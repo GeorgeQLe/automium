@@ -41,6 +41,8 @@ Goal: preserve the benchmark contract work already completed, finish the fixture
 
 ### Milestone
 
+- [x] Phase 1 milestone completed on 2026-04-07.
+
 Acceptance criteria:
 
 - Benchmark contract tests in `packages/contracts/tests/` and `packages/benchmark/tests/` pass against versioned fixtures.

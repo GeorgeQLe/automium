@@ -1,48 +1,50 @@
-# Current Phase: Benchmark Foundation Reset
+# Current Phase: Frozen Parity Audit and Benchmark Target Design
 
-This file tracks the active work for Phase 1 from [tasks/roadmap.md](/home/georgeqle/projects/tools/dev/automium/tasks/roadmap.md). Manual blockers and follow-up approvals are tracked in [tasks/manual-todo.md](/home/georgeqle/projects/tools/dev/automium/tasks/manual-todo.md).
+This file tracks the active work for Phase 2 from [tasks/roadmap.md](/home/georgeqle/projects/tools/dev/automium/tasks/roadmap.md). Phase 1 has been archived in [tasks/phases/phase-1.md](/home/georgeqle/projects/tools/dev/automium/tasks/phases/phase-1.md).
 
 ## Current Status
 
-- Phase planning is complete; [tasks/roadmap.md](/home/georgeqle/projects/tools/dev/automium/tasks/roadmap.md) is now the source of truth for the full build sequence.
-- Completed Phase 1 foundation work already covers most of the contract and fixture layer from the earlier external-benchmark plan.
-- Next automated step: Step 1.5.
-- Known manual blockers: none for the remaining Phase 1 automation.
+- Phase 1 benchmark foundation reset is complete and archived in [tasks/phases/phase-1.md](/home/georgeqle/projects/tools/dev/automium/tasks/phases/phase-1.md).
+- The benchmark contract suites are green against the owned-target fixtures, so Phase 2 can start from a stable baseline.
+- Next automated step: Step 2.1.
+- Known manual blockers: none for Phase 2.
 
-## Phase 1: Benchmark Foundation Reset
+## Phase 2: Frozen Parity Audit and Benchmark Target Design
 
-Goal: preserve the benchmark contract work already completed, finish the fixture and documentation layer, and formally pivot the benchmark corpus away from provisioned third-party products toward owned benchmark targets.
+Goal: convert the parity-products spec into an implementation-grade frozen target for each owned product before building shared platform code.
 
 ### Tests First
 
-- [x] Step 1.1: **Automated** Freeze the benchmark contract tests in `packages/benchmark/tests/` and `packages/contracts/tests/` around schema versions, KPI expectations, fixture-backed corpus shape, and contract documentation references so Phase 1 has an executable baseline before the owned-target corpus pivot.
+- [ ] Step 2.1: **Automated** Write failing documentation and contract tests for parity artifacts in `docs/parity/`, `packages/benchmark/tests/owned-product-matrix.contract.test.ts`, and `tests/planning/seed-reset.plan.test.ts` covering feature matrices, API resource matrices, benchmark journeys, and deterministic reset requirements.
 
 ### Implementation
 
-- [x] Step 1.2: **Automated** Finalize the checked-in schema fixtures and contract documentation under `packages/contracts/fixtures/`, `packages/benchmark/fixtures/`, `docs/contracts/`, and `docs/benchmarks/` so the current benchmark foundation is green and versioned.
-- [x] Step 1.3: **Automated** Replace the external benchmark corpus assumptions in `packages/benchmark/src/corpus.ts`, `packages/benchmark/fixtures/corpus.v1.json`, and `docs/benchmarks/v1-corpus.md` with owned-target entries for `Altitude`, `Switchboard`, `Foundry`, and any owned support fixtures required for coverage.
-- [x] Step 1.4: **Automated** Update planning and task-tracking files in `tasks/todo.md`, `tasks/manual-todo.md`, and `tasks/history.md` so obsolete third-party provisioning blockers are removed and the new owned-target benchmark strategy is reflected everywhere.
+- [ ] Step 2.2: **Automated** Create the frozen feature matrices for `Altitude`, `Switchboard`, and `Foundry` in `docs/parity/altitude-feature-matrix.md`, `docs/parity/switchboard-feature-matrix.md`, and `docs/parity/foundry-feature-matrix.md`.
+- [ ] Step 2.3: **Automated** Create API compatibility matrices and adapter inventories in `docs/parity/` for the major resources and integrations required by each owned product.
+- [ ] Step 2.4: **Automated** Define deterministic seed/reset requirements and owned benchmark-critical journey maps in `docs/benchmarks/owned-products.md` and supporting fixture-plan files under `tests/fixtures/`.
 
 ### Green
 
-- [ ] Step 1.5: **Automated** Make the benchmark contract suites pass against the owned-target fixtures and verify that the docs and task files no longer describe third-party SaaS provisioning as a core benchmark dependency.
+- [ ] Step 2.5: **Automated** Make the parity-audit suites pass and verify that every owned product has a frozen, implementation-testable parity boundary with benchmark journeys and reset expectations.
 
 ### Milestone
 
 Acceptance criteria:
 
-- Benchmark contract tests in `packages/contracts/tests/` and `packages/benchmark/tests/` pass against versioned fixtures.
-- `docs/benchmarks/v1-corpus.md` references owned benchmark targets rather than provisioned Appsmith, Plane, and Chatwoot instances.
-- The benchmark corpus strategy is consistent with `specs/owned-parity-benchmark-products.md`.
-- All Phase 1 tests pass.
-- No regressions are introduced in pre-existing repository checks.
+- Each owned product has a checked-in frozen feature matrix.
+- Each owned product has a major-resource API compatibility matrix.
+- Owned benchmark journeys are defined against owned products rather than third-party apps.
+- Deterministic seed/reset requirements exist for every benchmark-critical journey.
+- All Phase 2 tests pass.
+- No regressions occur in Phase 1 suites.
 
 ## Next Step Plan
 
-Step 1.5 will run the Phase 1 verification sweep against the owned-target benchmark foundation.
+Step 2.1 will establish the red-phase test boundary for the owned-product parity artifacts.
 
-- Session context: the benchmark suites already passed once after Step 1.4 (`pnpm test:run -- packages/contracts/tests packages/benchmark/tests`), so Step 1.5 should start by reusing that result unless code or docs change again before execution.
-- Primary verification command: `pnpm test:run -- packages/contracts/tests packages/benchmark/tests`.
-- Files most likely to require attention if verification fails or wording drifts: `packages/contracts/src/`, `packages/benchmark/src/`, `packages/contracts/tests/`, `packages/benchmark/tests/`, `docs/benchmarks/v1-corpus.md`, `tasks/todo.md`, `tasks/manual-todo.md`, and `tasks/history.md`.
-- Scope guard: keep the run limited to Phase 1 verification and milestone closure; do not begin Phase 2 parity-audit artifact work in the same session.
-- Acceptance target: benchmark contract suites pass against the owned-target fixtures, no Phase 1 task/doc artifact still frames third-party SaaS provisioning as a core dependency, Step 1.5 is checked off, and the Phase 1 milestone is ready to close.
+- What to build: failing tests that lock the required shape of the feature matrices, API matrices, benchmark journeys, and deterministic reset requirements before any Phase 2 documentation is written.
+- Likely file changes: `packages/benchmark/tests/owned-product-matrix.contract.test.ts`, `tests/planning/seed-reset.plan.test.ts`, and any shared test helpers or placeholder directories needed to express the missing parity artifacts.
+- Session-specific context: `docs/parity/` and `tests/planning/` do not exist yet, while the Phase 1 benchmark suites are already green; Step 2.1 should preserve that baseline and add only intentional red-phase failures for the new parity-artifact surface.
+- Primary red-phase command: `pnpm test:run -- packages/benchmark/tests/owned-product-matrix.contract.test.ts tests/planning/seed-reset.plan.test.ts`.
+- Scope guard: stop after the new tests fail for the expected missing-documentation reasons; do not begin writing the actual parity matrices or journey plans in the same run.
+- Acceptance target: the new Step 2.1 tests fail in a targeted way, clearly naming the missing Phase 2 artifacts, while the existing Phase 1 contract suites remain green.

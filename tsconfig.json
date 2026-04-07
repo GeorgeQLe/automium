@@ -12,6 +12,7 @@
     ]
   },
   "include": [
-    "packages/**/*.ts"
+    "packages/**/*.ts",
+    "tests/**/*.ts"
   ]
 }

@@ -6,7 +6,7 @@ This file tracks the active work for Phase 1 from [tasks/roadmap.md](/home/georg
 
 - Phase planning is complete; [tasks/roadmap.md](/home/georgeqle/projects/tools/dev/automium/tasks/roadmap.md) is now the source of truth for the full build sequence.
 - Completed Phase 1 foundation work already covers most of the contract and fixture layer from the earlier external-benchmark plan.
-- Next automated step: Step 1.4.
+- Next automated step: Step 1.5.
 - Known manual blockers: none for the remaining Phase 1 automation.
 
 ## Phase 1: Benchmark Foundation Reset
@@ -21,7 +21,7 @@ Goal: preserve the benchmark contract work already completed, finish the fixture
 
 - [x] Step 1.2: **Automated** Finalize the checked-in schema fixtures and contract documentation under `packages/contracts/fixtures/`, `packages/benchmark/fixtures/`, `docs/contracts/`, and `docs/benchmarks/` so the current benchmark foundation is green and versioned.
 - [x] Step 1.3: **Automated** Replace the external benchmark corpus assumptions in `packages/benchmark/src/corpus.ts`, `packages/benchmark/fixtures/corpus.v1.json`, and `docs/benchmarks/v1-corpus.md` with owned-target entries for `Altitude`, `Switchboard`, `Foundry`, and any owned support fixtures required for coverage.
-- [ ] Step 1.4: **Automated** Update planning and task-tracking files in `tasks/todo.md`, `tasks/manual-todo.md`, and `tasks/history.md` so obsolete third-party provisioning blockers are removed and the new owned-target benchmark strategy is reflected everywhere.
+- [x] Step 1.4: **Automated** Update planning and task-tracking files in `tasks/todo.md`, `tasks/manual-todo.md`, and `tasks/history.md` so obsolete third-party provisioning blockers are removed and the new owned-target benchmark strategy is reflected everywhere.
 
 ### Green
 
@@ -39,9 +39,9 @@ Acceptance criteria:
 
 ## Next Step Plan
 
-Step 1.4 will finish the planning-file cleanup that follows the owned-target corpus pivot.
+Step 1.5 will run the Phase 1 verification sweep against the owned-target benchmark foundation.
 
-- Update `tasks/roadmap.md`, `tasks/manual-todo.md`, and `tasks/history.md` so no active Phase 1 blocker still assumes provisioned third-party SaaS environments.
-- Re-check `tasks/todo.md` status text and milestone wording against the owned-target strategy before marking Step 1.4 complete.
-- Keep the scope to planning and tracking artifacts only; do not start the Step 1.5 verification sweep in the same run.
-- Re-run the benchmark contract suites after the tracking updates to confirm the docs and fixtures still align with the frozen v1 corpus.
+- Run the benchmark contract suites and fix any regressions that prevent the owned-target fixtures from passing.
+- Re-verify that `docs/benchmarks/v1-corpus.md`, `tasks/todo.md`, `tasks/manual-todo.md`, and `tasks/history.md` consistently describe the owned benchmark strategy.
+- Keep the scope to Phase 1 verification only; do not begin Phase 2 parity-audit artifact work in the same run.
+- If the benchmark suites pass cleanly, close the Phase 1 milestone and confirm the repository stays green.

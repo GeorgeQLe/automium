@@ -1,5 +1,7 @@
 # Manual TODO
 
+Phase 1 manual blockers: none. The remaining manual items begin after the benchmark-foundation reset and assume the owned-product benchmark strategy.
+
 - Confirm any instance-wide governance, retention, and secret-management policies that must apply to all owned products before externalization. _(after: Step 3.5)_
 - Review artifact retention windows, replay access boundaries, and audit-log requirements for persisted traces. _(after: Step 7.5)_
 - Confirm domain allowlists, credential-vault integration, and tenant policy defaults before fleet-scale worker rollout. _(after: Step 7.6)_

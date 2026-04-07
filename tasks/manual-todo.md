@@ -1,6 +1,6 @@
 # Manual TODO
 
-- Select the initial owned or consented SaaS applications, benchmark journeys, and environment profiles for the v1 corpus. _(blocks: Step 1.3)_
+- [x] Select the initial owned or consented SaaS applications, benchmark journeys, and environment profiles for the v1 corpus. _(blocks: Step 1.3)_ Approved shortlist: Appsmith, Plane, Chatwoot, and an owned iframe fixture app across the owned-baseline, owned-upload, owned-session-churn, and owned-iframe profiles.
 - Provision benchmark accounts, fixture data, session bootstrap instructions, and access policies for each selected environment. _(blocks: Step 1.4)_
 - Review and approve artifact retention windows, replay access boundaries, and audit-log requirements for persisted traces. _(after: Step 5.3)_
 - Confirm domain allowlists, credential-vault integration, and tenant policy defaults before multi-tenant worker rollout. _(after: Step 7.3)_

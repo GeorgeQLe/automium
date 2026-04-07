@@ -1,0 +1,9 @@
+{
+  "name": "@automium/admin-console",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./governance-shell": "./src/governance-shell.ts"
+  }
+}

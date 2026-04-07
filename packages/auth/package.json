@@ -1,0 +1,9 @@
+{
+  "name": "@automium/auth",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./platform-auth": "./src/platform-auth.ts"
+  }
+}

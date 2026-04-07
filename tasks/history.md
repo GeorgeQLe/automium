@@ -28,3 +28,6 @@
 - Re-ran `pnpm test:run` after the Phase 2 artifact freeze and confirmed 6 passing files / 20 passing tests with no regressions in the existing contract suites.
 - Completed Step 2.5 by re-running `pnpm test:run`, confirming that the Phase 2 parity-audit suites and prior benchmark-contract suites remain green at 6 passing files / 20 passing tests.
 - Archived the completed Phase 2 execution file under `tasks/phases/phase-2.md`, marked the Phase 2 milestone complete in `tasks/roadmap.md`, and regenerated `tasks/todo.md` around the Phase 3 Step 3.1 shared-platform red-phase tests.
+- Added the Phase 3 shared-platform contract suites under `packages/auth/tests/`, `packages/tenancy/tests/`, `packages/rbac/tests/`, `packages/audit/tests/`, `packages/realtime/tests/`, and `apps/admin-console/tests/`, and expanded the Vitest/TypeScript config so the new app-level tests are included in the workspace.
+- Completed Step 3.2 by scaffolding the shared platform packages plus `apps/admin-console/` with thin contract-shaped module exports for auth, tenancy, RBAC, audit, realtime, files, jobs, search, adapters, UI, API contracts, and domain-model boundaries.
+- Re-ran `pnpm test:run` after the scaffold landed and confirmed the repository is green at 12 passing files / 32 passing tests, eliminating the prior missing-module failures from the Phase 3 suites.

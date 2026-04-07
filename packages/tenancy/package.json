@@ -1,0 +1,9 @@
+{
+  "name": "@automium/tenancy",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./platform-tenancy": "./src/platform-tenancy.ts"
+  }
+}

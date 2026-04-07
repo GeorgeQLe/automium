@@ -6,9 +6,10 @@ This file tracks the active work for Phase 3 from [tasks/roadmap.md](/home/georg
 
 - Phase 1 benchmark foundation reset is complete and archived in [tasks/phases/phase-1.md](/home/georgeqle/projects/tools/dev/automium/tasks/phases/phase-1.md).
 - Phase 2 frozen parity audit and benchmark target design is complete and archived in [tasks/phases/phase-2.md](/home/georgeqle/projects/tools/dev/automium/tasks/phases/phase-2.md).
-- The repository baseline is green at 6 passing files / 20 passing tests before shared-platform work begins.
-- Shared platform implementation has not started; Phase 3 begins by defining the executable failing-test boundary for the common platform surfaces.
-- Next automated step: Step 3.1.
+- The repository baseline was green at 6 passing files / 20 passing tests before shared-platform work began.
+- Shared platform packages and the admin shell scaffold now exist with frozen contract exports for auth, tenancy, RBAC, audit, realtime, and admin-console governance.
+- The current repository state is green at 12 passing files / 32 passing tests after the Step 3.2 scaffold landed.
+- Next automated step: Step 3.3.
 - Known manual blockers: none for Phase 3.
 
 ## Phase 3: Shared Multi-Tenant Product Platform
@@ -17,11 +18,11 @@ Goal: build the common application platform that all three owned products will r
 
 ### Tests First
 
-- [ ] Step 3.1: **Automated** Write failing platform tests in `packages/auth/tests/`, `packages/tenancy/tests/`, `packages/rbac/tests/`, `packages/audit/tests/`, `packages/realtime/tests/`, and `apps/admin-console/tests/` covering auth, invites, memberships, permissions, audit trails, files, jobs, search, and realtime delivery.
+- [x] Step 3.1: **Automated** Write failing platform tests in `packages/auth/tests/`, `packages/tenancy/tests/`, `packages/rbac/tests/`, `packages/audit/tests/`, `packages/realtime/tests/`, and `apps/admin-console/tests/` covering auth, invites, memberships, permissions, audit trails, files, jobs, search, and realtime delivery.
 
 ### Implementation
 
-- [ ] Step 3.2: **Automated** Scaffold the shared platform packages and admin shell under `apps/admin-console/`, `packages/auth/`, `packages/tenancy/`, `packages/rbac/`, `packages/audit/`, `packages/files/`, `packages/search/`, `packages/jobs/`, `packages/realtime/`, `packages/adapters/`, `packages/ui/`, `packages/api-contracts/`, and `packages/domain-model/`.
+- [x] Step 3.2: **Automated** Scaffold the shared platform packages and admin shell under `apps/admin-console/`, `packages/auth/`, `packages/tenancy/`, `packages/rbac/`, `packages/audit/`, `packages/files/`, `packages/search/`, `packages/jobs/`, `packages/realtime/`, `packages/adapters/`, `packages/ui/`, `packages/api-contracts/`, and `packages/domain-model/`.
 - [ ] Step 3.3: **Automated** Implement authentication, sessions, organizations, workspaces, invites, memberships, RBAC, audit logging, file ownership, search indexing, jobs, and realtime event delivery across the shared packages.
 - [ ] Step 3.4: **Automated** Build the admin shell and shared product primitives for configuration, governance, and product-level navigation.
 
@@ -42,11 +43,10 @@ Acceptance criteria:
 
 ## Next Step Plan
 
-Step 3.1 will write the red-phase shared-platform suites that define the common platform boundary before any scaffolding begins.
+Step 3.3 will implement actual shared-platform behavior behind the scaffolded package boundaries.
 
-- What to build: failing tests for auth, organization/workspace tenancy, invites, memberships, RBAC permissions, audit trails, file ownership metadata, search indexing, job scheduling, realtime delivery, and admin-console governance flows.
-- Likely file changes: new test files under `packages/auth/tests/`, `packages/tenancy/tests/`, `packages/rbac/tests/`, `packages/audit/tests/`, `packages/realtime/tests/`, and `apps/admin-console/tests/`, plus any minimal workspace config needed so Vitest discovers the new suites.
-- Key technical decisions or risks: keep Step 3.1 at the contract level so the tests describe platform behavior without prematurely locking in internal implementations; make the suite boundaries explicit enough to drive the later package scaffolding in Steps 3.2-3.4.
-- Session-specific context: the current green baseline is `pnpm test:run` with 6 passing files / 20 passing tests covering benchmark contracts and parity-planning artifacts only.
-- Tests to write first: auth/session lifecycle, invite acceptance, organization and workspace membership, permission checks, audit-event emission, file ownership constraints, search-job contracts, realtime event delivery, and admin-console governance smoke coverage.
-- Acceptance target: Phase 3 has executable failing tests that capture the shared platform surface while preserving the existing Phase 1-2 green baseline outside the intentional red suites.
+- What to build: authentication/session flows, organization and workspace tenancy, invite acceptance, membership state, RBAC checks, audit event emission, file ownership metadata, search indexing contracts, job lifecycle primitives, and realtime delivery orchestration across the shared packages.
+- Likely file changes: expand the new `src/` modules in `packages/auth/`, `packages/tenancy/`, `packages/rbac/`, `packages/audit/`, `packages/files/`, `packages/search/`, `packages/jobs/`, `packages/realtime/`, `packages/domain-model/`, `packages/api-contracts/`, and `apps/admin-console/`, with shared types likely centralized in `packages/domain-model/` and `packages/api-contracts/`.
+- Key technical decisions or risks: keep the implementations deterministic and package-local enough for contract testing, avoid coupling the admin console shell directly to unfinished backend behavior, and preserve the exported boundary names frozen in Steps 3.1-3.2.
+- Session-specific context: `pnpm test:run` is green at 12 passing files / 32 passing tests after the scaffold introduced all required module entrypoints and contract constants.
+- Acceptance target: the shared packages expose concrete behavior and domain structures that support invites, memberships, permissions, audit, files, jobs, search, and realtime workflows without breaking the current green suite.

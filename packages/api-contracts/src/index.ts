@@ -1,0 +1,11 @@
+export const SHARED_PLATFORM_API_SURFACES = [
+  "auth",
+  "tenancy",
+  "rbac",
+  "audit",
+  "files",
+  "jobs",
+  "search",
+  "realtime",
+  "admin-console"
+] as const;

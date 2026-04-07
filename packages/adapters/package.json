@@ -1,0 +1,8 @@
+{
+  "name": "@automium/adapters",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  }
+}

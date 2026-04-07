@@ -1,0 +1,9 @@
+{
+  "name": "@automium/audit",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./platform-audit": "./src/platform-audit.ts"
+  }
+}

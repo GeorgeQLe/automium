@@ -1,0 +1,9 @@
+{
+  "name": "@automium/realtime",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./platform-realtime": "./src/platform-realtime.ts"
+  }
+}

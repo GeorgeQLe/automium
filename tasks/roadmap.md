@@ -1,247 +1,236 @@
 # Agent-Native Browser QA Platform Roadmap
 
-This plan translates [the finalized product spec](/home/georgeqle/projects/tools/dev/automium/specs/agent-native-browser-qa-platform.md) into execution phases. The repository currently contains planning artifacts only, so the file paths below define the intended package and app layout to create as implementation begins. Manual-only work is tracked separately in [tasks/manual-todo.md](/home/georgeqle/projects/tools/dev/automium/tasks/manual-todo.md).
+This plan translates [the finalized core platform spec](/home/georgeqle/projects/tools/dev/automium/specs/agent-native-browser-qa-platform.md) and [the owned parity benchmark products spec](/home/georgeqle/projects/tools/dev/automium/specs/owned-parity-benchmark-products.md) into an execution-grade phased plan. The repository already contains early benchmark contract work, so Phase 1 preserves that foundation while pivoting the benchmark surface from provisioned third-party apps to owned parity products.
 
 ## Summary
 
-- Deliver a full platform alpha in sequential phases that validate the highest-risk assumptions first: benchmark contracts, engine kernel, semantic runtime, replay, vision, worker scale, and natural-language authoring.
-- Keep the browser scope narrow: authenticated React/Vue SaaS apps with dashboards, CRUD flows, forms, sessions, uploads, and common iframes.
-- Treat replay/debug, deterministic execution, and cross-model benchmarking as core product surfaces, not post-MVP cleanup.
+- Keep the benchmark contract work already completed, but retarget the benchmark corpus to owned products.
+- Build the owned benchmark targets before the browser-engine-heavy phases so the QA platform validates against durable, controlled applications.
+- Sequence work as benchmark foundation reset, parity audit, shared platform, `Altitude`, `Switchboard`, `Foundry`, then browser/runtime integration.
+- Treat replay/debug, deterministic execution, benchmarking, and worker isolation as core platform surfaces once owned benchmark products exist.
 
 ## Phase Overview
 
 | Phase | Focus | Primary Deliverables | Depends On |
 | --- | --- | --- | --- |
-| 1 | Benchmark contracts and repo skeleton | Frozen semantic, replay, and KPI contracts; benchmark corpus manifest | Spec approval |
-| 2 | Control plane skeleton and shared domain model | Core APIs, entity schemas, planner adapter base, operator shell | Phase 1 |
-| 3 | Engine kernel for the QA web subset | HTML/DOM/JS/CSS/network/storage/input/frame runtime for target apps | Phase 1 |
-| 4 | Semantic runtime and deterministic executor | Stable semantic IDs, actionability model, executor, assertions, recovery | Phases 2-3 |
-| 5 | Replay, artifacts, and causal debugging | Event stream, artifact pipeline, replay console timeline and diffs | Phases 2-4 |
-| 6 | Targeted vision and context budgeting | Vision fallback, OCR/disambiguation, compaction, token policies | Phases 4-5 |
-| 7 | Worker isolation and large-scale execution | Queueing, isolated workers, tenancy controls, telemetry, fleet runs | Phases 2-6 |
-| 8 | Natural-language authoring, benchmarking, and alpha hardening | Journey compiler, cross-model benchmark runner, integrated alpha | Phases 1-7 |
+| 1 | Benchmark foundation reset | Owned-target benchmark corpus, completed contract fixtures/docs alignment, obsolete third-party blockers removed | Specs approval |
+| 2 | Frozen parity audit and benchmark target design | Checked-in parity matrices, API matrices, seed/reset model, owned benchmark journey map | Phase 1 |
+| 3 | Shared multi-tenant product platform | Auth, tenancy, RBAC, audit, files, search, jobs, realtime, admin shell | Phase 2 |
+| 4 | `Altitude` parity product | Plane-parity project management workspace on the shared platform | Phase 3 |
+| 5 | `Switchboard` parity product | Chatwoot-parity support workspace with realtime messaging and automation | Phases 3-4 |
+| 6 | `Foundry` parity product | Appsmith-parity internal app builder with editor/runtime split | Phases 3-5 |
+| 7 | Agent browser runtime and platform integration | Control plane, engine, semantic runtime, replay, benchmarking, and alpha on owned products | Phases 1-6 |
 
-## Phase 1: Benchmark Contracts and Repo Skeleton
+## Phase 1: Benchmark Foundation Reset
 
-Goal: freeze the contracts and benchmark definitions that every later phase will implement, while establishing the initial workspace layout.
+Goal: preserve the benchmark contract work already completed, finish the fixture and documentation layer, and formally pivot the benchmark corpus away from provisioned third-party products toward owned benchmark targets.
 
 ### Tests First
 
-- Step 1.1: **Automated** Write failing contract tests in `packages/contracts/tests/semantic-snapshot.contract.test.ts`, `packages/contracts/tests/replay-event.contract.test.ts`, `packages/contracts/tests/planner-adapter.contract.test.ts`, and `packages/benchmark/tests/kpi-harness.test.ts` covering required fields, schema versioning, event ordering, KPI aggregation, and planner intent vocabulary.
+- Step 1.1: **Automated** Freeze the benchmark contract tests in `packages/benchmark/tests/` and `packages/contracts/tests/` around schema versions, KPI expectations, fixture-backed corpus shape, and contract documentation references so Phase 1 has an executable baseline before the owned-target corpus pivot.
 
 ### Implementation
 
-- Step 1.2: **Automated** Create the initial workspace structure under `packages/contracts/`, `packages/benchmark/`, `docs/contracts/`, `docs/benchmarks/`, and `tests/fixtures/` so the project has stable homes for contracts, corpus manifests, and golden fixtures.
-- Step 1.3: **Automated** Define the v1 benchmark corpus, fixture manifest, verdict taxonomy, KPI formulas, and planner adapter interface in `packages/benchmark/src/corpus.ts`, `packages/benchmark/src/kpis.ts`, `packages/contracts/src/semantic-snapshot.ts`, `packages/contracts/src/replay-event.ts`, and `packages/contracts/src/planner-adapter.ts`.
+- Step 1.2: **Automated** Finalize the checked-in schema fixtures and contract documentation under `packages/contracts/fixtures/`, `packages/benchmark/fixtures/`, `docs/contracts/`, and `docs/benchmarks/` so the current benchmark foundation is green and versioned.
+- Step 1.3: **Automated** Replace the external benchmark corpus assumptions in `packages/benchmark/src/corpus.ts`, `packages/benchmark/fixtures/corpus.v1.json`, and `docs/benchmarks/v1-corpus.md` with owned-target entries for `Altitude`, `Switchboard`, `Foundry`, and any owned support fixtures required for coverage.
+- Step 1.4: **Automated** Update planning and task-tracking files in `tasks/todo.md`, `tasks/manual-todo.md`, and `tasks/history.md` so obsolete third-party provisioning blockers are removed and the new owned-target benchmark strategy is reflected everywhere.
 
 ### Green
 
-- Step 1.4: **Automated** Add golden schema fixtures under `packages/contracts/fixtures/` and `packages/benchmark/fixtures/`, make the new contract suites pass, and align the contract documentation in `docs/contracts/` and `docs/benchmarks/v1-corpus.md` with the frozen interfaces.
+- Step 1.5: **Automated** Make the benchmark contract suites pass against the owned-target fixtures and verify that the docs and task files no longer describe third-party SaaS provisioning as a core benchmark dependency.
 
 ### Milestone
 
 Acceptance criteria:
 
-- Contract tests in `packages/contracts/tests/` and `packages/benchmark/tests/` pass against versioned fixtures.
-- `docs/benchmarks/v1-corpus.md` maps each benchmark journey to an authorized site profile, fixture set, and expected verdict semantics.
-- The semantic snapshot, replay event, and planner adapter contracts are versioned and referenced by path from the benchmark docs.
+- Benchmark contract tests in `packages/contracts/tests/` and `packages/benchmark/tests/` pass against versioned fixtures.
+- `docs/benchmarks/v1-corpus.md` references owned benchmark targets rather than provisioned Appsmith, Plane, and Chatwoot instances.
+- The benchmark corpus strategy is consistent with `specs/owned-parity-benchmark-products.md`.
 - All Phase 1 tests pass.
 - No regressions are introduced in pre-existing repository checks.
 
-## Phase 2: Control Plane Skeleton and Shared Domain Model
+## Phase 2: Frozen Parity Audit and Benchmark Target Design
 
-Goal: establish the product shell, shared entities, and planner abstraction so authoring, execution, and replay use the same system model.
+Goal: convert the parity-products spec into an implementation-grade frozen target for each owned product before building shared platform code.
 
 ### Tests First
 
-- Step 2.1: **Automated** Write failing API and domain tests in `apps/control-plane/tests/journey-api.contract.test.ts`, `packages/domain-model/tests/entities.test.ts`, `packages/planner-adapters/tests/base-adapter.test.ts`, and `apps/replay-console/tests/navigation-shell.test.tsx` for entity schemas, lifecycle states, API payloads, and operator navigation.
+- Step 2.1: **Automated** Write failing documentation and contract tests for parity artifacts in `docs/parity/`, `packages/benchmark/tests/owned-product-matrix.contract.test.ts`, and `tests/planning/seed-reset.plan.test.ts` covering feature matrices, API resource matrices, benchmark journeys, and deterministic reset requirements.
 
 ### Implementation
 
-- Step 2.2: **Automated** Create the control-plane and shared-model packages under `apps/control-plane/`, `apps/replay-console/`, `packages/domain-model/`, `packages/api/`, and `packages/planner-adapters/`, including workspace manifests and module boundaries.
-- Step 2.3: **Automated** Implement `Journey`, `Run`, `Step`, `Assertion`, and `RecoveryRule` schemas plus planner adapter base classes in `packages/domain-model/src/` and `packages/planner-adapters/src/`, and expose typed API contracts from `packages/api/src/`.
-- Step 2.4: **Automated** Scaffold the operator-facing surfaces for journey authoring, run listing, and replay entry in `apps/control-plane/src/` and `apps/replay-console/src/`, wired to the shared domain types and placeholder data sources.
+- Step 2.2: **Automated** Create the frozen feature matrices for `Altitude`, `Switchboard`, and `Foundry` in `docs/parity/altitude-feature-matrix.md`, `docs/parity/switchboard-feature-matrix.md`, and `docs/parity/foundry-feature-matrix.md`.
+- Step 2.3: **Automated** Create API compatibility matrices and adapter inventories in `docs/parity/` for the major resources and integrations required by each owned product.
+- Step 2.4: **Automated** Define deterministic seed/reset requirements and owned benchmark-critical journey maps in `docs/benchmarks/owned-products.md` and supporting fixture-plan files under `tests/fixtures/`.
 
 ### Green
 
-- Step 2.5: **Automated** Make the new API, domain, and UI shell tests pass and verify that a smoke flow can create a draft journey, view a queued run, and open a replay placeholder without schema mismatches.
+- Step 2.5: **Automated** Make the parity-audit suites pass and verify that every owned product has a frozen, implementation-testable parity boundary with benchmark journeys and reset expectations.
 
 ### Milestone
 
 Acceptance criteria:
 
-- Shared entity schemas define stable lifecycle states for journeys, runs, steps, assertions, and recovery rules.
-- Control-plane and replay-console routes use the same typed contracts from `packages/domain-model/` and `packages/api/`.
-- Planner adapters share a single base interface compatible with the Phase 1 contract tests.
+- Each owned product has a checked-in frozen feature matrix.
+- Each owned product has a major-resource API compatibility matrix.
+- Owned benchmark journeys are defined against owned products rather than third-party apps.
+- Deterministic seed/reset requirements exist for every benchmark-critical journey.
 - All Phase 2 tests pass.
-- No regressions occur in Phase 1 contract and benchmark suites.
+- No regressions occur in Phase 1 suites.
 
-## Phase 3: Engine Kernel for the QA Web Subset
+## Phase 3: Shared Multi-Tenant Product Platform
 
-Goal: deliver the first browser engine kernel capable of loading and operating the narrow SaaS-app subset defined in the spec.
+Goal: build the common application platform that all three owned products will reuse.
 
 ### Tests First
 
-- Step 3.1: **Automated** Write failing engine tests in `packages/engine/tests/html-dom.test.ts`, `packages/engine/tests/layout-saas-subset.test.ts`, `packages/engine/tests/network-session.test.ts`, `packages/engine/tests/input-and-frames.test.ts`, and `tests/integration/engine/authorized-app-smoke.test.ts` for document parsing, layout constraints, session persistence, iframe behavior, and benchmark smoke journeys.
+- Step 3.1: **Automated** Write failing platform tests in `packages/auth/tests/`, `packages/tenancy/tests/`, `packages/rbac/tests/`, `packages/audit/tests/`, `packages/realtime/tests/`, and `apps/admin-console/tests/` covering auth, invites, memberships, permissions, audit trails, files, jobs, search, and realtime delivery.
 
 ### Implementation
 
-- Step 3.2: **Automated** Implement the engine modules under `packages/engine/src/html/`, `packages/engine/src/dom/`, `packages/engine/src/js/`, `packages/engine/src/css/`, `packages/engine/src/network/`, `packages/engine/src/storage/`, `packages/engine/src/input/`, and `packages/engine/src/frames/`.
-- Step 3.3: **Automated** Add support for auth/session flows, SPA navigation, forms, uploads, and common iframe interactions in the engine runtime, and document supported/unsupported behaviors in `docs/compatibility/v1-web-subset.md`.
+- Step 3.2: **Automated** Scaffold the shared platform packages and admin shell under `apps/admin-console/`, `packages/auth/`, `packages/tenancy/`, `packages/rbac/`, `packages/audit/`, `packages/files/`, `packages/search/`, `packages/jobs/`, `packages/realtime/`, `packages/adapters/`, `packages/ui/`, `packages/api-contracts/`, and `packages/domain-model/`.
+- Step 3.3: **Automated** Implement authentication, sessions, organizations, workspaces, invites, memberships, RBAC, audit logging, file ownership, search indexing, jobs, and realtime event delivery across the shared packages.
+- Step 3.4: **Automated** Build the admin shell and shared product primitives for configuration, governance, and product-level navigation.
 
 ### Green
 
-- Step 3.4: **Automated** Make the engine suites pass for login, dashboard, CRUD, and form journeys from the Phase 1 corpus, and add controlled failure coverage for unsupported behaviors in `packages/engine/tests/unsupported-behavior.test.ts`.
+- Step 3.5: **Automated** Make the shared platform suites pass and verify that multi-workspace tenancy, permissions, audit, files, jobs, search, and realtime behavior are stable enough to support all owned products.
 
 ### Milestone
 
 Acceptance criteria:
 
-- The engine can load benchmark applications, maintain sessions, and execute common SaaS interactions inside the supported subset.
-- `docs/compatibility/v1-web-subset.md` lists supported behaviors, known exclusions, and expected failure modes.
-- Unsupported features fail in diagnosable, bounded ways instead of silent corruption.
+- Multi-workspace tenancy works across the shared platform.
+- RBAC and audit coverage exist for shared resource types and sensitive actions.
+- Files, jobs, search, and realtime delivery pass platform acceptance suites.
+- An admin shell exists for instance-level setup and governance.
 - All Phase 3 tests pass.
 - No regressions occur in Phases 1-2 suites.
 
-## Phase 4: Semantic Runtime and Deterministic Executor
+## Phase 4: Altitude
 
-Goal: make the engine agent-operable through stable semantic identities, deterministic execution, assertions, and bounded recovery.
+Goal: deliver the first owned parity product, `Altitude`, as the Plane-parity benchmark surface and shared-product proving ground.
 
 ### Tests First
 
-- Step 4.1: **Automated** Write failing runtime and execution tests in `packages/runtime/tests/semantic-ids.test.ts`, `packages/runtime/tests/actionability.test.ts`, `packages/executor/tests/action-compiler.test.ts`, `packages/assertions/tests/verdicts.test.ts`, and `tests/integration/journeys/deterministic-run.test.ts`.
+- Step 4.1: **Automated** Write failing API, domain, and UI workflow tests in `apps/altitude/tests/`, `packages/domain-model/tests/altitude/`, and `tests/integration/altitude/` for workspaces, projects, work items, views, cycles, modules, pages, analytics, attachments, notifications, and webhooks.
 
 ### Implementation
 
-- Step 4.2: **Automated** Implement semantic snapshot generation, stable interactive node identity, mutation tracking, and actionability scoring in `packages/runtime/src/`.
-- Step 4.3: **Automated** Implement deterministic action compilation, bounded retries, recovery policies, and assertion evaluation in `packages/executor/src/` and `packages/assertions/src/`, consuming the Phase 1 planner intent contract.
+- Step 4.2: **Automated** Scaffold `apps/altitude/` plus any product-specific packages needed for project management domain logic, APIs, and UI shells.
+- Step 4.3: **Automated** Implement workspaces, projects, membership, work items, views, saved views, cycles, modules, pages/wiki, attachments, activity history, notifications, and major-resource APIs for `Altitude`.
+- Step 4.4: **Automated** Add deterministic seeds, reset hooks, and benchmark-friendly routes for the `Altitude` benchmark-critical journeys.
 
 ### Green
 
-- Step 4.4: **Automated** Make the runtime and journey execution suites pass for core actions (`navigate`, `click`, `type/fill`, `select`, `upload`, `wait for condition`, `assert`, `recover`, `finish`) and verify reproducible outcomes across repeated runs of the same corpus journeys.
+- Step 4.5: **Automated** Make the `Altitude` suites pass and verify that the owned project-management benchmark journeys run end to end against deterministic fixtures.
 
 ### Milestone
 
 Acceptance criteria:
 
-- Semantic snapshots expose stable IDs, frame hierarchy, interactability metadata, recent mutations, relevant network events, and pinned invariants.
-- Planner intent and executor action responsibilities are separated by typed contracts and enforced by tests.
-- Recovery behavior is explicit, bounded, and replayable for transient failures.
+- The frozen `Altitude` feature matrix passes.
+- Major-resource API compatibility tests pass for `Altitude`.
+- Realtime collaboration works for assignments, comments, activity, and state changes.
+- The QA platform can exercise the defined `Altitude` benchmark-critical journeys.
 - All Phase 4 tests pass.
 - No regressions occur in Phases 1-3 suites.
 
-## Phase 5: Replay, Artifacts, and Causal Debugging
+## Phase 5: Switchboard
 
-Goal: provide the artifact pipeline and replay surfaces needed to explain what happened during a run and why it passed, failed, or recovered.
+Goal: deliver the second owned parity product, `Switchboard`, as the Chatwoot-parity support workspace and realtime messaging benchmark surface.
 
 ### Tests First
 
-- Step 5.1: **Automated** Write failing artifact and replay tests in `packages/event-stream/tests/replay-event-ordering.test.ts`, `packages/artifacts/tests/manifest.test.ts`, `packages/artifacts/tests/retention-policy.test.ts`, `apps/replay-console/tests/step-debugger.test.tsx`, and `tests/integration/replay/failure-diagnosis.test.ts`.
+- Step 5.1: **Automated** Write failing API, adapter, and UI workflow tests in `apps/switchboard/tests/`, `packages/adapters/tests/switchboard/`, and `tests/integration/switchboard/` for inboxes, channels, contacts, conversations, assignments, notes, canned responses, macros, automation, and reporting.
 
 ### Implementation
 
-- Step 5.2: **Automated** Implement the replay event stream, artifact manifest, targeted screenshot metadata, network trace packaging, and run summary generation in `packages/event-stream/src/` and `packages/artifacts/src/`.
-- Step 5.3: **Automated** Build the replay console timeline, step inspector, semantic before/after diff, mutation log, and planner-versus-executor views in `apps/replay-console/src/`.
+- Step 5.2: **Automated** Scaffold `apps/switchboard/` and any supporting channel, messaging, and automation modules needed for the support workspace surface.
+- Step 5.3: **Automated** Implement accounts, inboxes, contacts, conversations, threaded messages, teams, assignments, labels, notes, canned responses, macros, automation rules, reporting, and major-resource APIs for `Switchboard`.
+- Step 5.4: **Automated** Implement production-grade support for website live chat, API channel, and email, plus adapter-backed operator flows for the remaining public channel categories.
+- Step 5.5: **Automated** Add deterministic seeds, reset hooks, and benchmark-friendly routes for the `Switchboard` benchmark-critical journeys.
 
 ### Green
 
-- Step 5.4: **Automated** Make the replay suites pass by reconstructing a failing run from persisted artifacts alone and verifying that the console can explain planner input, executor action, state changes, retries, and final verdict.
+- Step 5.6: **Automated** Make the `Switchboard` suites pass and verify that owned conversation-routing benchmarks run end to end with realtime updates and stable fixtures.
 
 ### Milestone
 
 Acceptance criteria:
 
-- Every run emits a replay bundle with semantic events, targeted visual artifacts, traces, planner decisions, executor actions, and a verdict summary.
-- The replay console can answer what the planner believed, what the executor did, what changed, and why the run failed or recovered.
-- Artifact retention behavior is defined and enforced in the artifact pipeline.
+- The frozen `Switchboard` feature matrix passes.
+- Major-resource API compatibility tests pass for `Switchboard`.
+- Realtime conversation, assignment, notes, and inbox-routing behavior works under shared platform constraints.
+- Core channel support works end to end for website live chat, API, and email.
 - All Phase 5 tests pass.
 - No regressions occur in Phases 1-4 suites.
 
-## Phase 6: Targeted Vision and Context Budgeting
+## Phase 6: Foundry
 
-Goal: add selective vision fallback and bounded context management without losing determinism or exploding token spend.
+Goal: deliver the third owned parity product, `Foundry`, as the Appsmith-parity internal app builder and the most complex benchmark target.
 
 ### Tests First
 
-- Step 6.1: **Automated** Write failing tests in `packages/vision/tests/targeted-crop-policy.test.ts`, `packages/vision/tests/ocr-disambiguation.test.ts`, `packages/context-manager/tests/budget-compaction.test.ts`, and `tests/integration/journeys/ambiguous-target-recovery.test.ts`.
+- Step 6.1: **Automated** Write failing editor, runtime, datasource, and publish-flow tests in `apps/foundry/tests/`, `packages/adapters/tests/foundry/`, and `tests/integration/foundry/` for apps, pages, widgets, datasources, queries, JavaScript logic, bindings, branching, deployment, and permissions.
 
 ### Implementation
 
-- Step 6.2: **Automated** Implement targeted crop capture, semantic coordinate mapping, OCR/disambiguation hooks, and ambiguity detection in `packages/vision/src/`.
-- Step 6.3: **Automated** Implement pinned invariants, recent raw-step windows, summarized history chapters, per-step token caps, and escalation policies in `packages/context-manager/src/`, integrating with planner adapters and the executor.
+- Step 6.2: **Automated** Scaffold `apps/foundry/` and any supporting packages for widgets, datasources, query execution, builder state, and publish/runtime flows.
+- Step 6.3: **Automated** Implement organizations or workspaces, applications, pages, editor/runtime split, visual canvas, widget system, datasources, queries, JavaScript logic units, bindings, themes, environments, permissions, and major-resource APIs for `Foundry`.
+- Step 6.4: **Automated** Implement versioning, branching, deployment, publish/share flows, custom-widget hooks, and production-grade datasource support for Postgres-compatible SQL, MySQL-compatible SQL, and REST APIs.
+- Step 6.5: **Automated** Add deterministic seeds, reset hooks, and benchmark-friendly routes for the `Foundry` builder and runtime benchmark-critical journeys.
 
 ### Green
 
-- Step 6.4: **Automated** Make the vision and context suites pass by showing that ambiguous scenarios invoke vision only when semantic resolution fails, and that long journeys remain within configured token budgets without losing required assertions.
+- Step 6.6: **Automated** Make the `Foundry` suites pass and verify that builder, publish, and runtime journeys run end to end against deterministic fixtures.
 
 ### Milestone
 
 Acceptance criteria:
 
-- Vision is invoked only for ambiguity, canvas/image text, or visual-only checks justified by runtime policies.
-- Context compaction preserves active assertions and recovery context across long journeys.
-- Token and visual-capture budgets are measurable against Phase 1 KPI definitions.
+- The frozen `Foundry` feature matrix passes.
+- Major-resource API compatibility tests pass for `Foundry`.
+- Builder/runtime workflows, publish flows, and branch-aware collaboration behave consistently under shared platform constraints.
+- Core datasource and widget workflows work end to end against deterministic fixtures.
 - All Phase 6 tests pass.
 - No regressions occur in Phases 1-5 suites.
 
-## Phase 7: Worker Isolation and Large-Scale Execution
+## Phase 7: Agent Browser Runtime and Platform Integration
 
-Goal: make the platform operationally credible by running isolated journeys across a worker fleet with tenancy, quotas, and telemetry.
+Goal: complete the original QA platform vision against owned products instead of third-party benchmark dependencies.
 
 ### Tests First
 
-- Step 7.1: **Automated** Write failing orchestration and scale tests in `packages/orchestrator/tests/queue-policy.test.ts`, `packages/worker/tests/isolation-boundary.test.ts`, `packages/policies/tests/tenant-guards.test.ts`, and `tests/load/concurrent-runs.test.ts`.
+- Step 7.1: **Automated** Write failing control-plane, engine, runtime, replay, worker, benchmark-runner, and alpha tests in `apps/control-plane/tests/`, `apps/replay-console/tests/`, `packages/engine/tests/`, `packages/runtime/tests/`, `packages/executor/tests/`, `packages/artifacts/tests/`, `packages/orchestrator/tests/`, and `tests/e2e/alpha/` against the owned product corpus.
 
 ### Implementation
 
-- Step 7.2: **Automated** Implement job queueing, worker assignment, isolated run lifecycles, warm-pool support, and artifact handoff in `packages/orchestrator/src/` and `packages/worker/src/`.
-- Step 7.3: **Automated** Implement tenant policies, concurrency controls, quota enforcement, telemetry aggregation, and artifact ownership boundaries in `packages/policies/src/`, `packages/orchestrator/src/telemetry/`, and `apps/control-plane/src/runs/`.
+- Step 7.2: **Automated** Scaffold the control plane, replay console, planner-adapter, engine, runtime, executor, assertions, event-stream, artifacts, context-manager, vision, orchestrator, worker, policies, journey-compiler, and benchmark-runner packages and apps needed for the integrated QA platform.
+- Step 7.3: **Automated** Implement the control plane, shared execution domain model, planner abstraction, and benchmark-run submission flows aligned to the owned benchmark targets.
+- Step 7.4: **Automated** Implement the browser engine kernel, semantic runtime, deterministic executor, assertions, and bounded recovery for the supported QA web subset exercised primarily against `Altitude`, `Switchboard`, `Foundry`, and any owned support fixtures.
+- Step 7.5: **Automated** Implement replay event streams, artifact packaging, replay/debug console surfaces, targeted vision fallback, and context budgeting across owned-product runs.
+- Step 7.6: **Automated** Implement worker isolation, queueing, telemetry, quotas, policy enforcement, natural-language authoring, cross-model benchmark reporting, and alpha hardening for owned-product execution.
 
 ### Green
 
-- Step 7.4: **Automated** Make the orchestration suites pass by running concurrent benchmark journeys in isolated workers, validating telemetry completeness, and confirming that worker failures do not leak state or artifacts across runs or tenants.
+- Step 7.7: **Automated** Make the integrated platform suites pass and verify that the QA platform can compile, execute, replay, and benchmark journeys across all owned products without relying on third-party benchmark apps.
 
 ### Milestone
 
 Acceptance criteria:
 
-- Journeys execute in isolated environments with clear ownership of state, secrets, and artifacts.
-- Queueing, concurrency, and warm-pool behavior are observable from the control plane.
-- Tenant and policy boundaries are enforced by tests rather than documentation alone.
+- The QA platform can compile and execute benchmark journeys against all owned products.
+- Replay and artifact surfaces explain planner intent, executor action, state changes, retries, and verdicts for owned-product runs.
+- Worker isolation and policy controls hold under concurrent benchmark execution.
+- Cross-model benchmarking works against the owned product corpus with repeatability, latency, recovery, and spend reporting.
 - All Phase 7 tests pass.
 - No regressions occur in Phases 1-6 suites.
 
-## Phase 8: Natural-Language Authoring, Benchmarking, and Alpha Hardening
-
-Goal: complete the agent-first platform by compiling natural-language QA journeys, benchmarking planners, and hardening the integrated alpha.
-
-### Tests First
-
-- Step 8.1: **Automated** Write failing tests in `packages/journey-compiler/tests/natural-language-compile.test.ts`, `packages/journey-compiler/tests/graph-assembly.test.ts`, `packages/benchmark-runner/tests/cross-model-compare.test.ts`, and `tests/e2e/alpha/full-platform-smoke.test.ts`.
-
-### Implementation
-
-- Step 8.2: **Automated** Implement natural-language journey parsing, graph compilation, fixture and environment binding, and policy profile attachment in `packages/journey-compiler/src/` and `apps/control-plane/src/authoring/`.
-- Step 8.3: **Automated** Implement the benchmark runner, cross-model comparison pipeline, KPI reporting, and alpha limitation documentation in `packages/benchmark-runner/src/`, `apps/control-plane/src/benchmarks/`, and `docs/alpha/`.
-
-### Green
-
-- Step 8.4: **Automated** Make the end-to-end alpha suites pass by compiling benchmark journeys, executing them through the worker fleet on multiple planner backends, validating replay/debug output, and generating a benchmark report with repeatability, latency, recovery, and spend metrics.
-
-### Milestone
-
-Acceptance criteria:
-
-- Operators can define benchmark journeys in natural language, inspect the compiled graph, and launch runs without code-first scripting.
-- Cross-model benchmark reports compare GPT, Claude, and Gemini under the same fixtures and policies.
-- Alpha limitations, supported environments, and operating constraints are documented in `docs/alpha/`.
-- All Phase 8 tests pass.
-- No regressions occur in Phases 1-7 suites.
-
 ## Cross-Phase Concerns
 
-- Keep contract versioning strict across `packages/contracts/`, `packages/domain-model/`, and replay/artifact schemas so fixtures and golden traces remain valid as the system grows.
-- Maintain an integration ladder: schema tests first, subsystem tests second, benchmark-journey integration tests third, and cross-model alpha smoke tests last.
-- Enforce authorized-use controls, domain allowlists, secret scoping, artifact access rules, and audit logging from the earliest executable phases instead of deferring them to launch hardening.
-- Track repeatability, latency, recovery success, and token-spend metrics continuously so every phase can be evaluated against the same KPI definitions from Phase 1.
-- Document supported web-surface constraints, unsupported behaviors, and operational limits as code evolves, so benchmark results and alpha expectations remain honest.
+- Keep contract versioning strict across benchmark, product, domain, replay, and artifact schemas.
+- Preserve deterministic seed and reset hooks for every owned benchmark journey as product complexity grows.
+- Enforce legal, branding, and naming boundaries so owned parity products remain distinct from the upstream products they reference internally.
+- Treat shared platform quality as a force multiplier: shortcuts in tenancy, audit, realtime, or permissions will multiply across all three products.
+- Maintain an integration ladder: contract tests first, subsystem tests second, owned-product integration suites third, and full alpha smoke tests last.

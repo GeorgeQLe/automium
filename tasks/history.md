@@ -22,3 +22,7 @@
 - Refreshed the Step 1.5 handoff plan in `tasks/todo.md` so the next run can execute the Phase 1 verification sweep with the command, likely file touch points, and acceptance target already captured.
 - Completed Step 1.5 by re-running `pnpm test:run -- packages/contracts/tests packages/benchmark/tests`, confirming 4 passing files / 10 passing tests against the owned-target fixtures, and verifying that the benchmark docs and task files no longer treat third-party SaaS provisioning as a core dependency.
 - Archived the completed Phase 1 execution files under `tasks/phases/`, marked the Phase 1 milestone complete in `tasks/roadmap.md`, and regenerated `tasks/todo.md` around the Phase 2 Step 2.1 red-phase parity-audit tests.
+- Expanded the Vitest and TypeScript config to include `tests/**/*.test.ts`, then added the Phase 2 contract suites for owned parity artifacts and seed/reset planning under `packages/benchmark/tests/owned-product-matrix.contract.test.ts` and `tests/planning/seed-reset.plan.test.ts`.
+- Froze the Phase 2 owned-product parity boundary in `docs/parity/` with feature matrices and API compatibility matrices for `Altitude`, `Switchboard`, and `Foundry`.
+- Added `docs/benchmarks/owned-products.md` plus deterministic seed/reset planning artifacts under `tests/fixtures/` for the owned benchmark-critical journeys across `Altitude`, `Switchboard`, and `Foundry`.
+- Re-ran `pnpm test:run` after the Phase 2 artifact freeze and confirmed 6 passing files / 20 passing tests with no regressions in the existing contract suites.

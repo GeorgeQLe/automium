@@ -19,3 +19,4 @@
 - Retargeted the frozen benchmark corpus, KPI sample inputs, and supporting contract fixtures from Appsmith, Plane, and Chatwoot to the owned benchmark targets `Foundry`, `Altitude`, and `Switchboard`, while preserving the owned iframe support fixture for coverage.
 - Cleared the obsolete Phase 1 provisioning narrative from `tasks/todo.md`, `tasks/manual-todo.md`, and `tasks/history.md`, confirming that no manual blockers remain before the owned-target verification sweep in Step 1.5.
 - Re-ran the benchmark contract suites after the planning-file cleanup to confirm the owned-target fixtures and task docs still align.
+- Refreshed the Step 1.5 handoff plan in `tasks/todo.md` so the next run can execute the Phase 1 verification sweep with the command, likely file touch points, and acceptance target already captured.

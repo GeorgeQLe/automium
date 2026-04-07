@@ -41,7 +41,8 @@ Acceptance criteria:
 
 Step 1.5 will run the Phase 1 verification sweep against the owned-target benchmark foundation.
 
-- Run the benchmark contract suites and fix any regressions that prevent the owned-target fixtures from passing.
-- Re-verify that `docs/benchmarks/v1-corpus.md`, `tasks/todo.md`, `tasks/manual-todo.md`, and `tasks/history.md` consistently describe the owned benchmark strategy.
-- Keep the scope to Phase 1 verification only; do not begin Phase 2 parity-audit artifact work in the same run.
-- If the benchmark suites pass cleanly, close the Phase 1 milestone and confirm the repository stays green.
+- Session context: the benchmark suites already passed once after Step 1.4 (`pnpm test:run -- packages/contracts/tests packages/benchmark/tests`), so Step 1.5 should start by reusing that result unless code or docs change again before execution.
+- Primary verification command: `pnpm test:run -- packages/contracts/tests packages/benchmark/tests`.
+- Files most likely to require attention if verification fails or wording drifts: `packages/contracts/src/`, `packages/benchmark/src/`, `packages/contracts/tests/`, `packages/benchmark/tests/`, `docs/benchmarks/v1-corpus.md`, `tasks/todo.md`, `tasks/manual-todo.md`, and `tasks/history.md`.
+- Scope guard: keep the run limited to Phase 1 verification and milestone closure; do not begin Phase 2 parity-audit artifact work in the same session.
+- Acceptance target: benchmark contract suites pass against the owned-target fixtures, no Phase 1 task/doc artifact still frames third-party SaaS provisioning as a core dependency, Step 1.5 is checked off, and the Phase 1 milestone is ready to close.

@@ -7,9 +7,9 @@ export interface BenchmarkCorpusManifest {
 }
 
 export type AuthorizedBenchmarkAppId =
-  | "appsmith"
-  | "plane"
-  | "chatwoot"
+  | "foundry"
+  | "altitude"
+  | "switchboard"
   | "iframe-fixture";
 
 export type BenchmarkEnvironmentProfileId =
@@ -56,43 +56,46 @@ export const BENCHMARK_CORPUS_VERSION = "v1";
 
 export const authorizedBenchmarkApps = [
   {
-    id: "appsmith",
-    displayName: "Appsmith",
-    hosting: "self-hosted",
-    rationale: "Baseline authenticated dashboard and CRUD benchmark.",
+    id: "foundry",
+    displayName: "Foundry",
+    hosting: "owned-fixture",
+    rationale:
+      "Owned internal app builder benchmark for published-app runtime and CRUD flows.",
     supportedCapabilities: [
       "login",
-      "dashboard",
+      "published-app-runtime",
+      "datasource-bindings",
       "forms",
-      "table-crud",
-      "spa-navigation"
+      "table-crud"
     ]
   },
   {
-    id: "plane",
-    displayName: "Plane",
-    hosting: "self-hosted",
-    rationale: "Richer project-management SPA with multi-view work-item flows.",
+    id: "altitude",
+    displayName: "Altitude",
+    hosting: "owned-fixture",
+    rationale:
+      "Owned project-planning workspace benchmark for work-item and attachment flows.",
     supportedCapabilities: [
       "login",
       "dashboard",
-      "crud",
+      "work-items",
       "forms",
       "attachments",
-      "spa-navigation"
+      "planning-views"
     ]
   },
   {
-    id: "chatwoot",
-    displayName: "Chatwoot",
-    hosting: "self-hosted",
-    rationale: "Support workflow benchmark with inboxes, attachments, and embeds.",
+    id: "switchboard",
+    displayName: "Switchboard",
+    hosting: "owned-fixture",
+    rationale:
+      "Owned support workspace benchmark for inbox routing and recovery workflows.",
     supportedCapabilities: [
       "login",
-      "dashboard",
-      "forms",
+      "shared-inbox",
+      "conversation-routing",
       "attachments",
-      "embedded-widget"
+      "automation"
     ]
   },
   {
@@ -159,28 +162,28 @@ export const benchmarkEnvironmentProfiles = [
 
 export const benchmarkFixtureManifest = [
   {
-    id: "appsmith-baseline-admin",
-    appId: "appsmith",
+    id: "foundry-baseline-builder",
+    appId: "foundry",
     environmentProfileId: "owned-baseline",
-    seedRef: "fixtures/appsmith/baseline-seed.json",
-    accountRef: "accounts/appsmith/admin.json",
-    artifactRoot: "artifacts/appsmith/baseline"
+    seedRef: "fixtures/foundry/published-orders-app-seed.json",
+    accountRef: "accounts/foundry/builder-admin.json",
+    artifactRoot: "artifacts/foundry/baseline"
   },
   {
-    id: "plane-upload-member",
-    appId: "plane",
+    id: "altitude-upload-member",
+    appId: "altitude",
     environmentProfileId: "owned-upload",
-    seedRef: "fixtures/plane/upload-seed.json",
-    accountRef: "accounts/plane/member.json",
-    artifactRoot: "artifacts/plane/upload"
+    seedRef: "fixtures/altitude/project-attachment-seed.json",
+    accountRef: "accounts/altitude/member.json",
+    artifactRoot: "artifacts/altitude/upload"
   },
   {
-    id: "chatwoot-session-agent",
-    appId: "chatwoot",
+    id: "switchboard-session-agent",
+    appId: "switchboard",
     environmentProfileId: "owned-session-churn",
-    seedRef: "fixtures/chatwoot/session-seed.json",
-    accountRef: "accounts/chatwoot/agent.json",
-    artifactRoot: "artifacts/chatwoot/session"
+    seedRef: "fixtures/switchboard/session-recovery-seed.json",
+    accountRef: "accounts/switchboard/agent.json",
+    artifactRoot: "artifacts/switchboard/session"
   },
   {
     id: "iframe-fixture-operator",
@@ -194,31 +197,31 @@ export const benchmarkFixtureManifest = [
 
 export const benchmarkJourneys = [
   {
-    id: "appsmith-login-dashboard",
-    appId: "appsmith",
+    id: "foundry-open-published-orders-app",
+    appId: "foundry",
     environmentProfileId: "owned-baseline",
-    fixtureId: "appsmith-baseline-admin",
+    fixtureId: "foundry-baseline-builder",
     category: "dashboard",
     expectedVerdict: "pass",
-    deterministicKey: "appsmith-login-dashboard"
+    deterministicKey: "foundry-open-published-orders-app"
   },
   {
-    id: "plane-create-work-item-with-attachment",
-    appId: "plane",
+    id: "altitude-create-work-item-with-attachment",
+    appId: "altitude",
     environmentProfileId: "owned-upload",
-    fixtureId: "plane-upload-member",
+    fixtureId: "altitude-upload-member",
     category: "upload",
     expectedVerdict: "pass",
-    deterministicKey: "plane-create-work-item-with-attachment"
+    deterministicKey: "altitude-create-work-item-with-attachment"
   },
   {
-    id: "chatwoot-session-recovery",
-    appId: "chatwoot",
+    id: "switchboard-session-recovery",
+    appId: "switchboard",
     environmentProfileId: "owned-session-churn",
-    fixtureId: "chatwoot-session-agent",
+    fixtureId: "switchboard-session-agent",
     category: "authentication",
     expectedVerdict: "pass",
-    deterministicKey: "chatwoot-session-recovery"
+    deterministicKey: "switchboard-session-recovery"
   },
   {
     id: "iframe-fixture-embedded-form-submit",

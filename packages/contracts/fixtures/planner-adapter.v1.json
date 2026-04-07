@@ -1,0 +1,50 @@
+{
+  "metadata": {
+    "id": "openai-gpt-5.4-benchmark",
+    "vendor": "openai",
+    "model": "gpt-5.4",
+    "intentSchemaVersion": "v1"
+  },
+  "requiredMethods": [
+    "metadata",
+    "buildPrompt",
+    "parsePlannerOutput",
+    "compileIntent",
+    "summarizeStep"
+  ],
+  "metadataFields": [
+    "id",
+    "vendor",
+    "model",
+    "intentSchemaVersion"
+  ],
+  "allowedIntents": [
+    "navigate",
+    "click",
+    "type/fill",
+    "select",
+    "upload",
+    "press-key",
+    "wait-for-condition",
+    "assert",
+    "extract",
+    "branch",
+    "recover",
+    "finish"
+  ],
+  "sampleIntent": {
+    "kind": "click",
+    "reasoning": "The dashboard CTA is visible and matches the pinned invariant.",
+    "target": "primary-cta",
+    "arguments": {
+      "button": "left"
+    }
+  },
+  "compiledIntent": {
+    "opcode": "click",
+    "targetId": "primary-cta",
+    "parameters": {
+      "button": "left"
+    }
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "repeatability": 0.6666666666666666,
+  "passRate": 0.6666666666666666,
+  "medianJourneyLatencyMs": 1200,
+  "tokenSpend": {
+    "total": 1350,
+    "average": 450
+  },
+  "recoverySuccessRate": 1
+}

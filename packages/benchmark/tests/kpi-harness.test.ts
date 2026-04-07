@@ -1,6 +1,22 @@
+import { readFile } from "node:fs/promises";
 import { describe, expect, it } from "vitest";
 
+async function readFixture<T>(fixtureName: string): Promise<T> {
+  const url = new URL(`../fixtures/${fixtureName}`, import.meta.url);
+  const contents = await readFile(url, "utf8");
+
+  return JSON.parse(contents) as T;
+}
+
 describe("benchmark KPI harness contract", () => {
+  it("freezes the v1 corpus manifest against the checked-in golden fixture", async () => {
+    const contract = await import("../src/corpus");
+    const fixture = await readFixture("corpus.v1.json");
+
+    expect(contract.BENCHMARK_CORPUS_VERSION).toBe("v1");
+    expect(contract.benchmarkCorpusManifest).toEqual(fixture);
+  });
+
   it("aggregates the headline KPIs for repeatability, latency, spend, and recovery", async () => {
     const contract = await import("../src/kpis");
 
@@ -26,40 +42,19 @@ describe("benchmark KPI harness contract", () => {
 
   it("computes KPI summaries from benchmark run outcomes", async () => {
     const contract = await import("../src/kpis");
+    const outcomes = await readFixture<
+      Array<{
+        verdict: "pass" | "fail" | "inconclusive" | "unsupported";
+        latencyMs: number;
+        tokenSpend: number;
+        recovered: boolean;
+        deterministicKey: string;
+      }>
+    >("kpi-run-outcomes.v1.json");
+    const expectedSummary = await readFixture("kpi-summary.v1.json");
 
-    const summary = contract.aggregateBenchmarkKpis([
-      {
-        verdict: "pass",
-        latencyMs: 1200,
-        tokenSpend: 400,
-        recovered: false,
-        deterministicKey: "login-dashboard"
-      },
-      {
-        verdict: "pass",
-        latencyMs: 1000,
-        tokenSpend: 350,
-        recovered: true,
-        deterministicKey: "login-dashboard"
-      },
-      {
-        verdict: "fail",
-        latencyMs: 1800,
-        tokenSpend: 600,
-        recovered: false,
-        deterministicKey: "login-dashboard"
-      }
-    ]);
+    const summary = contract.aggregateBenchmarkKpis(outcomes);
 
-    expect(summary).toEqual({
-      repeatability: 2 / 3,
-      passRate: 2 / 3,
-      medianJourneyLatencyMs: 1200,
-      tokenSpend: {
-        total: 1350,
-        average: 450
-      },
-      recoverySuccessRate: 1
-    });
+    expect(summary).toEqual(expectedSummary);
   });
 });

@@ -12,3 +12,8 @@
 - Marked Step 1.2 complete in `tasks/todo.md` and advanced the next automated step to Step 1.3, which remains blocked on selecting the initial authorized benchmark apps and environments.
 - Frozen the Phase 1 v1 contracts for semantic snapshots, replay events, planner adapters, benchmark verdicts, and KPI aggregation in `packages/contracts/src/` and `packages/benchmark/src/`.
 - Captured the approved provisional benchmark corpus for Appsmith, Plane, Chatwoot, and an owned iframe fixture app, and marked Step 1.3 complete in `tasks/todo.md`.
+- Added versioned schema fixtures and contract documentation for the Phase 1 benchmark foundation, while recording that the last external-environment provisioning work was still manual.
+- Added the owned parity benchmark products spec and interview log, defining `Altitude`, `Switchboard`, and `Foundry` as owned replacements for third-party benchmark dependencies.
+- Rewrote `tasks/roadmap.md` to pivot from external-benchmark-first sequencing to an owned-products-first roadmap: benchmark foundation reset, parity audit, shared platform, owned products, then browser/runtime integration.
+- Expanded the owned-products-first roadmap into execution-ready phase steps and regenerated `tasks/todo.md` and `tasks/manual-todo.md` around the new Phase 1 benchmark reset.
+- Retargeted the frozen benchmark corpus, KPI sample inputs, and supporting contract fixtures from Appsmith, Plane, and Chatwoot to the owned benchmark targets `Foundry`, `Altitude`, and `Switchboard`, while preserving the owned iframe support fixture for coverage.

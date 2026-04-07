@@ -1,36 +1,47 @@
-# Current Phase: Benchmark Contracts and Repo Skeleton
+# Current Phase: Benchmark Foundation Reset
 
 This file tracks the active work for Phase 1 from [tasks/roadmap.md](/home/georgeqle/projects/tools/dev/automium/tasks/roadmap.md). Manual blockers and follow-up approvals are tracked in [tasks/manual-todo.md](/home/georgeqle/projects/tools/dev/automium/tasks/manual-todo.md).
 
 ## Current Status
 
 - Phase planning is complete; [tasks/roadmap.md](/home/georgeqle/projects/tools/dev/automium/tasks/roadmap.md) is now the source of truth for the full build sequence.
+- Completed Phase 1 foundation work already covers most of the contract and fixture layer from the earlier external-benchmark plan.
 - Next automated step: Step 1.4.
-- Known manual blockers: Step 1.4 depends on provisioned benchmark accounts and fixtures.
+- Known manual blockers: none for the remaining Phase 1 automation.
 
-## Phase 1: Benchmark Contracts and Repo Skeleton
+## Phase 1: Benchmark Foundation Reset
 
-Goal: freeze the contracts and benchmark definitions that every later phase will implement, while establishing the initial workspace layout.
+Goal: preserve the benchmark contract work already completed, finish the fixture and documentation layer, and formally pivot the benchmark corpus away from provisioned third-party products toward owned benchmark targets.
 
 ### Tests First
 
-- [x] Step 1.1: **Automated** Write failing contract tests in `packages/contracts/tests/semantic-snapshot.contract.test.ts`, `packages/contracts/tests/replay-event.contract.test.ts`, `packages/contracts/tests/planner-adapter.contract.test.ts`, and `packages/benchmark/tests/kpi-harness.test.ts` covering required fields, schema versioning, event ordering, KPI aggregation, and planner intent vocabulary.
+- [x] Step 1.1: **Automated** Freeze the benchmark contract tests in `packages/benchmark/tests/` and `packages/contracts/tests/` around schema versions, KPI expectations, fixture-backed corpus shape, and contract documentation references so Phase 1 has an executable baseline before the owned-target corpus pivot.
 
 ### Implementation
 
-- [x] Step 1.2: **Automated** Create the initial workspace structure under `packages/contracts/`, `packages/benchmark/`, `docs/contracts/`, `docs/benchmarks/`, and `tests/fixtures/` so the project has stable homes for contracts, corpus manifests, and golden fixtures.
-- [x] Step 1.3: **Automated** Define the v1 benchmark corpus, fixture manifest, verdict taxonomy, KPI formulas, and planner adapter interface in `packages/benchmark/src/corpus.ts`, `packages/benchmark/src/kpis.ts`, `packages/contracts/src/semantic-snapshot.ts`, `packages/contracts/src/replay-event.ts`, and `packages/contracts/src/planner-adapter.ts`.
+- [x] Step 1.2: **Automated** Finalize the checked-in schema fixtures and contract documentation under `packages/contracts/fixtures/`, `packages/benchmark/fixtures/`, `docs/contracts/`, and `docs/benchmarks/` so the current benchmark foundation is green and versioned.
+- [x] Step 1.3: **Automated** Replace the external benchmark corpus assumptions in `packages/benchmark/src/corpus.ts`, `packages/benchmark/fixtures/corpus.v1.json`, and `docs/benchmarks/v1-corpus.md` with owned-target entries for `Altitude`, `Switchboard`, `Foundry`, and any owned support fixtures required for coverage.
+- [ ] Step 1.4: **Automated** Update planning and task-tracking files in `tasks/todo.md`, `tasks/manual-todo.md`, and `tasks/history.md` so obsolete third-party provisioning blockers are removed and the new owned-target benchmark strategy is reflected everywhere.
 
 ### Green
 
-- [ ] Step 1.4: **Automated** Add golden schema fixtures under `packages/contracts/fixtures/` and `packages/benchmark/fixtures/`, make the new contract suites pass, and align the contract documentation in `docs/contracts/` and `docs/benchmarks/v1-corpus.md` with the frozen interfaces.
+- [ ] Step 1.5: **Automated** Make the benchmark contract suites pass against the owned-target fixtures and verify that the docs and task files no longer describe third-party SaaS provisioning as a core benchmark dependency.
 
 ### Milestone
 
 Acceptance criteria:
 
-- Contract tests in `packages/contracts/tests/` and `packages/benchmark/tests/` pass against versioned fixtures.
-- `docs/benchmarks/v1-corpus.md` maps each benchmark journey to an authorized site profile, fixture set, and expected verdict semantics.
-- The semantic snapshot, replay event, and planner adapter contracts are versioned and referenced by path from the benchmark docs.
+- Benchmark contract tests in `packages/contracts/tests/` and `packages/benchmark/tests/` pass against versioned fixtures.
+- `docs/benchmarks/v1-corpus.md` references owned benchmark targets rather than provisioned Appsmith, Plane, and Chatwoot instances.
+- The benchmark corpus strategy is consistent with `specs/owned-parity-benchmark-products.md`.
 - All Phase 1 tests pass.
 - No regressions are introduced in pre-existing repository checks.
+
+## Next Step Plan
+
+Step 1.4 will finish the planning-file cleanup that follows the owned-target corpus pivot.
+
+- Update `tasks/roadmap.md`, `tasks/manual-todo.md`, and `tasks/history.md` so no active Phase 1 blocker still assumes provisioned third-party SaaS environments.
+- Re-check `tasks/todo.md` status text and milestone wording against the owned-target strategy before marking Step 1.4 complete.
+- Keep the scope to planning and tracking artifacts only; do not start the Step 1.5 verification sweep in the same run.
+- Re-run the benchmark contract suites after the tracking updates to confirm the docs and fixtures still align with the frozen v1 corpus.

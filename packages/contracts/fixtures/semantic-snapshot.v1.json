@@ -1,0 +1,80 @@
+{
+  "schemaVersion": "v1",
+  "url": "https://foundry.localhost/apps/orders/runtime",
+  "route": "/apps/orders/runtime",
+  "frameHierarchy": [
+    {
+      "id": "root",
+      "parentFrameId": null,
+      "origin": "https://foundry.localhost",
+      "url": "https://foundry.localhost/apps/orders/runtime"
+    }
+  ],
+  "taskContext": {
+    "journeyId": "foundry-open-published-orders-app",
+    "runId": "run-v1-001",
+    "stepId": "step-open-dashboard",
+    "environmentProfileId": "owned-baseline",
+    "authorizedAppId": "foundry"
+  },
+  "checkpointContext": {
+    "checkpointId": "dashboard-loaded",
+    "label": "Published orders app runtime is ready for interaction",
+    "assertionIds": [
+      "runtime-header-visible",
+      "primary-form-enabled"
+    ]
+  },
+  "interactiveElements": [
+    {
+      "id": "nav-dashboard",
+      "role": "link",
+      "label": "Dashboard",
+      "value": null,
+      "required": false,
+      "disabled": false,
+      "loading": false,
+      "error": null,
+      "visible": true,
+      "interactable": true,
+      "group": "primary-navigation"
+    },
+    {
+      "id": "global-search",
+      "role": "textbox",
+      "label": "Search",
+      "value": "",
+      "required": false,
+      "disabled": false,
+      "loading": false,
+      "error": null,
+      "visible": true,
+      "interactable": true,
+      "group": "header"
+    }
+  ],
+  "recentMutations": [
+    {
+      "mutationId": "mutation-001",
+      "kind": "child-list",
+      "targetId": "dashboard-grid",
+      "summary": "Hydrated runtime widgets after the published app loaded."
+    }
+  ],
+  "relevantNetworkEvents": [
+    {
+      "requestId": "request-001",
+      "method": "GET",
+      "url": "https://foundry.localhost/api/v1/apps/orders/runtime",
+      "status": 200,
+      "category": "fetch"
+    }
+  ],
+  "pinnedInvariants": [
+    {
+      "invariantId": "inv-dashboard-route",
+      "description": "The published runtime route must remain /apps/orders/runtime until the step completes.",
+      "source": "journey"
+    }
+  ]
+}

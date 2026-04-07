@@ -1,0 +1,23 @@
+[
+  {
+    "verdict": "pass",
+    "latencyMs": 1200,
+    "tokenSpend": 400,
+    "recovered": false,
+    "deterministicKey": "foundry-open-published-orders-app"
+  },
+  {
+    "verdict": "pass",
+    "latencyMs": 1000,
+    "tokenSpend": 350,
+    "recovered": true,
+    "deterministicKey": "foundry-open-published-orders-app"
+  },
+  {
+    "verdict": "fail",
+    "latencyMs": 1800,
+    "tokenSpend": 600,
+    "recovered": false,
+    "deterministicKey": "foundry-open-published-orders-app"
+  }
+]

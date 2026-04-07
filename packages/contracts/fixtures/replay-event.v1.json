@@ -1,0 +1,47 @@
+{
+  "schemaVersion": "v1",
+  "eventId": "event-001",
+  "runId": "run-v1-001",
+  "stepId": "step-open-dashboard",
+  "sequence": 4,
+  "phase": "action",
+  "timestamp": "2026-04-07T14:30:00.000Z",
+  "plannerIntent": {
+    "kind": "click",
+    "target": "nav-dashboard",
+    "arguments": {
+      "button": "left",
+      "retryable": true
+    }
+  },
+  "executorAction": {
+    "opcode": "click",
+    "targetId": "nav-dashboard",
+    "parameters": {
+      "button": "left"
+    }
+  },
+  "preStateSnapshotRef": {
+    "snapshotId": "snapshot-before-001",
+    "schemaVersion": "v1",
+    "path": "packages/contracts/fixtures/semantic-snapshot.v1.json"
+  },
+  "postStateSnapshotRef": {
+    "snapshotId": "snapshot-after-001",
+    "schemaVersion": "v1",
+    "path": "packages/contracts/fixtures/semantic-snapshot.v1.json"
+  },
+  "artifactRefs": [
+    {
+      "artifactId": "artifact-network-001",
+      "kind": "network-trace",
+      "path": "artifacts/foundry/baseline/network-trace.ndjson"
+    }
+  ],
+  "summary": {
+    "headline": "Opened the published orders app runtime",
+    "detail": "The executor loaded the Foundry runtime route and captured before and after state snapshots.",
+    "recoveryAttempted": false
+  },
+  "verdict": "pass"
+}

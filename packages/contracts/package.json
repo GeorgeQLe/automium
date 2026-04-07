@@ -1,0 +1,11 @@
+{
+  "name": "@automium/contracts",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./semantic-snapshot": "./src/semantic-snapshot.ts",
+    "./replay-event": "./src/replay-event.ts",
+    "./planner-adapter": "./src/planner-adapter.ts"
+  }
+}

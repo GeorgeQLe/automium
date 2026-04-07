@@ -1,0 +1,10 @@
+{
+  "name": "@automium/benchmark",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./corpus": "./src/corpus.ts",
+    "./kpis": "./src/kpis.ts"
+  }
+}

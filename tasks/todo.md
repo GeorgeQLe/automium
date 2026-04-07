@@ -5,7 +5,7 @@ This file tracks the active work for Phase 1 from [tasks/roadmap.md](/home/georg
 ## Current Status
 
 - Phase planning is complete; [tasks/roadmap.md](/home/georgeqle/projects/tools/dev/automium/tasks/roadmap.md) is now the source of truth for the full build sequence.
-- Next automated step: Step 1.2.
+- Next automated step: Step 1.3.
 - Known manual blockers: Step 1.3 depends on selecting the initial authorized benchmark apps and environments, and Step 1.4 depends on provisioned benchmark accounts and fixtures.
 
 ## Phase 1: Benchmark Contracts and Repo Skeleton
@@ -18,7 +18,7 @@ Goal: freeze the contracts and benchmark definitions that every later phase will
 
 ### Implementation
 
-- [ ] Step 1.2: **Automated** Create the initial workspace structure under `packages/contracts/`, `packages/benchmark/`, `docs/contracts/`, `docs/benchmarks/`, and `tests/fixtures/` so the project has stable homes for contracts, corpus manifests, and golden fixtures.
+- [x] Step 1.2: **Automated** Create the initial workspace structure under `packages/contracts/`, `packages/benchmark/`, `docs/contracts/`, `docs/benchmarks/`, and `tests/fixtures/` so the project has stable homes for contracts, corpus manifests, and golden fixtures.
 - [ ] Step 1.3: **Automated** Define the v1 benchmark corpus, fixture manifest, verdict taxonomy, KPI formulas, and planner adapter interface in `packages/benchmark/src/corpus.ts`, `packages/benchmark/src/kpis.ts`, `packages/contracts/src/semantic-snapshot.ts`, `packages/contracts/src/replay-event.ts`, and `packages/contracts/src/planner-adapter.ts`.
 
 ### Green

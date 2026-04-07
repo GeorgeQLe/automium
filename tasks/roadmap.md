@@ -71,6 +71,8 @@ Goal: convert the parity-products spec into an implementation-grade frozen targe
 
 ### Milestone
 
+- [x] Phase 2 milestone completed on 2026-04-07.
+
 Acceptance criteria:
 
 - Each owned product has a checked-in frozen feature matrix.

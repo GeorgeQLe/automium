@@ -26,3 +26,5 @@
 - Froze the Phase 2 owned-product parity boundary in `docs/parity/` with feature matrices and API compatibility matrices for `Altitude`, `Switchboard`, and `Foundry`.
 - Added `docs/benchmarks/owned-products.md` plus deterministic seed/reset planning artifacts under `tests/fixtures/` for the owned benchmark-critical journeys across `Altitude`, `Switchboard`, and `Foundry`.
 - Re-ran `pnpm test:run` after the Phase 2 artifact freeze and confirmed 6 passing files / 20 passing tests with no regressions in the existing contract suites.
+- Completed Step 2.5 by re-running `pnpm test:run`, confirming that the Phase 2 parity-audit suites and prior benchmark-contract suites remain green at 6 passing files / 20 passing tests.
+- Archived the completed Phase 2 execution file under `tasks/phases/phase-2.md`, marked the Phase 2 milestone complete in `tasks/roadmap.md`, and regenerated `tasks/todo.md` around the Phase 3 Step 3.1 shared-platform red-phase tests.

@@ -38,3 +38,6 @@
 - All behavior modules use pure functions, deterministic factory IDs, types derived from frozen `as const` constants, and no cross-package imports.
 - Updated 13 `src/index.ts` barrels with additive re-exports. No frozen `platform-*.ts` files were modified.
 - Confirmed `pnpm test:run` remains green at 12 passing files / 32 passing tests.
+- Completed Step 3.4 by adding the admin shell configuration layer and product-level navigation primitives: `admin-shell.ts` (AdminShellConfig composing governance + product nav, ProductContext/ProductRegistration/ProductNavigationConfig, REGISTERED_PRODUCTS seed for Altitude/Switchboard/Foundry, builders and validation), `admin-api-routes.ts` (3 governance mutation routes + 2 product nav routes, AdminRouteManifest merging seed + extended routes), breadcrumb navigation primitives in `packages/ui/src/ui-behavior.ts` (BreadcrumbConfig/BreadcrumbSegment + buildBreadcrumbConfig), and barrel updates in `apps/admin-console/src/index.ts`.
+- All new modules follow the Step 3.3 pattern: types from constants, pure functions, no cross-package imports, deterministic params.
+- Confirmed `pnpm test:run` remains green at 12 passing files / 32 passing tests.

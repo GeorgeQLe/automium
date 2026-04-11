@@ -25,7 +25,7 @@ Goal: deliver the first owned parity product, `Altitude`, as the Plane-parity be
 
 ### Implementation
 
-- [ ] Step 4.2: **Automated** Scaffold `apps/altitude/` with frozen constants, the product domain model, and barrel exports following the shared-platform package pattern.
+- [x] Step 4.2: **Automated** Scaffold `apps/altitude/` with frozen constants, the product domain model, and barrel exports following the shared-platform package pattern.
   - Files: create `apps/altitude/src/altitude-constants.ts` (frozen domain arrays: work item types, states, priorities, view types, planning entities), `apps/altitude/src/altitude-domain.ts` (interfaces: Project, WorkItem, WorkItemType, WorkItemState, Cycle, Module, Page, View, SavedView, Comment, Attachment, Notification, AnalyticsSummary, WebhookConfig), `apps/altitude/src/index.ts` (barrel)
   - Files: create `apps/altitude/package.json`, `apps/altitude/tsconfig.json`
 - [ ] Step 4.3: **Automated** Implement factories, validators, and state machines for the core Altitude domain: projects, work items, comments, attachments, and activity history.
@@ -58,54 +58,36 @@ Acceptance criteria:
 
 ## Next Step Plan
 
-Step 4.2 will scaffold `apps/altitude/` with frozen constants and the product domain model.
+Step 4.3 will implement factories, validators, and state machines for the core Altitude domain.
 
-- What to build: 2 source modules that define the Altitude domain's frozen constant arrays and TypeScript interfaces, plus update the barrel. `apps/altitude/package.json` and `apps/altitude/tsconfig.json` already exist from Step 4.1.
+- What to build: 4 source modules with factory functions, validators, and a work-item state machine. These are the first modules that tests can actually call. After this step, `altitude-domain.contract.test.ts` tests 1–7 (project, work-item, comment, attachment factories + state transition + validators) should go from failing to passing. The notification test (test 8) stays failing — `altitude-notifications.ts` is Step 4.4.
 - Files to create:
-  - `apps/altitude/src/altitude-constants.ts` — frozen `as const` arrays for all domain enumerations:
-    - `WORK_ITEM_TYPES`: `["issue", "task", "epic", "story", "bug"]`
-    - `WORK_ITEM_STATES`: `["backlog", "todo", "in-progress", "in-review", "done", "cancelled"]`
-    - `WORK_ITEM_PRIORITIES`: `["none", "low", "medium", "high", "urgent"]`
-    - `VIEW_TYPES`: `["board", "list", "table", "calendar", "timeline"]`
-    - `CYCLE_STATES`: `["draft", "active", "completed", "cancelled"]`
-    - `NOTIFICATION_TYPES`: `["assignment", "mention", "state-change", "comment", "due-date"]`
-    - `ALTITUDE_REALTIME_TOPICS`: `["work-item-changed", "comment-added", "assignment-changed", "cycle-updated", "module-updated"]`
-    - `ALTITUDE_WEBHOOK_EVENTS`: `["project.created", "project.updated", "work-item.created", "work-item.updated", "work-item.deleted", "comment.created", "cycle.created", "cycle.updated", "module.created", "module.updated"]`
-    - Derived union types for each: `type WorkItemType = (typeof WORK_ITEM_TYPES)[number]`, etc.
-  - `apps/altitude/src/altitude-domain.ts` — TypeScript interfaces for all domain entities:
-    - `Project`: `{ projectId, name, description?, organizationId, workspaceId, createdAt }`
-    - `WorkItem`: `{ workItemId, projectId, title, description?, type: WorkItemType, state: WorkItemState, priority: WorkItemPriority, assigneeId?, labels?, createdAt }`
-    - `Comment`: `{ commentId, workItemId, authorId, body, createdAt }`
-    - `Attachment`: `{ attachmentId, workItemId, fileName, fileSize, mimeType, uploadedBy, createdAt }`
-    - `View`: `{ viewId, projectId, type: ViewType, name, createdAt }`
-    - `SavedView`: `View & { filters: Record<string, string[]> }`
-    - `Cycle`: `{ cycleId, projectId, name, startDate, endDate, state: CycleState, createdAt }`
-    - `Module`: `{ moduleId, projectId, name, description, createdAt }`
-    - `Page`: `{ pageId, projectId, title, content?, createdAt }`
-    - `Notification`: `{ notificationId, recipientId, type: NotificationType, workItemId, message, createdAt }`
-    - `AnalyticsSummary`: `{ summaryId, projectId, totalWorkItems, completedWorkItems, overdueWorkItems, createdAt }`
-    - `WebhookConfig`: `{ webhookId, projectId, url, events: string[], createdAt }`
-    - `CycleWorkItemLink`: `{ cycleId, workItemId, attachedAt }`
-    - `ModuleWorkItemLink`: `{ moduleId, workItemId, addedAt }`
-    - `AltitudeRealtimeEvent`: `{ eventId, organizationId, workspaceId, topic: AltitudeRealtimeTopic, payload: Record<string, unknown>, occurredAt }`
-    - `AltitudeApiRoute`: `{ path, methods: string[], description? }`
-    - `AltitudeBenchmarkRoute`: `{ path, name }`
-    - All interfaces import types from `altitude-constants.ts`.
+  - `apps/altitude/src/altitude-projects.ts`
+    - `createProject(input: { name, organizationId, workspaceId }) → Project` — generates deterministic `projectId` (e.g. `"proj_" + counter`), sets `createdAt` to ISO string.
+    - `validateProject(project: Project) → string[]` — returns errors for empty `projectId`, `name`, `organizationId`. Does NOT check `workspaceId` (test passes `"ws_1"` for it).
+  - `apps/altitude/src/altitude-work-items.ts`
+    - `createWorkItem(input: { projectId, title, type, state, priority }) → WorkItem` — generates `workItemId`, sets `createdAt`.
+    - `transitionWorkItemState(from: WorkItemState, to: WorkItemState) → WorkItemState` — valid paths include `backlog→in-progress` and `in-progress→done`. Invalid path `done→backlog` must throw.
+    - `validateWorkItem(item: WorkItem) → string[]` — returns errors for empty `workItemId`, `projectId`, `title`.
+    - Exports `VALID_WORK_ITEM_TRANSITIONS` map (not tested directly but used internally).
+  - `apps/altitude/src/altitude-comments.ts`
+    - `createComment(input: { workItemId, authorId, body }) → Comment` — generates `commentId`, sets `createdAt`.
+  - `apps/altitude/src/altitude-attachments.ts`
+    - `createAttachment(input: { workItemId, fileName, fileSize, mimeType, uploadedBy }) → Attachment` — generates `attachmentId`, sets `createdAt`.
 - Files to modify:
-  - `apps/altitude/src/index.ts` — replace empty barrel with `export * from "./altitude-constants"` and `export * from "./altitude-domain"`.
+  - `apps/altitude/src/index.ts` — add re-exports for the 4 new modules.
 - Key patterns:
-  - Follow `packages/tenancy/src/platform-tenancy.ts` pattern for frozen constants (array `as const`, derived union type).
-  - Follow `packages/tenancy/src/tenancy-behavior.ts` pattern for interfaces (domain entity shapes with ID, timestamps, tenancy fields).
-  - No factory functions, validators, or state machines yet — those come in Steps 4.3–4.6.
-  - Constants file is the source of truth for all enum-like values. Domain file imports types from constants.
+  - Follow `packages/tenancy/src/tenancy-behavior.ts` factory pattern: pure functions, deterministic ID generation (prefix + incrementing counter), ISO timestamp via `new Date().toISOString()`.
+  - Import domain interfaces from `./altitude-domain` and types from `./altitude-constants`.
+  - State machine: define a `Map<WorkItemState, WorkItemState[]>` of allowed transitions. `transitionWorkItemState` checks the map and throws if the transition is not in the allowed list.
+  - Validators return `string[]` of error messages, not throwing. Each checks required string fields for falsy/empty values.
 - Key technical decisions:
-  - Tests will still fail after this step (missing factory/validator exports) — this is expected. Step 4.2 only establishes types and constants.
-  - `VIEW_TYPES` and `CYCLE_STATES` must match what the test files assert: `["board", "list", "table", "calendar", "timeline"]` and `["draft", "active", "completed", "cancelled"]` respectively.
-  - `ALTITUDE_REALTIME_TOPICS` must be `["work-item-changed", "comment-added", "assignment-changed", "cycle-updated", "module-updated"]`.
-  - `ALTITUDE_WEBHOOK_EVENTS` must contain at minimum the 10 events tested in `altitude-collaboration.contract.test.ts`.
+  - The test for `transitionWorkItemState` checks `backlog→in-progress→done` as valid and `done→backlog` as invalid. The transition map must allow at minimum these forward paths. A reasonable full map: `backlog→[todo, in-progress]`, `todo→[in-progress, backlog]`, `in-progress→[in-review, done, backlog]`, `in-review→[done, in-progress]`, `done→[cancelled]`, `cancelled→[]`.
+  - `createNotification` is imported from `altitude-notifications.ts` in the test — that file is Step 4.4, so test 8 (notification) will still fail after 4.3.
+  - Tests import directly from `../src/altitude-projects` etc., not from the barrel. But barrel re-exports are still needed for downstream consumers.
+- Test strategy: tdd — the 8 tests in `altitude-domain.contract.test.ts` are the target. Tests 1–7 should pass after this step. Test 8 (notification) remains failing until Step 4.4.
 - Acceptance criteria:
-  - `apps/altitude/src/altitude-constants.ts` exists with all frozen arrays and derived types.
-  - `apps/altitude/src/altitude-domain.ts` exists with all interfaces importing types from constants.
-  - `apps/altitude/src/index.ts` re-exports both modules.
-  - `pnpm test:run` shows 27 files (21 passing + 6 failing). The 6 altitude test files still fail because factories/validators are not yet implemented. The 21 existing files remain green at 70 tests.
-  - No new test files are created in this step.
+  - All 4 new source files exist and export the listed functions.
+  - `apps/altitude/src/index.ts` re-exports all 4 modules.
+  - `pnpm test:run` — `altitude-domain.contract.test.ts` drops from 8 failures to 1 (the notification test). Other 5 altitude test files still fail. Phase 1–3 suites remain green.
+  - No new test files created.

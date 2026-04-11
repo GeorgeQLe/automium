@@ -49,3 +49,4 @@
 - RBAC permission matrix completeness verified: all 5 roles have entries for all 9 resources.
 - Confirmed `pnpm test:run` green at 21 passing files / 70 passing tests with no regressions in Phases 1-2 suites.
 - Phase 3 complete. All acceptance criteria met. Archived to `tasks/phases/phase-3.md`. Transitioning to Phase 4 (Altitude).
+- Completed Step 4.1 (red phase) by creating the `apps/altitude/` workspace member with empty barrel and 6 contract test files (29 tests) covering domain model, API routes, views, planning, collaboration, and benchmark journeys. All 29 new tests fail on missing exports as expected. Existing 21 files / 70 tests remain green.

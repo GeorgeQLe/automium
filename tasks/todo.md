@@ -1,46 +1,45 @@
-# Current Phase: Shared Multi-Tenant Product Platform
+# Current Phase: Altitude
 
-This file tracks the active work for Phase 3 from [tasks/roadmap.md](/home/georgeqle/projects/tools/dev/automium/tasks/roadmap.md). Phase 1 has been archived in [tasks/phases/phase-1.md](/home/georgeqle/projects/tools/dev/automium/tasks/phases/phase-1.md) and Phase 2 in [tasks/phases/phase-2.md](/home/georgeqle/projects/tools/dev/automium/tasks/phases/phase-2.md).
+This file tracks the active work for Phase 4 from [tasks/roadmap.md](/home/georgeqle/projects/tools/dev/automium/tasks/roadmap.md). Prior phases are archived in [tasks/phases/](/home/georgeqle/projects/tools/dev/automium/tasks/phases/).
 
 ## Current Status
 
 - Phase 1 benchmark foundation reset is complete and archived in [tasks/phases/phase-1.md](/home/georgeqle/projects/tools/dev/automium/tasks/phases/phase-1.md).
 - Phase 2 frozen parity audit and benchmark target design is complete and archived in [tasks/phases/phase-2.md](/home/georgeqle/projects/tools/dev/automium/tasks/phases/phase-2.md).
-- The repository baseline was green at 6 passing files / 20 passing tests before shared-platform work began.
-- Shared platform packages and the admin shell scaffold now exist with frozen contract exports for auth, tenancy, RBAC, audit, realtime, and admin-console governance.
-- The current repository state is green at 21 passing files / 70 passing tests after Step 3.5 platform suite verification landed.
-- Phase 3 is complete. All steps 3.1–3.5 are done.
-- Known manual blockers: none for Phase 3.
+- Phase 3 shared multi-tenant product platform is complete and archived in [tasks/phases/phase-3.md](/home/georgeqle/projects/tools/dev/automium/tasks/phases/phase-3.md).
+- The current repository state is green at 21 passing files / 70 passing tests.
+- Next automated step: Step 4.1.
+- Known manual blockers: none for Phase 4.
 
-## Phase 3: Shared Multi-Tenant Product Platform
+## Phase 4: Altitude
 
-Goal: build the common application platform that all three owned products will reuse.
+Goal: deliver the first owned parity product, `Altitude`, as the Plane-parity benchmark surface and shared-product proving ground.
 
 ### Tests First
 
-- [x] Step 3.1: **Automated** Write failing platform tests in `packages/auth/tests/`, `packages/tenancy/tests/`, `packages/rbac/tests/`, `packages/audit/tests/`, `packages/realtime/tests/`, and `apps/admin-console/tests/` covering auth, invites, memberships, permissions, audit trails, files, jobs, search, and realtime delivery.
+- [ ] Step 4.1: **Automated** Write failing API, domain, and UI workflow tests in `apps/altitude/tests/`, `packages/domain-model/tests/altitude/`, and `tests/integration/altitude/` for workspaces, projects, work items, views, cycles, modules, pages, analytics, attachments, notifications, and webhooks.
 
 ### Implementation
 
-- [x] Step 3.2: **Automated** Scaffold the shared platform packages and admin shell under `apps/admin-console/`, `packages/auth/`, `packages/tenancy/`, `packages/rbac/`, `packages/audit/`, `packages/files/`, `packages/search/`, `packages/jobs/`, `packages/realtime/`, `packages/adapters/`, `packages/ui/`, `packages/api-contracts/`, and `packages/domain-model/`.
-- [x] Step 3.3: **Automated** Implement authentication, sessions, organizations, workspaces, invites, memberships, RBAC, audit logging, file ownership, search indexing, jobs, and realtime event delivery across the shared packages.
-- [x] Step 3.4: **Automated** Build the admin shell and shared product primitives for configuration, governance, and product-level navigation.
+- [ ] Step 4.2: **Automated** Scaffold `apps/altitude/` plus any product-specific packages needed for project management domain logic, APIs, and UI shells.
+- [ ] Step 4.3: **Automated** Implement workspaces, projects, membership, work items, views, saved views, cycles, modules, pages/wiki, attachments, activity history, notifications, and major-resource APIs for `Altitude`.
+- [ ] Step 4.4: **Automated** Add deterministic seeds, reset hooks, and benchmark-friendly routes for the `Altitude` benchmark-critical journeys.
 
 ### Green
 
-- [x] Step 3.5: **Automated** Make the shared platform suites pass and verify that multi-workspace tenancy, permissions, audit, files, jobs, search, and realtime behavior are stable enough to support all owned products.
+- [ ] Step 4.5: **Automated** Make the `Altitude` suites pass and verify that the owned project-management benchmark journeys run end to end against deterministic fixtures.
 
 ### Milestone
 
 Acceptance criteria:
 
-- Multi-workspace tenancy works across the shared platform.
-- RBAC and audit coverage exist for shared resource types and sensitive actions.
-- Files, jobs, search, and realtime delivery pass platform acceptance suites.
-- An admin shell exists for instance-level setup and governance.
-- All Phase 3 tests pass.
-- No regressions occur in Phases 1-2 suites.
+- The frozen `Altitude` feature matrix passes.
+- Major-resource API compatibility tests pass for `Altitude`.
+- Realtime collaboration works for assignments, comments, activity, and state changes.
+- The QA platform can exercise the defined `Altitude` benchmark-critical journeys.
+- All Phase 4 tests pass.
+- No regressions occur in Phases 1-3 suites.
 
 ## Next Step Plan
 
-Phase 3 is complete. All shared platform behavior modules are verified with 70 passing tests across 21 files. The next phase can be planned from [tasks/roadmap.md](/home/georgeqle/projects/tools/dev/automium/tasks/roadmap.md).
+Awaiting implementation plan from `/plan-phases`.

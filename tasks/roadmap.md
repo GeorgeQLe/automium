@@ -102,6 +102,8 @@ Goal: build the common application platform that all three owned products will r
 
 ### Milestone
 
+- [x] Phase 3 milestone completed on 2026-04-11.
+
 Acceptance criteria:
 
 - Multi-workspace tenancy works across the shared platform.

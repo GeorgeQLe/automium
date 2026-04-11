@@ -41,3 +41,11 @@
 - Completed Step 3.4 by adding the admin shell configuration layer and product-level navigation primitives: `admin-shell.ts` (AdminShellConfig composing governance + product nav, ProductContext/ProductRegistration/ProductNavigationConfig, REGISTERED_PRODUCTS seed for Altitude/Switchboard/Foundry, builders and validation), `admin-api-routes.ts` (3 governance mutation routes + 2 product nav routes, AdminRouteManifest merging seed + extended routes), breadcrumb navigation primitives in `packages/ui/src/ui-behavior.ts` (BreadcrumbConfig/BreadcrumbSegment + buildBreadcrumbConfig), and barrel updates in `apps/admin-console/src/index.ts`.
 - All new modules follow the Step 3.3 pattern: types from constants, pure functions, no cross-package imports, deterministic params.
 - Confirmed `pnpm test:run` remains green at 12 passing files / 32 passing tests.
+
+## 2026-04-11
+
+- Completed Step 3.5 by adding 9 behavior-level test files (38 new tests) exercising factories, validators, state machines, and domain logic across all shared platform packages: files (5 tests), jobs (5 tests), search (4 tests), auth (4 tests), tenancy (4 tests), RBAC (4 tests), audit (4 tests), realtime (4 tests), and admin shell (4 tests).
+- Three packages went from zero to covered (files, jobs, search); six existing packages gained behavior-level tests.
+- RBAC permission matrix completeness verified: all 5 roles have entries for all 9 resources.
+- Confirmed `pnpm test:run` green at 21 passing files / 70 passing tests with no regressions in Phases 1-2 suites.
+- Phase 3 complete. All acceptance criteria met. Archived to `tasks/phases/phase-3.md`. Transitioning to Phase 4 (Altitude).

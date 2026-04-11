@@ -119,3 +119,44 @@ export function buildAuditTimelineConfig(params: {
     filters: params.filters,
   };
 }
+
+// --- Breadcrumb navigation ---
+
+export interface BreadcrumbSegment {
+  label: string;
+  href?: string;
+}
+
+export interface BreadcrumbConfig {
+  primitive: "breadcrumb";
+  segments: BreadcrumbSegment[];
+}
+
+export function buildBreadcrumbConfig(params: {
+  product: { label: string; href: string };
+  section?: { label: string; href: string };
+  resource?: { label: string; href?: string };
+}): BreadcrumbConfig {
+  const segments: BreadcrumbSegment[] = [
+    { label: params.product.label, href: params.product.href },
+  ];
+
+  if (params.section) {
+    segments.push({
+      label: params.section.label,
+      href: params.section.href,
+    });
+  }
+
+  if (params.resource) {
+    segments.push({
+      label: params.resource.label,
+      href: params.resource.href,
+    });
+  }
+
+  return {
+    primitive: "breadcrumb",
+    segments,
+  };
+}

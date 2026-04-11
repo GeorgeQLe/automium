@@ -6,3 +6,5 @@ export const ADAPTER_INTEGRATION_BOUNDARIES = [
   "search-backend",
   "realtime-transport"
 ] as const;
+
+export * from "./adapters-behavior";

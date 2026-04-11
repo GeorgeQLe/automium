@@ -9,3 +9,5 @@ export const SHARED_PLATFORM_DOMAIN_RESOURCES = [
   "realtime-channel",
   "audit-log"
 ] as const;
+
+export * from "./domain-model-behavior";

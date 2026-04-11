@@ -5,3 +5,5 @@ export const SHARED_PLATFORM_UI_PRIMITIVES = [
   "status-badge",
   "audit-timeline"
 ] as const;
+
+export * from "./ui-behavior";

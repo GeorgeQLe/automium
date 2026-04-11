@@ -3,3 +3,5 @@ export const SEARCH_INDEX_RESOURCE_TYPES = [
   "file",
   "job"
 ] as const;
+
+export * from "./search-behavior";

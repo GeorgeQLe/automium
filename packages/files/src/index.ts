@@ -4,3 +4,5 @@ export const FILE_OWNERSHIP_FIELDS = [
   "workspaceId",
   "ownerMembershipId"
 ] as const;
+
+export * from "./files-behavior";

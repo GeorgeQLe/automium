@@ -9,3 +9,5 @@ export const SHARED_PLATFORM_API_SURFACES = [
   "realtime",
   "admin-console"
 ] as const;
+
+export * from "./api-contracts-behavior";

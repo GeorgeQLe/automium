@@ -8,8 +8,8 @@ This file tracks the active work for Phase 3 from [tasks/roadmap.md](/home/georg
 - Phase 2 frozen parity audit and benchmark target design is complete and archived in [tasks/phases/phase-2.md](/home/georgeqle/projects/tools/dev/automium/tasks/phases/phase-2.md).
 - The repository baseline was green at 6 passing files / 20 passing tests before shared-platform work began.
 - Shared platform packages and the admin shell scaffold now exist with frozen contract exports for auth, tenancy, RBAC, audit, realtime, and admin-console governance.
-- The current repository state is green at 12 passing files / 32 passing tests after the Step 3.2 scaffold landed.
-- Next automated step: Step 3.3.
+- The current repository state is green at 12 passing files / 32 passing tests after Step 3.3 behavior modules landed.
+- Next automated step: Step 3.4.
 - Known manual blockers: none for Phase 3.
 
 ## Phase 3: Shared Multi-Tenant Product Platform
@@ -23,7 +23,7 @@ Goal: build the common application platform that all three owned products will r
 ### Implementation
 
 - [x] Step 3.2: **Automated** Scaffold the shared platform packages and admin shell under `apps/admin-console/`, `packages/auth/`, `packages/tenancy/`, `packages/rbac/`, `packages/audit/`, `packages/files/`, `packages/search/`, `packages/jobs/`, `packages/realtime/`, `packages/adapters/`, `packages/ui/`, `packages/api-contracts/`, and `packages/domain-model/`.
-- [ ] Step 3.3: **Automated** Implement authentication, sessions, organizations, workspaces, invites, memberships, RBAC, audit logging, file ownership, search indexing, jobs, and realtime event delivery across the shared packages.
+- [x] Step 3.3: **Automated** Implement authentication, sessions, organizations, workspaces, invites, memberships, RBAC, audit logging, file ownership, search indexing, jobs, and realtime event delivery across the shared packages.
 - [ ] Step 3.4: **Automated** Build the admin shell and shared product primitives for configuration, governance, and product-level navigation.
 
 ### Green
@@ -43,10 +43,10 @@ Acceptance criteria:
 
 ## Next Step Plan
 
-Step 3.3 will implement actual shared-platform behavior behind the scaffolded package boundaries.
+Step 3.4 will build the admin shell and shared product primitives for configuration, governance, and product-level navigation.
 
-- What to build: authentication/session flows, organization and workspace tenancy, invite acceptance, membership state, RBAC checks, audit event emission, file ownership metadata, search indexing contracts, job lifecycle primitives, and realtime delivery orchestration across the shared packages.
-- Likely file changes: expand the new `src/` modules in `packages/auth/`, `packages/tenancy/`, `packages/rbac/`, `packages/audit/`, `packages/files/`, `packages/search/`, `packages/jobs/`, `packages/realtime/`, `packages/domain-model/`, `packages/api-contracts/`, and `apps/admin-console/`, with shared types likely centralized in `packages/domain-model/` and `packages/api-contracts/`.
-- Key technical decisions or risks: keep the implementations deterministic and package-local enough for contract testing, avoid coupling the admin console shell directly to unfinished backend behavior, and preserve the exported boundary names frozen in Steps 3.1-3.2.
-- Session-specific context: `pnpm test:run` is green at 12 passing files / 32 passing tests after the scaffold introduced all required module entrypoints and contract constants.
-- Acceptance target: the shared packages expose concrete behavior and domain structures that support invites, memberships, permissions, audit, files, jobs, search, and realtime workflows without breaking the current green suite.
+- What to build: admin shell governance state management, section configuration, product-level navigation primitives, shared product configuration interfaces, and wiring the governance shell to the UI primitives already defined in `packages/ui/`.
+- Likely file changes: new modules in `apps/admin-console/src/` for admin shell logic and product navigation, possible additions to `packages/ui/src/` for shared product navigation primitives, and barrel updates in both locations.
+- Key technical decisions or risks: keep the admin shell self-contained (no cross-package behavior imports beyond types), build on the governance-behavior.ts patterns established in Step 3.3, and ensure the admin shell can be extended per-product in Phases 4-6.
+- Session-specific context: `pnpm test:run` is green at 12 passing files / 32 passing tests. Step 3.3 established the pattern of behavior modules with types derived from frozen `as const` constants, factory functions, state machines, and validation. All 13 packages have behavior modules. Packages without a `platform-*.ts` file use local `const` declarations in the behavior file to avoid circular imports with `index.ts`.
+- Acceptance target: the admin shell exposes governance configuration, section management, and product-level navigation primitives that can be exercised in the Step 3.5 green phase without breaking the current suite.

@@ -31,3 +31,10 @@
 - Added the Phase 3 shared-platform contract suites under `packages/auth/tests/`, `packages/tenancy/tests/`, `packages/rbac/tests/`, `packages/audit/tests/`, `packages/realtime/tests/`, and `apps/admin-console/tests/`, and expanded the Vitest/TypeScript config so the new app-level tests are included in the workspace.
 - Completed Step 3.2 by scaffolding the shared platform packages plus `apps/admin-console/` with thin contract-shaped module exports for auth, tenancy, RBAC, audit, realtime, files, jobs, search, adapters, UI, API contracts, and domain-model boundaries.
 - Re-ran `pnpm test:run` after the scaffold landed and confirmed the repository is green at 12 passing files / 32 passing tests, eliminating the prior missing-module failures from the Phase 3 suites.
+
+## 2026-04-10
+
+- Completed Step 3.3 by implementing 13 behavior modules across all shared platform packages: auth (sessions, invites, state machines), tenancy (organizations, workspaces, memberships, role precedence), RBAC (permission matrix, check function), audit (event factory, 7 action-specific builders), realtime (delivery orchestration, sequence tracker), files (ownership, transfers), search (indexing requests/entries), jobs (lifecycle state machine), adapters (6 typed adapter interfaces, registry), UI (framework-agnostic config builders), domain-model (resource refs, events, ownership scope registry), API contracts (9 seed route manifests, contract registry), and admin-console governance (shell state, section configs, capability mapping).
+- All behavior modules use pure functions, deterministic factory IDs, types derived from frozen `as const` constants, and no cross-package imports.
+- Updated 13 `src/index.ts` barrels with additive re-exports. No frozen `platform-*.ts` files were modified.
+- Confirmed `pnpm test:run` remains green at 12 passing files / 32 passing tests.

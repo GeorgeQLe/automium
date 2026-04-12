@@ -7,8 +7,8 @@ This file tracks the active work for Phase 4 from [tasks/roadmap.md](/home/georg
 - Phase 1 benchmark foundation reset is complete and archived in [tasks/phases/phase-1.md](/home/georgeqle/projects/tools/dev/automium/tasks/phases/phase-1.md).
 - Phase 2 frozen parity audit and benchmark target design is complete and archived in [tasks/phases/phase-2.md](/home/georgeqle/projects/tools/dev/automium/tasks/phases/phase-2.md).
 - Phase 3 shared multi-tenant product platform is complete and archived in [tasks/phases/phase-3.md](/home/georgeqle/projects/tools/dev/automium/tasks/phases/phase-3.md).
-- The current repository state is at 26 passing files / 95 passing tests (25 tests passing across 5 Altitude unit contract files; 4 expected failures remain in the Step 4.6 benchmark journey contract).
-- Next automated step: Step 4.6.
+- The current repository state is at 27 passing files / 99 passing tests. All Step 4.6 benchmark journey seed and route failures are resolved.
+- Next automated step: Step 4.7.
 - Known manual blockers: none for Phase 4.
 
 ## Phase 4: Altitude
@@ -37,7 +37,7 @@ Goal: deliver the first owned parity product, `Altitude`, as the Plane-parity be
 - [x] Step 4.5: **Automated** Implement the Altitude API route manifest and adapter boundaries. (Realtime module pulled forward to Step 4.4.)
   - Files: create `apps/altitude/src/altitude-api-routes.ts` (ALTITUDE_API_ROUTES manifest for projects, work-items, cycles, modules, pages, views, comments, attachments, notifications, analytics, webhooks), `apps/altitude/src/altitude-adapters.ts` (adapter interfaces: SourceControlAdapter, ChatNotificationAdapter, AlertAdapter, WebhookDeliveryAdapter; adapter registry factory)
   - Files: modify `apps/altitude/src/index.ts` (re-export new modules)
-- [ ] Step 4.6: **Automated** Add deterministic seeds, reset hooks, and benchmark-friendly route definitions for the Altitude benchmark-critical journeys.
+- [x] Step 4.6: **Automated** Add deterministic seeds, reset hooks, and benchmark-friendly route definitions for the Altitude benchmark-critical journeys.
   - Files: create `apps/altitude/src/altitude-seed.ts` (seedAltitudeBenchmarkEnvironment: creates workspace, project, work-item presets, cycles, modules, page root, attachment bucket, analytics snapshot; resetAltitudeBenchmarkEnvironment: clears mutations and rebuilds seed), `apps/altitude/src/altitude-benchmark-routes.ts` (ALTITUDE_BENCHMARK_ROUTES: workspace landing, project backlog, board/list view, cycle planning, module detail, wiki, work-item detail, analytics URLs)
   - Files: modify `apps/altitude/src/index.ts` (re-export new modules)
 
@@ -58,14 +58,16 @@ Acceptance criteria:
 
 ## Next Step Plan
 
-Step 4.6 will add deterministic seed/reset support and benchmark-friendly route definitions for the Altitude benchmark-critical journeys. After this step, `tests/integration/altitude/altitude-benchmark-journeys.contract.test.ts` (4 tests) should go green.
+Step 4.7 will verify that all Altitude suites and prior phase suites remain green with no remaining expected failures. The implementation work for Phase 4 is now complete, so this step is a stabilization and regression sweep.
 
-- Files to create:
-  - `apps/altitude/src/altitude-seed.ts` — `seedAltitudeBenchmarkEnvironment()` returning a deterministic workspace, project, work-item presets, cycles, modules, page root, attachment bucket, and analytics snapshot; `resetAltitudeBenchmarkEnvironment()` clearing mutations and rebuilding the deterministic seed.
-  - `apps/altitude/src/altitude-benchmark-routes.ts` — `ALTITUDE_BENCHMARK_ROUTES` covering 8 journey URLs: workspace landing, project backlog, board/list view, cycle planning, module detail, wiki, work-item detail, and analytics.
-- Files to modify:
-  - `apps/altitude/src/index.ts` — add re-exports for seed and benchmark-routes modules.
+- Command to run:
+  - `pnpm test:run`
+- Files likely to modify only if regressions are found:
+  - Altitude implementation modules under `apps/altitude/src/`
+  - Altitude contract tests under `apps/altitude/tests/` or `tests/integration/altitude/`
+  - Task files if Step 4.7 completes the phase transition.
 - Acceptance criteria:
-  - `altitude-benchmark-journeys.contract.test.ts` goes from 4 failures to 0.
-  - Full `pnpm test:run` reaches all Phase 4 tests green if no further Step 4.7 stabilization issues remain.
-  - Phase 1-3 suites remain green. No regressions.
+  - Full `pnpm test:run` remains green at 27 passing files / 99 passing tests or better.
+  - All Phase 4 Altitude suites pass: domain, views, planning, collaboration, API, and benchmark journeys.
+  - Phase 1-3 suites remain green with no regressions.
+  - If green, mark Step 4.7 complete and archive Phase 4 into `tasks/phases/phase-4.md`.

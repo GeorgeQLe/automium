@@ -14,3 +14,5 @@ export * from "./altitude-webhooks";
 export * from "./altitude-realtime";
 export * from "./altitude-api-routes";
 export * from "./altitude-adapters";
+export * from "./altitude-benchmark-routes";
+export * from "./altitude-seed";

@@ -12,7 +12,8 @@ This file tracks the active work for Phase 5 from [tasks/roadmap.md](/home/georg
 - Step 5.2 Switchboard scaffold is complete. The focused domain contract is green at 1 passing file / 6 passing tests, and the existing repository baseline remains green at 27 passing files / 99 passing tests.
 - Step 5.3 Switchboard operational resource modules are complete. The implemented Switchboard scope is green at 4 passing files / 21 passing tests, and the existing Phase 1-4 baseline remains green at 27 passing files / 99 passing tests.
 - Step 5.4 Switchboard channel modules are complete. Native website/API/email channels, public channel adapter boundaries, and webhook event normalization are green with the implemented Switchboard scope at 5 passing files / 27 passing tests. The existing Phase 1-4 baseline remains green at 27 passing files / 99 passing tests. The Step 5.5 seed/benchmark suite remains intentionally red on missing modules for the next implementation step.
-- Next automated step: Step 5.5.
+- Step 5.5 Switchboard deterministic seed/reset hooks and benchmark route modules are complete. The Step 5.5 benchmark journey contract is green at 1 passing file / 6 passing tests, all Phase 5 Switchboard suites are green at 6 passing files / 33 passing tests, the existing Phase 1-4 baseline remains green at 27 passing files / 99 passing tests, full `pnpm test:run` is green at 33 passing files / 132 passing tests, and `pnpm exec tsc --noEmit` passes.
+- Next automated step: Step 5.6.
 - Known manual blockers: none for Phase 5.
 
 ## Phase 5: Switchboard
@@ -41,7 +42,7 @@ Goal: deliver the second owned parity product, `Switchboard`, as the Chatwoot-pa
   - Native channel factories cover website live chat session metadata, API channel ingest payloads, and email threading metadata
   - Adapter contracts cover WhatsApp, Facebook, Instagram, Telegram, LINE, SMS, TikTok, X/Twitter, and voice/phone event normalization into contacts, conversations, and messages
   - Files: modify `apps/switchboard/src/index.ts` to re-export channel modules
-- [ ] Step 5.5: **Automated** Add deterministic seeds, reset hooks, and benchmark-friendly routes for the `Switchboard` benchmark-critical journeys.
+- [x] Step 5.5: **Automated** Add deterministic seeds, reset hooks, and benchmark-friendly routes for the `Switchboard` benchmark-critical journeys.
   - Files: create `apps/switchboard/src/switchboard-seed.ts`, `apps/switchboard/src/switchboard-benchmark-routes.ts`
   - Seed covers one account, operators, supervisor, teams, core channels, inbox defaults, contacts, conversation starters, message payloads, labels, SLA metadata, triage states, collaborator identities, canned responses, macros, automation rules, open and historical conversations, and reporting snapshot
   - Routes cover inbox administration, conversation list, active conversation, notes/collaboration, operator shortcuts, automation rules, and reporting URLs
@@ -64,24 +65,21 @@ Acceptance criteria:
 
 ## Next Step Plan
 
-Step 5.5 adds deterministic Switchboard seed/reset state and benchmark-friendly route definitions. Keep this work scoped to stable fixtures and URLs for benchmark-critical journeys; Step 5.6 will be the full green verification sweep after the seed and routes exist.
+Step 5.6 is the Phase 5 green sweep. The implementation modules now exist, so this step should verify the full Switchboard surface end to end and make any final fixes needed for owned conversation-routing benchmarks, realtime updates, and stable fixtures.
 
 - Commands to run:
-  - `pnpm exec vitest run tests/integration/switchboard/switchboard-benchmark-journeys.contract.test.ts`
-  - Expect this Step 5.5 suite to pass after implementation.
-  - Re-run `pnpm exec vitest run apps/switchboard/tests/switchboard-domain.contract.test.ts apps/switchboard/tests/switchboard-api.contract.test.ts apps/switchboard/tests/switchboard-conversations.contract.test.ts apps/switchboard/tests/switchboard-automation.contract.test.ts apps/switchboard/tests/switchboard-channels.contract.test.ts tests/integration/switchboard/switchboard-benchmark-journeys.contract.test.ts` to confirm all Phase 5 Switchboard suites pass together.
-  - Re-run `pnpm exec vitest run packages apps/admin-console apps/altitude tests/integration/altitude tests/planning` to confirm the existing 27 files / 99 tests remain green.
-- Files to create:
+  - `pnpm exec vitest run apps/switchboard/tests/switchboard-domain.contract.test.ts apps/switchboard/tests/switchboard-api.contract.test.ts apps/switchboard/tests/switchboard-conversations.contract.test.ts apps/switchboard/tests/switchboard-automation.contract.test.ts apps/switchboard/tests/switchboard-channels.contract.test.ts tests/integration/switchboard/switchboard-benchmark-journeys.contract.test.ts`
+  - `pnpm exec vitest run packages apps/admin-console apps/altitude tests/integration/altitude tests/planning`
+  - If both targeted commands pass, run `pnpm test:run` as the final Phase 5 all-repo verification.
+- Files likely to inspect or modify if failures appear:
+  - `apps/switchboard/src/switchboard-domain.ts`
+  - `apps/switchboard/src/switchboard-realtime.ts`
+  - `apps/switchboard/src/switchboard-assignments.ts`
+  - `apps/switchboard/src/switchboard-channels.ts`
   - `apps/switchboard/src/switchboard-seed.ts`
   - `apps/switchboard/src/switchboard-benchmark-routes.ts`
-- Files to modify:
-  - `apps/switchboard/src/index.ts`
 - Implementation expectations:
-  - `switchboard-benchmark-routes.ts` should export `SWITCHBOARD_BENCHMARK_ROUTES` with 7 stable routes whose ids are exactly `["inbox-administration", "conversation-list", "active-conversation", "notes-collaboration", "operator-shortcuts", "automation-rules", "reporting"]`.
-  - Each benchmark route should have a `/switchboard/` path, a user-facing `name`, and non-empty `requiredSeedKeys`.
-  - `switchboard-seed.ts` should expose `seedSwitchboardBenchmarkEnvironment()`, `resetSwitchboardBenchmarkEnvironment()`, and `verifySwitchboardBenchmarkSeed(env)`.
-  - The seed should use deterministic IDs and existing Switchboard factories for one account, at least two operators, one supervisor, teams, website/API/email channels, at least three inboxes, contacts, open and historical conversations, messages, labels, canned responses, macros, automation rules, and a report summary.
-  - Include benchmark-critical metadata needed for inbox administration, conversation list unread counts, active conversation state, notes/collaboration, operator shortcuts, automation rules, SLA/triage state, collaborator identities, and reporting.
-  - `resetSwitchboardBenchmarkEnvironment()` should rebuild the same deterministic state as `seedSwitchboardBenchmarkEnvironment()`, preserving account ID, conversation IDs, and report metrics across calls.
-  - `verifySwitchboardBenchmarkSeed(env)` should return `{ ready, checked, errors }`, with checks including `unread-counts`, `assignee-state`, `automation-rules`, and `report-summary`.
-  - Update the Switchboard barrel to re-export seed and benchmark route modules.
+  - Treat this as verification/fix work, not broad feature expansion.
+  - Confirm all Phase 5 acceptance criteria are satisfied: frozen feature matrix, API compatibility, realtime conversation/assignment/notes/inbox-routing behavior, website/API/email core channels, seed/reset/route coverage, and no Phase 1-4 regressions.
+  - Inspect validation output even on zero exit codes and record any warnings. Fix unexpected failures before marking Step 5.6 complete.
+  - If `pnpm test:run` passes without warnings, mark Step 5.6 complete and prepare the Phase 5 archive/transition workflow.

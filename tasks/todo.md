@@ -9,8 +9,9 @@ This file tracks the active work for Phase 6 from [tasks/roadmap.md](/home/georg
 - Phase 3 shared multi-tenant product platform is complete and archived in [tasks/phases/phase-3.md](/home/georgeqle/projects/tools/dev/automium/tasks/phases/phase-3.md).
 - Phase 4 Altitude parity product is complete and archived in [tasks/phases/phase-4.md](/home/georgeqle/projects/tools/dev/automium/tasks/phases/phase-4.md).
 - Phase 5 Switchboard parity product is complete and archived in [tasks/phases/phase-5.md](/home/georgeqle/projects/tools/dev/automium/tasks/phases/phase-5.md).
-- The repository is green at 33 passing files / 132 passing tests after Phase 5.
-- Next automated step: Step 6.1.
+- The Phase 1-5 baseline remains green at 33 passing files / 132 passing tests.
+- The new Phase 6 Foundry red suite is intentionally failing at 7 files / 37 tests on missing implementation modules.
+- Next automated step: Step 6.2.
 - Known manual blockers: none for Phase 6.
 
 ## Phase 6: Foundry
@@ -21,7 +22,7 @@ Goal: deliver the third owned parity product, `Foundry`, as the Appsmith-parity 
 
 ### Tests First
 
-- [ ] Step 6.1: **Automated** Write failing editor, runtime, datasource, and publish-flow tests in `apps/foundry/tests/`, `packages/adapters/tests/foundry/`, and `tests/integration/foundry/` for apps, pages, widgets, datasources, queries, JavaScript logic, bindings, branching, deployment, and permissions.
+- [x] Step 6.1: **Automated** Write failing editor, runtime, datasource, and publish-flow tests in `apps/foundry/tests/`, `packages/adapters/tests/foundry/`, and `tests/integration/foundry/` for apps, pages, widgets, datasources, queries, JavaScript logic, bindings, branching, deployment, and permissions.
   - Files: create `apps/foundry/tests/foundry-domain.contract.test.ts`, `apps/foundry/tests/foundry-api.contract.test.ts`, `apps/foundry/tests/foundry-builder.contract.test.ts`, `apps/foundry/tests/foundry-runtime.contract.test.ts`, `apps/foundry/tests/foundry-datasources.contract.test.ts`, `apps/foundry/tests/foundry-collaboration.contract.test.ts`, `tests/integration/foundry/foundry-benchmark-journeys.contract.test.ts`
   - Tests cover: workspace/application/page/widget/datasource/query/JavaScript object/binding/theme/environment/branch/deployment/permission domain shapes, API route manifest completeness, drag-and-drop canvas and widget layout contracts, editor/runtime split, datasource adapters for Postgres-compatible SQL, MySQL-compatible SQL, and REST APIs, query execution and bindings, custom widget registration, branch/version collaboration, publish/share/runtime metadata, deterministic seed/reset hooks, and benchmark route definitions.
   - Expected red state: new Foundry suites fail on missing Phase 6 implementation modules while the existing Phase 1-5 baseline remains green.
@@ -62,21 +63,21 @@ Acceptance criteria:
 
 ## Next Step Plan
 
-Step 6.1 is the Phase 6 red phase. It should create contract tests first, then run them to confirm they fail only because the Foundry implementation modules do not exist yet.
+Step 6.2 scaffolds the Foundry workspace package and the first implementation modules needed to turn the domain/constants portion of the Phase 6 red suite green.
 
 - Commands to run:
-  - `pnpm exec vitest run apps/foundry/tests/foundry-domain.contract.test.ts apps/foundry/tests/foundry-api.contract.test.ts apps/foundry/tests/foundry-builder.contract.test.ts apps/foundry/tests/foundry-runtime.contract.test.ts apps/foundry/tests/foundry-datasources.contract.test.ts apps/foundry/tests/foundry-collaboration.contract.test.ts tests/integration/foundry/foundry-benchmark-journeys.contract.test.ts`
+  - `pnpm exec vitest run apps/foundry/tests/foundry-domain.contract.test.ts`
+  - `pnpm exec vitest run apps/foundry/tests/foundry-api.contract.test.ts apps/foundry/tests/foundry-builder.contract.test.ts apps/foundry/tests/foundry-runtime.contract.test.ts apps/foundry/tests/foundry-datasources.contract.test.ts apps/foundry/tests/foundry-collaboration.contract.test.ts tests/integration/foundry/foundry-benchmark-journeys.contract.test.ts`
   - `pnpm exec vitest run packages apps/admin-console apps/altitude apps/switchboard tests/integration/altitude tests/integration/switchboard tests/planning`
 - Files to create:
-  - `apps/foundry/tests/foundry-domain.contract.test.ts`
-  - `apps/foundry/tests/foundry-api.contract.test.ts`
-  - `apps/foundry/tests/foundry-builder.contract.test.ts`
-  - `apps/foundry/tests/foundry-runtime.contract.test.ts`
-  - `apps/foundry/tests/foundry-datasources.contract.test.ts`
-  - `apps/foundry/tests/foundry-collaboration.contract.test.ts`
-  - `tests/integration/foundry/foundry-benchmark-journeys.contract.test.ts`
+  - `apps/foundry/package.json`
+  - `apps/foundry/tsconfig.json`
+  - `apps/foundry/src/foundry-constants.ts`
+  - `apps/foundry/src/foundry-domain.ts`
+  - `apps/foundry/src/index.ts`
 - Implementation expectations:
-  - Follow the red-phase pattern from Altitude Step 4.1 and Switchboard Step 5.1: test imports should clearly name the expected future modules and throw helpful missing-module errors.
-  - Keep tests grounded in `docs/parity/foundry-feature-matrix.md`, `docs/parity/foundry-api-matrix.md`, `tests/fixtures/foundry-seed-reset-plan.md`, and `docs/benchmarks/owned-products.md`.
-  - Do not create implementation modules in Step 6.1.
-  - Mark Step 6.1 complete only after the new Foundry suites fail for expected missing-module reasons and the existing Phase 1-5 baseline remains green.
+  - Follow the owned-product package pattern from `apps/altitude/` and `apps/switchboard/`: package metadata, local `tsconfig.json`, frozen `as const` arrays with derived union types, broad domain interfaces, pure factory helpers, validators, and barrel exports.
+  - Constants must satisfy `foundry-domain.contract.test.ts`: workspace roles, application states, page types, widget families, datasource types, query runtimes, binding scopes, branch statuses, deployment statuses, permission actions, realtime topics, and benchmark route categories.
+  - `foundry-domain.ts` should define Workspace, FoundryUser, Application, Page, Widget, WidgetBinding, Datasource, Query, JavaScriptObject, Theme, Environment, Branch, Deployment, PermissionGrant, CustomWidgetPackage, FoundryRealtimeEvent, FoundryApiRoute, and FoundryBenchmarkRoute shapes.
+  - Implement the domain factories and validators exercised by `foundry-domain.contract.test.ts`; leave API, builder, datasource, collaboration, runtime, seed, and route modules missing for later steps.
+  - Expected result: `foundry-domain.contract.test.ts` passes, the remaining six Foundry suites still fail on expected missing future modules, and the existing Phase 1-5 baseline remains green.

@@ -415,11 +415,13 @@ export function validateSwitchboardConversation(
   ]);
 }
 
-function requiredFields<T extends Record<string, unknown>>(
+function requiredFields<T extends object>(
   value: T,
   fields: Array<keyof T & string>
 ): string[] {
+  const record = value as Record<keyof T & string, unknown>;
+
   return fields
-    .filter((field) => !value[field])
+    .filter((field) => !record[field])
     .map((field) => `${field} is required`);
 }

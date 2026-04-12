@@ -16,3 +16,6 @@ export * from "./switchboard-automation";
 export * from "./switchboard-reports";
 export * from "./switchboard-realtime";
 export * from "./switchboard-api-routes";
+export * from "./switchboard-channels";
+export * from "./switchboard-channel-adapters";
+export * from "./switchboard-webhooks";

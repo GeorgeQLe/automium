@@ -68,3 +68,12 @@
 - Confirmed the implemented Switchboard scope is green with `pnpm exec vitest run apps/switchboard/tests/switchboard-domain.contract.test.ts apps/switchboard/tests/switchboard-api.contract.test.ts apps/switchboard/tests/switchboard-conversations.contract.test.ts apps/switchboard/tests/switchboard-automation.contract.test.ts` at 4 passing files / 21 passing tests.
 - Re-ran the Phase 1-4 baseline with `pnpm exec vitest run packages apps/admin-console apps/altitude tests/integration/altitude tests/planning`; it remains green at 27 passing files / 99 passing tests.
 - Verified the remaining Switchboard red suites are expected future-step failures only: Step 5.4 is missing channel modules, and Step 5.5 is missing benchmark route plus seed/reset modules.
+
+## 2026-04-12
+
+- Completed Step 5.4 by implementing the Switchboard channel layer: `switchboard-channels.ts` for native website live chat, API ingest, and email threading; `switchboard-channel-adapters.ts` for WhatsApp, Facebook, Instagram, Telegram, LINE, SMS, TikTok, X/Twitter, and voice adapter boundaries; and `switchboard-webhooks.ts` for normalized webhook event payloads.
+- Updated the Switchboard barrel exports for the new channel modules and tightened the domain `requiredFields` helper type so the new module import path compiles cleanly under a focused TypeScript check.
+- Confirmed the Step 5.4 channel suite passes with `pnpm exec vitest run apps/switchboard/tests/switchboard-channels.contract.test.ts` at 1 passing file / 6 passing tests.
+- Confirmed the implemented Switchboard scope passes with `pnpm exec vitest run apps/switchboard/tests/switchboard-domain.contract.test.ts apps/switchboard/tests/switchboard-api.contract.test.ts apps/switchboard/tests/switchboard-conversations.contract.test.ts apps/switchboard/tests/switchboard-automation.contract.test.ts apps/switchboard/tests/switchboard-channels.contract.test.ts` at 5 passing files / 27 passing tests.
+- Re-ran the Phase 1-4 baseline with `pnpm exec vitest run packages apps/admin-console apps/altitude tests/integration/altitude tests/planning`; it remains green at 27 passing files / 99 passing tests.
+- Prepared Step 5.5 in `tasks/todo.md` for deterministic Switchboard seed/reset hooks and benchmark route definitions.

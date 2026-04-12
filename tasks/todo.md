@@ -8,8 +8,8 @@ This file tracks the active work for Phase 5 from [tasks/roadmap.md](/home/georg
 - Phase 2 frozen parity audit and benchmark target design is complete and archived in [tasks/phases/phase-2.md](/home/georgeqle/projects/tools/dev/automium/tasks/phases/phase-2.md).
 - Phase 3 shared multi-tenant product platform is complete and archived in [tasks/phases/phase-3.md](/home/georgeqle/projects/tools/dev/automium/tasks/phases/phase-3.md).
 - Phase 4 Altitude parity product is complete and archived in [tasks/phases/phase-4.md](/home/georgeqle/projects/tools/dev/automium/tasks/phases/phase-4.md).
-- The repository baseline is green at 27 passing files / 99 passing tests before Switchboard work begins.
-- Next automated step: Step 5.1.
+- Step 5.1 red-phase Switchboard contract tests are complete. The existing repository baseline remains green at 27 passing files / 99 passing tests, while the 6 new Switchboard suites intentionally fail on missing Phase 5 implementation modules.
+- Next automated step: Step 5.2.
 - Known manual blockers: none for Phase 5.
 
 ## Phase 5: Switchboard
@@ -20,7 +20,7 @@ Goal: deliver the second owned parity product, `Switchboard`, as the Chatwoot-pa
 
 ### Tests First
 
-- [ ] Step 5.1: **Automated** Write failing API, adapter, and UI workflow tests in `apps/switchboard/tests/`, `packages/adapters/tests/switchboard/`, and `tests/integration/switchboard/` for inboxes, channels, contacts, conversations, assignments, notes, canned responses, macros, automation, and reporting.
+- [x] Step 5.1: **Automated** Write failing API, adapter, and UI workflow tests in `apps/switchboard/tests/`, `packages/adapters/tests/switchboard/`, and `tests/integration/switchboard/` for inboxes, channels, contacts, conversations, assignments, notes, canned responses, macros, automation, and reporting.
   - Files: create `apps/switchboard/tests/switchboard-domain.contract.test.ts`, `apps/switchboard/tests/switchboard-api.contract.test.ts`, `apps/switchboard/tests/switchboard-conversations.contract.test.ts`, `apps/switchboard/tests/switchboard-automation.contract.test.ts`, `apps/switchboard/tests/switchboard-channels.contract.test.ts`, `tests/integration/switchboard/switchboard-benchmark-journeys.contract.test.ts`
   - Tests cover: account/user/inbox/channel/contact/conversation/message/team/assignment/note/label/canned-response/macro/automation/report domain shapes, API route manifest completeness, core channel contracts for website live chat/API/email, adapter-ready public channel boundaries, realtime conversation and assignment events, automation and macro execution contracts, reporting summaries, deterministic seed/reset hooks, and benchmark route definitions
 
@@ -61,24 +61,22 @@ Acceptance criteria:
 
 ## Next Step Plan
 
-Step 5.1 is the red phase for Switchboard. It should add failing contract tests only, following the Altitude pattern from Phase 4: create the app test directory, add an empty `apps/switchboard/src/index.ts` barrel only if imports need a target, and assert the frozen Switchboard domain/API/channel/automation/benchmark contracts before implementation begins.
+Step 5.2 is the Switchboard scaffold step. It should create the workspace package, TypeScript config, frozen constants, broad domain interfaces, and barrel exports needed to turn the Step 5.1 domain and constants tests from missing-module failures into assertion-level progress. Keep this step scoped to the scaffold and domain model only; do not implement the operational modules from Steps 5.3-5.5 yet.
 
 - Commands to run:
-  - `pnpm test:run -- apps/switchboard/tests tests/integration/switchboard`
-  - If the new tests fail only because exports or modules are missing, that is expected for the red phase.
-  - Re-run `pnpm test:run` to confirm the pre-existing 27 files / 99 tests remain green while the new Switchboard suites are expected failures.
+  - `pnpm exec vitest run apps/switchboard/tests/switchboard-domain.contract.test.ts`
+  - Expect the constants and broad domain assertions to pass after the scaffold, while tests that import Step 5.3+ modules remain expected failures until later steps.
+  - Re-run `pnpm exec vitest run packages apps/admin-console apps/altitude tests/integration/altitude tests/planning` to confirm the pre-existing 27 files / 99 tests remain green.
 - Files to create:
-  - `apps/switchboard/tests/switchboard-domain.contract.test.ts`
-  - `apps/switchboard/tests/switchboard-api.contract.test.ts`
-  - `apps/switchboard/tests/switchboard-conversations.contract.test.ts`
-  - `apps/switchboard/tests/switchboard-automation.contract.test.ts`
-  - `apps/switchboard/tests/switchboard-channels.contract.test.ts`
-  - `tests/integration/switchboard/switchboard-benchmark-journeys.contract.test.ts`
-  - `apps/switchboard/src/index.ts` if needed as the missing-export import target
-- Test expectations:
-  - Domain test freezes account, user, team, inbox, channel config, contact, conversation, message, assignment, note, label, canned response, macro, automation rule, and report summary shapes.
-  - API test freezes route-manifest resources for accounts, users, inboxes, contacts, conversations, messages, labels, canned responses, macros, automation rules, reports, and webhooks.
-  - Conversation test freezes lifecycle transitions for open, snoozed, resolved, and reopened conversations plus assignment, notes, mentions, labels, priorities, and realtime events.
-  - Automation test freezes canned-response rendering, macro action bundles, automation triggers/actions, SLA/routing metadata, and report summary expectations.
-  - Channel test freezes website live chat, API channel, and email as native channels, with adapter-ready boundaries for WhatsApp, Facebook, Instagram, Telegram, LINE, SMS, TikTok, X/Twitter, and voice/phone.
-  - Benchmark journey test freezes deterministic seed/reset hooks and stable routes for inbox administration, conversation list, active conversation, notes/collaboration, operator shortcuts, automation rules, and reporting.
+  - `apps/switchboard/package.json`
+  - `apps/switchboard/tsconfig.json`
+  - `apps/switchboard/src/switchboard-constants.ts`
+  - `apps/switchboard/src/switchboard-domain.ts`
+  - `apps/switchboard/src/index.ts`
+- Implementation expectations:
+  - Mirror the Altitude scaffold style: pure TypeScript, frozen `as const` arrays, derived union types, and barrel re-exports.
+  - Define constants for conversation statuses, priorities, channel types, message directions/types, assignment statuses, automation trigger/action types, report metrics, realtime topics, and webhook events. Values should satisfy `switchboard-domain.contract.test.ts` exactly where that test freezes arrays.
+  - Define interfaces for Account, User, Team, Inbox, ChannelConfig, Contact, Conversation, Message, Assignment, Note, Label, CannedResponse, Macro, AutomationRule, ReportSummary, SwitchboardRealtimeEvent, SwitchboardApiRoute, and SwitchboardBenchmarkRoute.
+  - Add lightweight scaffold factories/validators in `switchboard-domain.ts` only for the broad domain test: `createSwitchboardAccount`, `createSwitchboardUser`, `createSwitchboardTeam`, `createSwitchboardChannelConfig`, `createSwitchboardInbox`, `createSwitchboardContact`, `createSwitchboardConversation`, `createSwitchboardMessage`, `createSwitchboardAssignment`, `createSwitchboardNote`, `createSwitchboardLabel`, `createSwitchboardCannedResponse`, `createSwitchboardMacro`, `createSwitchboardAutomationRule`, `createSwitchboardReportSummary`, `validateSwitchboardAccount`, and `validateSwitchboardConversation`.
+  - Use deterministic ID prefixes such as `acct_`, `user_`, `team_`, `channel_`, `inbox_`, `contact_`, `conv_`, `msg_`, `assign_`, `note_`, `label_`, `canned_`, `macro_`, `automation_`, and `report_`; this matches the existing scaffold pattern and keeps future seed work stable.
+  - Leave `switchboard-api-routes.ts`, operational resource modules, channel modules, seed modules, and benchmark route modules unimplemented until Steps 5.3-5.5.

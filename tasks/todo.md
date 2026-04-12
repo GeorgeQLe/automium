@@ -7,8 +7,8 @@ This file tracks the active work for Phase 4 from [tasks/roadmap.md](/home/georg
 - Phase 1 benchmark foundation reset is complete and archived in [tasks/phases/phase-1.md](/home/georgeqle/projects/tools/dev/automium/tasks/phases/phase-1.md).
 - Phase 2 frozen parity audit and benchmark target design is complete and archived in [tasks/phases/phase-2.md](/home/georgeqle/projects/tools/dev/automium/tasks/phases/phase-2.md).
 - Phase 3 shared multi-tenant product platform is complete and archived in [tasks/phases/phase-3.md](/home/georgeqle/projects/tools/dev/automium/tasks/phases/phase-3.md).
-- The current repository state is at 25 passing files / 91 passing tests (21 tests passing across 4 Altitude test files).
-- Next automated step: Step 4.5.
+- The current repository state is at 26 passing files / 95 passing tests (25 tests passing across 5 Altitude unit contract files; 4 expected failures remain in the Step 4.6 benchmark journey contract).
+- Next automated step: Step 4.6.
 - Known manual blockers: none for Phase 4.
 
 ## Phase 4: Altitude
@@ -34,7 +34,7 @@ Goal: deliver the first owned parity product, `Altitude`, as the Plane-parity be
 - [x] Step 4.4: **Automated** Implement views, saved views, cycles, modules, pages, notifications, analytics, webhooks, and realtime events for Altitude.
   - Files: create `apps/altitude/src/altitude-views.ts` (createView, createSavedView, VIEW_TYPES, validateView), `apps/altitude/src/altitude-cycles.ts` (createCycle, CYCLE_STATES, transitionCycleState, attachWorkItemToCycle, validateCycle), `apps/altitude/src/altitude-modules.ts` (createModule, addWorkItemToModule, validateModule), `apps/altitude/src/altitude-pages.ts` (createPage, validatePage), `apps/altitude/src/altitude-notifications.ts` (createNotification, NOTIFICATION_TYPES, validateNotification), `apps/altitude/src/altitude-analytics.ts` (createAnalyticsSummary, computeProjectProgress, validateAnalyticsSummary), `apps/altitude/src/altitude-webhooks.ts` (createWebhookConfig, ALTITUDE_WEBHOOK_EVENTS, validateWebhookConfig)
   - Files: modify `apps/altitude/src/index.ts` (re-export new modules)
-- [ ] Step 4.5: **Automated** Implement the Altitude API route manifest and adapter boundaries. (Realtime module pulled forward to Step 4.4.)
+- [x] Step 4.5: **Automated** Implement the Altitude API route manifest and adapter boundaries. (Realtime module pulled forward to Step 4.4.)
   - Files: create `apps/altitude/src/altitude-api-routes.ts` (ALTITUDE_API_ROUTES manifest for projects, work-items, cycles, modules, pages, views, comments, attachments, notifications, analytics, webhooks), `apps/altitude/src/altitude-adapters.ts` (adapter interfaces: SourceControlAdapter, ChatNotificationAdapter, AlertAdapter, WebhookDeliveryAdapter; adapter registry factory)
   - Files: modify `apps/altitude/src/index.ts` (re-export new modules)
 - [ ] Step 4.6: **Automated** Add deterministic seeds, reset hooks, and benchmark-friendly route definitions for the Altitude benchmark-critical journeys.
@@ -58,14 +58,14 @@ Acceptance criteria:
 
 ## Next Step Plan
 
-Step 4.5 will implement the Altitude API route manifest, adapter boundaries, and any remaining realtime collaboration pieces. After this step, `altitude-api.contract.test.ts` (4 tests) should go green. The realtime module (`altitude-realtime.ts`) was pulled forward into Step 4.4 since the collaboration tests import it alongside webhooks, so Step 4.5 focuses on `altitude-api-routes.ts` and `altitude-adapters.ts`.
+Step 4.6 will add deterministic seed/reset support and benchmark-friendly route definitions for the Altitude benchmark-critical journeys. After this step, `tests/integration/altitude/altitude-benchmark-journeys.contract.test.ts` (4 tests) should go green.
 
 - Files to create:
-  - `apps/altitude/src/altitude-api-routes.ts` — ALTITUDE_API_ROUTES manifest covering 11 resource routes (projects, work-items, cycles, modules, pages, views, comments, attachments, notifications, analytics, webhooks).
-  - `apps/altitude/src/altitude-adapters.ts` — adapter interfaces (SourceControlAdapter, ChatNotificationAdapter, AlertAdapter, WebhookDeliveryAdapter) and adapter registry factory.
+  - `apps/altitude/src/altitude-seed.ts` — `seedAltitudeBenchmarkEnvironment()` returning a deterministic workspace, project, work-item presets, cycles, modules, page root, attachment bucket, and analytics snapshot; `resetAltitudeBenchmarkEnvironment()` clearing mutations and rebuilding the deterministic seed.
+  - `apps/altitude/src/altitude-benchmark-routes.ts` — `ALTITUDE_BENCHMARK_ROUTES` covering 8 journey URLs: workspace landing, project backlog, board/list view, cycle planning, module detail, wiki, work-item detail, and analytics.
 - Files to modify:
-  - `apps/altitude/src/index.ts` — add re-exports for api-routes and adapters modules.
+  - `apps/altitude/src/index.ts` — add re-exports for seed and benchmark-routes modules.
 - Acceptance criteria:
-  - `altitude-api.contract.test.ts` goes from 4 failures to 0.
-  - `altitude-benchmark-journeys.contract.test.ts` still fails (Step 4.6).
-  - Phase 1–3 suites remain green. No regressions.
+  - `altitude-benchmark-journeys.contract.test.ts` goes from 4 failures to 0.
+  - Full `pnpm test:run` reaches all Phase 4 tests green if no further Step 4.7 stabilization issues remain.
+  - Phase 1-3 suites remain green. No regressions.

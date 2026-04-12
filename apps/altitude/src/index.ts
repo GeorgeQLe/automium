@@ -12,3 +12,5 @@ export * from "./altitude-notifications";
 export * from "./altitude-analytics";
 export * from "./altitude-webhooks";
 export * from "./altitude-realtime";
+export * from "./altitude-api-routes";
+export * from "./altitude-adapters";

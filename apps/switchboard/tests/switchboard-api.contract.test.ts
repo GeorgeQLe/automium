@@ -64,10 +64,10 @@ describe("switchboard API contract", () => {
     const mod = await loadSwitchboardApiRoutes();
     const conversations = mod.SWITCHBOARD_API_ROUTES.find(
       (route: { resource: string }) => route.resource === "conversations"
-    );
+    )!;
     const messages = mod.SWITCHBOARD_API_ROUTES.find(
       (route: { resource: string }) => route.resource === "messages"
-    );
+    )!;
 
     expect(conversations.methods).toEqual(
       expect.arrayContaining(["GET", "POST", "PATCH"])
@@ -85,7 +85,7 @@ describe("switchboard API contract", () => {
     const mod = await loadSwitchboardApiRoutes();
     const webhooks = mod.SWITCHBOARD_API_ROUTES.find(
       (route: { resource: string }) => route.resource === "webhooks"
-    );
+    )!;
 
     expect(webhooks.events).toEqual(
       expect.arrayContaining([

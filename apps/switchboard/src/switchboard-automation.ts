@@ -27,7 +27,7 @@ export interface SwitchboardSlaPolicy {
 }
 
 export type SwitchboardAutomationRuleWithSla = SwitchboardAutomationRule & {
-  sla?: SwitchboardSlaPolicy;
+  sla: SwitchboardSlaPolicy;
 };
 
 export interface SwitchboardAutomationResult {
@@ -44,7 +44,7 @@ export function createAutomationRule(
 ): SwitchboardAutomationRuleWithSla {
   return {
     ...createSwitchboardAutomationRule(params),
-    sla: params.sla,
+    sla: params.sla ?? {},
   };
 }
 

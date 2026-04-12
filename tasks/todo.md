@@ -10,8 +10,9 @@ This file tracks the active work for Phase 6 from [tasks/roadmap.md](/home/georg
 - Phase 4 Altitude parity product is complete and archived in [tasks/phases/phase-4.md](/home/georgeqle/projects/tools/dev/automium/tasks/phases/phase-4.md).
 - Phase 5 Switchboard parity product is complete and archived in [tasks/phases/phase-5.md](/home/georgeqle/projects/tools/dev/automium/tasks/phases/phase-5.md).
 - The Phase 1-5 baseline remains green at 33 passing files / 132 passing tests.
-- The new Phase 6 Foundry red suite is intentionally failing at 7 files / 37 tests on missing implementation modules.
-- Next automated step: Step 6.2.
+- The Step 6.2 Foundry domain/constants suite is green at 1 passing file / 5 passing tests.
+- The remaining Phase 6 Foundry suites are intentionally failing at 6 files / 32 tests on missing future implementation modules.
+- Next automated step: Step 6.3.
 - Known manual blockers: none for Phase 6.
 
 ## Phase 6: Foundry
@@ -29,10 +30,11 @@ Goal: deliver the third owned parity product, `Foundry`, as the Appsmith-parity 
 
 ### Implementation
 
-- [ ] Step 6.2: **Automated** Scaffold `apps/foundry/` with frozen constants, the product domain model, package metadata, and barrel exports following the shared-platform and owned-product package pattern.
+- [x] Step 6.2: **Automated** Scaffold `apps/foundry/` with frozen constants, the product domain model, package metadata, and barrel exports following the shared-platform and owned-product package pattern.
   - Files: create `apps/foundry/package.json`, `apps/foundry/tsconfig.json`, `apps/foundry/src/foundry-constants.ts`, `apps/foundry/src/foundry-domain.ts`, `apps/foundry/src/index.ts`
   - Constants include: workspace roles, application states, page types, widget families, datasource types, query runtimes, binding scopes, branch statuses, deployment statuses, permission actions, realtime topics, and benchmark route categories.
   - Domain interfaces include: Workspace, FoundryUser, Application, Page, Widget, WidgetBinding, Datasource, Query, JavaScriptObject, Theme, Environment, Branch, Deployment, PermissionGrant, CustomWidgetPackage, FoundryRealtimeEvent, FoundryApiRoute, FoundryBenchmarkRoute.
+  - Validation: `pnpm exec vitest run apps/foundry/tests/foundry-domain.contract.test.ts` passes at 1 file / 5 tests; focused TypeScript check for the new `apps/foundry/src/*.ts` files passes; future Foundry suites remain red only on modules planned for Steps 6.3-6.5; Phase 1-5 baseline remains green at 33 files / 132 tests.
 - [ ] Step 6.3: **Automated** Implement organizations or workspaces, applications, pages, editor/runtime split, visual canvas, widget system, datasources, queries, JavaScript logic units, bindings, themes, environments, permissions, and major-resource APIs for `Foundry`.
   - Files: create `apps/foundry/src/foundry-workspaces.ts`, `apps/foundry/src/foundry-users.ts`, `apps/foundry/src/foundry-applications.ts`, `apps/foundry/src/foundry-pages.ts`, `apps/foundry/src/foundry-widgets.ts`, `apps/foundry/src/foundry-canvas.ts`, `apps/foundry/src/foundry-datasources.ts`, `apps/foundry/src/foundry-queries.ts`, `apps/foundry/src/foundry-javascript.ts`, `apps/foundry/src/foundry-bindings.ts`, `apps/foundry/src/foundry-themes.ts`, `apps/foundry/src/foundry-environments.ts`, `apps/foundry/src/foundry-permissions.ts`, `apps/foundry/src/foundry-api-routes.ts`, `apps/foundry/src/foundry-realtime.ts`
   - Files: modify `apps/foundry/src/index.ts` to re-export all modules.
@@ -63,21 +65,37 @@ Acceptance criteria:
 
 ## Next Step Plan
 
-Step 6.2 scaffolds the Foundry workspace package and the first implementation modules needed to turn the domain/constants portion of the Phase 6 red suite green.
+Step 6.3 implements the Foundry builder/editor resource layer and major-resource APIs on top of the Step 6.2 domain scaffolding.
 
 - Commands to run:
   - `pnpm exec vitest run apps/foundry/tests/foundry-domain.contract.test.ts`
+  - `pnpm exec vitest run apps/foundry/tests/foundry-builder.contract.test.ts apps/foundry/tests/foundry-datasources.contract.test.ts apps/foundry/tests/foundry-collaboration.contract.test.ts`
   - `pnpm exec vitest run apps/foundry/tests/foundry-api.contract.test.ts apps/foundry/tests/foundry-builder.contract.test.ts apps/foundry/tests/foundry-runtime.contract.test.ts apps/foundry/tests/foundry-datasources.contract.test.ts apps/foundry/tests/foundry-collaboration.contract.test.ts tests/integration/foundry/foundry-benchmark-journeys.contract.test.ts`
   - `pnpm exec vitest run packages apps/admin-console apps/altitude apps/switchboard tests/integration/altitude tests/integration/switchboard tests/planning`
 - Files to create:
-  - `apps/foundry/package.json`
-  - `apps/foundry/tsconfig.json`
-  - `apps/foundry/src/foundry-constants.ts`
-  - `apps/foundry/src/foundry-domain.ts`
+  - `apps/foundry/src/foundry-workspaces.ts`
+  - `apps/foundry/src/foundry-users.ts`
+  - `apps/foundry/src/foundry-applications.ts`
+  - `apps/foundry/src/foundry-pages.ts`
+  - `apps/foundry/src/foundry-widgets.ts`
+  - `apps/foundry/src/foundry-canvas.ts`
+  - `apps/foundry/src/foundry-datasources.ts`
+  - `apps/foundry/src/foundry-queries.ts`
+  - `apps/foundry/src/foundry-javascript.ts`
+  - `apps/foundry/src/foundry-bindings.ts`
+  - `apps/foundry/src/foundry-themes.ts`
+  - `apps/foundry/src/foundry-environments.ts`
+  - `apps/foundry/src/foundry-permissions.ts`
+  - `apps/foundry/src/foundry-api-routes.ts`
+  - `apps/foundry/src/foundry-realtime.ts`
+- Files to modify:
   - `apps/foundry/src/index.ts`
 - Implementation expectations:
-  - Follow the owned-product package pattern from `apps/altitude/` and `apps/switchboard/`: package metadata, local `tsconfig.json`, frozen `as const` arrays with derived union types, broad domain interfaces, pure factory helpers, validators, and barrel exports.
-  - Constants must satisfy `foundry-domain.contract.test.ts`: workspace roles, application states, page types, widget families, datasource types, query runtimes, binding scopes, branch statuses, deployment statuses, permission actions, realtime topics, and benchmark route categories.
-  - `foundry-domain.ts` should define Workspace, FoundryUser, Application, Page, Widget, WidgetBinding, Datasource, Query, JavaScriptObject, Theme, Environment, Branch, Deployment, PermissionGrant, CustomWidgetPackage, FoundryRealtimeEvent, FoundryApiRoute, and FoundryBenchmarkRoute shapes.
-  - Implement the domain factories and validators exercised by `foundry-domain.contract.test.ts`; leave API, builder, datasource, collaboration, runtime, seed, and route modules missing for later steps.
-  - Expected result: `foundry-domain.contract.test.ts` passes, the remaining six Foundry suites still fail on expected missing future modules, and the existing Phase 1-5 baseline remains green.
+  - Follow the pure-function module pattern used by `apps/altitude/src/` and `apps/switchboard/src/`: import types from `foundry-domain.ts` and constants from `foundry-constants.ts`, return new immutable-ish objects, and keep generated IDs/timestamps deterministic enough for contract assertions.
+  - Resource modules should re-export or wrap the Step 6.2 domain factories where that keeps behavior consistent: workspaces/users/applications/pages/widgets/datasources/queries/themes/environments.
+  - `foundry-api-routes.ts` should define `FOUNDRY_API_ROUTES` with 13 resources: workspaces, applications, pages, widgets, datasources, queries, javascript-objects, bindings, branches, deployments, permissions, publish-metadata, and custom-widgets. Include auth, seedability, methods, and actions required by `foundry-api.contract.test.ts`.
+  - `foundry-canvas.ts` should support canvas creation, widget placement, resize updates, regions, z-index ordering, and layout-stable widget positions.
+  - `foundry-widgets.ts`, `foundry-bindings.ts`, and `foundry-javascript.ts` should satisfy the builder tests for standard widget library metadata, widget instances, binding evaluation against simple dotted expressions, and JavaScript action invocation metadata.
+  - `foundry-datasources.ts` and `foundry-queries.ts` should satisfy datasource factory and query binding tests, while `foundry-datasource-adapters.ts` remains for Step 6.4.
+  - `foundry-permissions.ts` and `foundry-realtime.ts` should satisfy the permission policy and realtime collaboration tests, while branch lifecycle helpers remain for Step 6.4.
+  - Expected result: domain and API suites pass; builder, datasource, and collaboration suites have only the expected Step 6.4 missing-module failures (`foundry-custom-widgets.ts`, `foundry-datasource-adapters.ts`, `foundry-branches.ts`); runtime and benchmark suites remain red until Steps 6.4-6.5; Phase 1-5 baseline remains green.

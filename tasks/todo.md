@@ -10,7 +10,8 @@ This file tracks the active work for Phase 5 from [tasks/roadmap.md](/home/georg
 - Phase 4 Altitude parity product is complete and archived in [tasks/phases/phase-4.md](/home/georgeqle/projects/tools/dev/automium/tasks/phases/phase-4.md).
 - Step 5.1 red-phase Switchboard contract tests are complete. The existing repository baseline remains green at 27 passing files / 99 passing tests, while the remaining Switchboard suites intentionally fail on missing Phase 5 implementation modules.
 - Step 5.2 Switchboard scaffold is complete. The focused domain contract is green at 1 passing file / 6 passing tests, and the existing repository baseline remains green at 27 passing files / 99 passing tests.
-- Next automated step: Step 5.3.
+- Step 5.3 Switchboard operational resource modules are complete. The implemented Switchboard scope is green at 4 passing files / 21 passing tests, and the existing Phase 1-4 baseline remains green at 27 passing files / 99 passing tests. The Step 5.4 channel suite and Step 5.5 seed/benchmark suite remain intentionally red on missing modules for future implementation steps.
+- Next automated step: Step 5.4.
 - Known manual blockers: none for Phase 5.
 
 ## Phase 5: Switchboard
@@ -31,7 +32,7 @@ Goal: deliver the second owned parity product, `Switchboard`, as the Chatwoot-pa
   - Files: create `apps/switchboard/package.json`, `apps/switchboard/tsconfig.json`, `apps/switchboard/src/switchboard-constants.ts`, `apps/switchboard/src/switchboard-domain.ts`, `apps/switchboard/src/index.ts`
   - Constants include: conversation statuses, priorities, channel types, message directions/types, assignment statuses, automation trigger/action types, report metrics, realtime topics, webhook events
   - Domain interfaces include: Account, User, Team, Inbox, ChannelConfig, Contact, Conversation, Message, Assignment, Note, Label, CannedResponse, Macro, AutomationRule, ReportSummary, SwitchboardRealtimeEvent, SwitchboardApiRoute, SwitchboardBenchmarkRoute
-- [ ] Step 5.3: **Automated** Implement accounts, inboxes, contacts, conversations, threaded messages, teams, assignments, labels, notes, canned responses, macros, automation rules, reporting, realtime events, and major-resource APIs for `Switchboard`.
+- [x] Step 5.3: **Automated** Implement accounts, inboxes, contacts, conversations, threaded messages, teams, assignments, labels, notes, canned responses, macros, automation rules, reporting, realtime events, and major-resource APIs for `Switchboard`.
   - Files: create `apps/switchboard/src/switchboard-accounts.ts`, `apps/switchboard/src/switchboard-users.ts`, `apps/switchboard/src/switchboard-teams.ts`, `apps/switchboard/src/switchboard-inboxes.ts`, `apps/switchboard/src/switchboard-contacts.ts`, `apps/switchboard/src/switchboard-conversations.ts`, `apps/switchboard/src/switchboard-messages.ts`, `apps/switchboard/src/switchboard-assignments.ts`, `apps/switchboard/src/switchboard-notes.ts`, `apps/switchboard/src/switchboard-labels.ts`, `apps/switchboard/src/switchboard-canned-responses.ts`, `apps/switchboard/src/switchboard-macros.ts`, `apps/switchboard/src/switchboard-automation.ts`, `apps/switchboard/src/switchboard-reports.ts`, `apps/switchboard/src/switchboard-realtime.ts`, `apps/switchboard/src/switchboard-api-routes.ts`
   - Files: modify `apps/switchboard/src/index.ts` to re-export all modules
 - [ ] Step 5.4: **Automated** Implement production-grade support for website live chat, API channel, and email, plus adapter-backed operator flows for the remaining public channel categories.
@@ -62,42 +63,24 @@ Acceptance criteria:
 
 ## Next Step Plan
 
-Step 5.3 implements the operational Switchboard resource modules behind the already-green domain scaffold. Keep the work focused on accounts, users, teams, inboxes, contacts, conversations, messages, assignments, notes, labels, canned responses, macros, automation, reports, realtime events, and the major-resource API manifest. Leave native channel factories/adapters/webhooks for Step 5.4, and deterministic seed plus benchmark route modules for Step 5.5.
+Step 5.4 implements the Switchboard channel layer behind the now-green core resource modules. Keep the work focused on production-grade native support for website live chat, API ingest, and email threading, plus adapter-backed operator boundaries for deferred public channel categories and webhook event normalization. Leave deterministic seed/reset hooks and benchmark route definitions for Step 5.5.
 
 - Commands to run:
-  - `pnpm exec vitest run apps/switchboard/tests/switchboard-api.contract.test.ts apps/switchboard/tests/switchboard-conversations.contract.test.ts apps/switchboard/tests/switchboard-automation.contract.test.ts`
-  - Expect these Step 5.3 suites to pass after implementation.
-  - `apps/switchboard/tests/switchboard-channels.contract.test.ts` and `tests/integration/switchboard/switchboard-benchmark-journeys.contract.test.ts` should remain expected missing-module failures until Steps 5.4 and 5.5.
+  - `pnpm exec vitest run apps/switchboard/tests/switchboard-channels.contract.test.ts`
+  - Expect this Step 5.4 suite to pass after implementation.
+  - `tests/integration/switchboard/switchboard-benchmark-journeys.contract.test.ts` should remain an expected missing-module failure until Step 5.5.
   - Re-run `pnpm exec vitest run packages apps/admin-console apps/altitude tests/integration/altitude tests/planning` to confirm the existing 27 files / 99 tests remain green.
 - Files to create:
-  - `apps/switchboard/src/switchboard-accounts.ts`
-  - `apps/switchboard/src/switchboard-users.ts`
-  - `apps/switchboard/src/switchboard-teams.ts`
-  - `apps/switchboard/src/switchboard-inboxes.ts`
-  - `apps/switchboard/src/switchboard-contacts.ts`
-  - `apps/switchboard/src/switchboard-conversations.ts`
-  - `apps/switchboard/src/switchboard-messages.ts`
-  - `apps/switchboard/src/switchboard-assignments.ts`
-  - `apps/switchboard/src/switchboard-notes.ts`
-  - `apps/switchboard/src/switchboard-labels.ts`
-  - `apps/switchboard/src/switchboard-canned-responses.ts`
-  - `apps/switchboard/src/switchboard-macros.ts`
-  - `apps/switchboard/src/switchboard-automation.ts`
-  - `apps/switchboard/src/switchboard-reports.ts`
-  - `apps/switchboard/src/switchboard-realtime.ts`
-  - `apps/switchboard/src/switchboard-api-routes.ts`
+  - `apps/switchboard/src/switchboard-channels.ts`
+  - `apps/switchboard/src/switchboard-channel-adapters.ts`
+  - `apps/switchboard/src/switchboard-webhooks.ts`
 - Files to modify:
   - `apps/switchboard/src/index.ts`
-  - `apps/switchboard/src/switchboard-constants.ts` only if the Step 5.3 automation action names need to be reconciled with the frozen automation contract (`send-reply` rather than a generic send-message action).
 - Implementation expectations:
-  - Prefer thin wrappers around the scaffold factories in `switchboard-domain.ts` where the contract only needs resource creation.
-  - `switchboard-conversations.ts` should re-export `SWITCHBOARD_CONVERSATION_STATUSES`, provide `createConversation`, `transitionConversationStatus`, and `reopenConversation`, and throw for statuses outside the frozen set.
-  - `switchboard-messages.ts` should support threaded messages by preserving `parentMessageId`, author identity, direction, type, body, and timestamps.
-  - `switchboard-assignments.ts` should implement `assignConversation` and `reassignConversation`, preserving `assignedBy`, setting `assigned` for first assignment, `transferred` for reassignment, and refreshing `assignedAt`.
-  - `switchboard-notes.ts` should expose `createPrivateNote` with mention preservation.
-  - `switchboard-canned-responses.ts` should render `{{contact.*}}`, `{{operator.*}}`, and `{{conversation.*}}` placeholders from nested context values.
-  - `switchboard-macros.ts` should preserve ordered action execution and return applied action metadata for conversation/actor scope.
-  - `switchboard-automation.ts` should freeze `SWITCHBOARD_AUTOMATION_TRIGGERS` and `SWITCHBOARD_AUTOMATION_ACTIONS`, support optional SLA metadata, and evaluate simple equality conditions against nested event context.
-  - `switchboard-reports.ts` should return report summaries with `generatedAt` and preserve inbox, SLA, reassignment, and resolution metrics.
-  - `switchboard-realtime.ts` should re-export `SWITCHBOARD_REALTIME_TOPICS` and create realtime events with `eventId`, `accountId`, optional `inboxId`, topic, payload, and `occurredAt`.
-  - `switchboard-api-routes.ts` should define 16 route entries for accounts, users, inboxes, channels, contacts, conversations, messages, assignments, teams, notes, labels, canned-responses, macros, automation-rules, reports, and webhooks. Each entry needs `resource`, `/api/switchboard/...` path, methods, `requiresAuth`, and `seedable`; conversation/message routes need lifecycle actions, and webhooks need public event coverage.
+  - `switchboard-channels.ts` should provide `createWebsiteLiveChatChannel`, `createApiChannel`, and `createEmailChannel` with stable IDs, account/inbox scope, and channel-specific metadata. Website chat preserves `widgetId` and `allowedOrigins`; API channels return a `tokenRef`; email channels preserve `address` and `threadingMode`.
+  - `switchboard-channels.ts` should also provide `normalizeApiChannelIngest`, returning a core contact, conversation, inbound message, and `idempotencyKey` from an API payload. Use the existing core factories from `switchboard-domain.ts` or the Step 5.3 wrapper modules rather than duplicating unrelated behavior.
+  - `normalizeEmailThread` should return a contact keyed by sender email, a conversation with the email subject, and an inbound message carrying metadata with `messageId` and `references`.
+  - `switchboard-channel-adapters.ts` should expose `createSwitchboardChannelAdapterRegistry()` with `supportedTypes` exactly matching `["whatsapp", "facebook", "instagram", "telegram", "line", "sms", "tiktok", "x-twitter", "voice"]`.
+  - Each adapter returned by `registry.getAdapter(type)` should implement `normalizeInboundEvent(input)` and produce `{ channelType, contact, conversation, message }`, preserving external contact identity, display name, inbox scope, message body, inbound direction, and event timestamp when provided.
+  - `switchboard-webhooks.ts` should expose `createSwitchboardWebhookEvent({ accountId, event, payload })`, returning `webhookEventId`, `accountId`, `event`, `payload`, and `createdAt`.
+  - Update the Switchboard barrel to re-export all three channel modules.

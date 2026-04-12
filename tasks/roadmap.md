@@ -196,6 +196,8 @@ Goal: deliver the second owned parity product, `Switchboard`, as the Chatwoot-pa
 
 ### Milestone
 
+- [x] Phase 5 milestone completed on 2026-04-12.
+
 Acceptance criteria:
 
 - The frozen `Switchboard` feature matrix passes.

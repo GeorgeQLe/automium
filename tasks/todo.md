@@ -1,6 +1,6 @@
-# Current Phase: Switchboard
+# Current Phase: Foundry
 
-This file tracks the active work for Phase 5 from [tasks/roadmap.md](/home/georgeqle/projects/tools/dev/automium/tasks/roadmap.md). Prior phases are archived in [tasks/phases/](/home/georgeqle/projects/tools/dev/automium/tasks/phases/).
+This file tracks the active work for Phase 6 from [tasks/roadmap.md](/home/georgeqle/projects/tools/dev/automium/tasks/roadmap.md). Prior phases are archived in [tasks/phases/](/home/georgeqle/projects/tools/dev/automium/tasks/phases/).
 
 ## Current Status
 
@@ -8,79 +8,75 @@ This file tracks the active work for Phase 5 from [tasks/roadmap.md](/home/georg
 - Phase 2 frozen parity audit and benchmark target design is complete and archived in [tasks/phases/phase-2.md](/home/georgeqle/projects/tools/dev/automium/tasks/phases/phase-2.md).
 - Phase 3 shared multi-tenant product platform is complete and archived in [tasks/phases/phase-3.md](/home/georgeqle/projects/tools/dev/automium/tasks/phases/phase-3.md).
 - Phase 4 Altitude parity product is complete and archived in [tasks/phases/phase-4.md](/home/georgeqle/projects/tools/dev/automium/tasks/phases/phase-4.md).
-- Step 5.1 red-phase Switchboard contract tests are complete. The existing repository baseline remains green at 27 passing files / 99 passing tests, while the remaining Switchboard suites intentionally fail on missing Phase 5 implementation modules.
-- Step 5.2 Switchboard scaffold is complete. The focused domain contract is green at 1 passing file / 6 passing tests, and the existing repository baseline remains green at 27 passing files / 99 passing tests.
-- Step 5.3 Switchboard operational resource modules are complete. The implemented Switchboard scope is green at 4 passing files / 21 passing tests, and the existing Phase 1-4 baseline remains green at 27 passing files / 99 passing tests.
-- Step 5.4 Switchboard channel modules are complete. Native website/API/email channels, public channel adapter boundaries, and webhook event normalization are green with the implemented Switchboard scope at 5 passing files / 27 passing tests. The existing Phase 1-4 baseline remains green at 27 passing files / 99 passing tests. The Step 5.5 seed/benchmark suite remains intentionally red on missing modules for the next implementation step.
-- Step 5.5 Switchboard deterministic seed/reset hooks and benchmark route modules are complete. The Step 5.5 benchmark journey contract is green at 1 passing file / 6 passing tests, all Phase 5 Switchboard suites are green at 6 passing files / 33 passing tests, the existing Phase 1-4 baseline remains green at 27 passing files / 99 passing tests, full `pnpm test:run` is green at 33 passing files / 132 passing tests, and `pnpm exec tsc --noEmit` passes.
-- Step 5.6 Phase 5 green verification is complete. All Switchboard suites and the existing Phase 1-4 baseline remain green.
-- Next automated step: Phase 5 transition to Phase 6.
-- Known manual blockers: none for Phase 5.
+- Phase 5 Switchboard parity product is complete and archived in [tasks/phases/phase-5.md](/home/georgeqle/projects/tools/dev/automium/tasks/phases/phase-5.md).
+- The repository is green at 33 passing files / 132 passing tests after Phase 5.
+- Next automated step: Step 6.1.
+- Known manual blockers: none for Phase 6.
 
-## Phase 5: Switchboard
+## Phase 6: Foundry
 
-Goal: deliver the second owned parity product, `Switchboard`, as the Chatwoot-parity support workspace and realtime messaging benchmark surface.
+Goal: deliver the third owned parity product, `Foundry`, as the Appsmith-parity internal app builder and the most complex benchmark target.
 
 > Test strategy: tdd
 
 ### Tests First
 
-- [x] Step 5.1: **Automated** Write failing API, adapter, and UI workflow tests in `apps/switchboard/tests/`, `packages/adapters/tests/switchboard/`, and `tests/integration/switchboard/` for inboxes, channels, contacts, conversations, assignments, notes, canned responses, macros, automation, and reporting.
-  - Files: create `apps/switchboard/tests/switchboard-domain.contract.test.ts`, `apps/switchboard/tests/switchboard-api.contract.test.ts`, `apps/switchboard/tests/switchboard-conversations.contract.test.ts`, `apps/switchboard/tests/switchboard-automation.contract.test.ts`, `apps/switchboard/tests/switchboard-channels.contract.test.ts`, `tests/integration/switchboard/switchboard-benchmark-journeys.contract.test.ts`
-  - Tests cover: account/user/inbox/channel/contact/conversation/message/team/assignment/note/label/canned-response/macro/automation/report domain shapes, API route manifest completeness, core channel contracts for website live chat/API/email, adapter-ready public channel boundaries, realtime conversation and assignment events, automation and macro execution contracts, reporting summaries, deterministic seed/reset hooks, and benchmark route definitions
+- [ ] Step 6.1: **Automated** Write failing editor, runtime, datasource, and publish-flow tests in `apps/foundry/tests/`, `packages/adapters/tests/foundry/`, and `tests/integration/foundry/` for apps, pages, widgets, datasources, queries, JavaScript logic, bindings, branching, deployment, and permissions.
+  - Files: create `apps/foundry/tests/foundry-domain.contract.test.ts`, `apps/foundry/tests/foundry-api.contract.test.ts`, `apps/foundry/tests/foundry-builder.contract.test.ts`, `apps/foundry/tests/foundry-runtime.contract.test.ts`, `apps/foundry/tests/foundry-datasources.contract.test.ts`, `apps/foundry/tests/foundry-collaboration.contract.test.ts`, `tests/integration/foundry/foundry-benchmark-journeys.contract.test.ts`
+  - Tests cover: workspace/application/page/widget/datasource/query/JavaScript object/binding/theme/environment/branch/deployment/permission domain shapes, API route manifest completeness, drag-and-drop canvas and widget layout contracts, editor/runtime split, datasource adapters for Postgres-compatible SQL, MySQL-compatible SQL, and REST APIs, query execution and bindings, custom widget registration, branch/version collaboration, publish/share/runtime metadata, deterministic seed/reset hooks, and benchmark route definitions.
+  - Expected red state: new Foundry suites fail on missing Phase 6 implementation modules while the existing Phase 1-5 baseline remains green.
 
 ### Implementation
 
-- [x] Step 5.2: **Automated** Scaffold `apps/switchboard/` and any supporting channel, messaging, and automation modules needed for the support workspace surface.
-  - Files: create `apps/switchboard/package.json`, `apps/switchboard/tsconfig.json`, `apps/switchboard/src/switchboard-constants.ts`, `apps/switchboard/src/switchboard-domain.ts`, `apps/switchboard/src/index.ts`
-  - Constants include: conversation statuses, priorities, channel types, message directions/types, assignment statuses, automation trigger/action types, report metrics, realtime topics, webhook events
-  - Domain interfaces include: Account, User, Team, Inbox, ChannelConfig, Contact, Conversation, Message, Assignment, Note, Label, CannedResponse, Macro, AutomationRule, ReportSummary, SwitchboardRealtimeEvent, SwitchboardApiRoute, SwitchboardBenchmarkRoute
-- [x] Step 5.3: **Automated** Implement accounts, inboxes, contacts, conversations, threaded messages, teams, assignments, labels, notes, canned responses, macros, automation rules, reporting, realtime events, and major-resource APIs for `Switchboard`.
-  - Files: create `apps/switchboard/src/switchboard-accounts.ts`, `apps/switchboard/src/switchboard-users.ts`, `apps/switchboard/src/switchboard-teams.ts`, `apps/switchboard/src/switchboard-inboxes.ts`, `apps/switchboard/src/switchboard-contacts.ts`, `apps/switchboard/src/switchboard-conversations.ts`, `apps/switchboard/src/switchboard-messages.ts`, `apps/switchboard/src/switchboard-assignments.ts`, `apps/switchboard/src/switchboard-notes.ts`, `apps/switchboard/src/switchboard-labels.ts`, `apps/switchboard/src/switchboard-canned-responses.ts`, `apps/switchboard/src/switchboard-macros.ts`, `apps/switchboard/src/switchboard-automation.ts`, `apps/switchboard/src/switchboard-reports.ts`, `apps/switchboard/src/switchboard-realtime.ts`, `apps/switchboard/src/switchboard-api-routes.ts`
-  - Files: modify `apps/switchboard/src/index.ts` to re-export all modules
-- [x] Step 5.4: **Automated** Implement production-grade support for website live chat, API channel, and email, plus adapter-backed operator flows for the remaining public channel categories.
-  - Files: create `apps/switchboard/src/switchboard-channels.ts`, `apps/switchboard/src/switchboard-channel-adapters.ts`, `apps/switchboard/src/switchboard-webhooks.ts`
-  - Native channel factories cover website live chat session metadata, API channel ingest payloads, and email threading metadata
-  - Adapter contracts cover WhatsApp, Facebook, Instagram, Telegram, LINE, SMS, TikTok, X/Twitter, and voice/phone event normalization into contacts, conversations, and messages
-  - Files: modify `apps/switchboard/src/index.ts` to re-export channel modules
-- [x] Step 5.5: **Automated** Add deterministic seeds, reset hooks, and benchmark-friendly routes for the `Switchboard` benchmark-critical journeys.
-  - Files: create `apps/switchboard/src/switchboard-seed.ts`, `apps/switchboard/src/switchboard-benchmark-routes.ts`
-  - Seed covers one account, operators, supervisor, teams, core channels, inbox defaults, contacts, conversation starters, message payloads, labels, SLA metadata, triage states, collaborator identities, canned responses, macros, automation rules, open and historical conversations, and reporting snapshot
-  - Routes cover inbox administration, conversation list, active conversation, notes/collaboration, operator shortcuts, automation rules, and reporting URLs
-  - Files: modify `apps/switchboard/src/index.ts` to re-export seed and route modules
+- [ ] Step 6.2: **Automated** Scaffold `apps/foundry/` with frozen constants, the product domain model, package metadata, and barrel exports following the shared-platform and owned-product package pattern.
+  - Files: create `apps/foundry/package.json`, `apps/foundry/tsconfig.json`, `apps/foundry/src/foundry-constants.ts`, `apps/foundry/src/foundry-domain.ts`, `apps/foundry/src/index.ts`
+  - Constants include: workspace roles, application states, page types, widget families, datasource types, query runtimes, binding scopes, branch statuses, deployment statuses, permission actions, realtime topics, and benchmark route categories.
+  - Domain interfaces include: Workspace, FoundryUser, Application, Page, Widget, WidgetBinding, Datasource, Query, JavaScriptObject, Theme, Environment, Branch, Deployment, PermissionGrant, CustomWidgetPackage, FoundryRealtimeEvent, FoundryApiRoute, FoundryBenchmarkRoute.
+- [ ] Step 6.3: **Automated** Implement organizations or workspaces, applications, pages, editor/runtime split, visual canvas, widget system, datasources, queries, JavaScript logic units, bindings, themes, environments, permissions, and major-resource APIs for `Foundry`.
+  - Files: create `apps/foundry/src/foundry-workspaces.ts`, `apps/foundry/src/foundry-users.ts`, `apps/foundry/src/foundry-applications.ts`, `apps/foundry/src/foundry-pages.ts`, `apps/foundry/src/foundry-widgets.ts`, `apps/foundry/src/foundry-canvas.ts`, `apps/foundry/src/foundry-datasources.ts`, `apps/foundry/src/foundry-queries.ts`, `apps/foundry/src/foundry-javascript.ts`, `apps/foundry/src/foundry-bindings.ts`, `apps/foundry/src/foundry-themes.ts`, `apps/foundry/src/foundry-environments.ts`, `apps/foundry/src/foundry-permissions.ts`, `apps/foundry/src/foundry-api-routes.ts`, `apps/foundry/src/foundry-realtime.ts`
+  - Files: modify `apps/foundry/src/index.ts` to re-export all modules.
+- [ ] Step 6.4: **Automated** Implement versioning, branching, deployment, publish/share flows, custom-widget hooks, and production-grade datasource support for Postgres-compatible SQL, MySQL-compatible SQL, and REST APIs.
+  - Files: create `apps/foundry/src/foundry-branches.ts`, `apps/foundry/src/foundry-deployments.ts`, `apps/foundry/src/foundry-publishing.ts`, `apps/foundry/src/foundry-runtime.ts`, `apps/foundry/src/foundry-custom-widgets.ts`, `apps/foundry/src/foundry-datasource-adapters.ts`
+  - Adapter contracts cover schema introspection, parameterized query execution, REST request configuration, auth metadata, result normalization, custom widget packaging, and runtime loading metadata.
+  - Files: modify `apps/foundry/src/index.ts` to re-export branch, deployment, runtime, custom-widget, and adapter modules.
+- [ ] Step 6.5: **Automated** Add deterministic seeds, reset hooks, and benchmark-friendly routes for the `Foundry` builder and runtime benchmark-critical journeys.
+  - Files: create `apps/foundry/src/foundry-seed.ts`, `apps/foundry/src/foundry-benchmark-routes.ts`
+  - Seed covers one workspace, deterministic editors/viewers/runtime consumers, starter app shell, page graph, datasource credentials, mock endpoint metadata, schema metadata, query templates, action permissions, sample bindings, layout regions, widget defaults, CRUD table/form fixtures, JavaScript object templates, event handlers, custom widget package/registry entry, branch metadata, deployment metadata, and a published runtime snapshot.
+  - Routes cover builder home, datasource configuration, query editor, page builder, CRUD workspace, logic editor, custom widget management, branch/publish, and published runtime URLs.
+  - Files: modify `apps/foundry/src/index.ts` to re-export seed and route modules.
 
 ### Green
 
-- [x] Step 5.6: **Automated** Make the `Switchboard` suites pass and verify that owned conversation-routing benchmarks run end to end with realtime updates and stable fixtures.
+- [ ] Step 6.6: **Automated** Make the `Foundry` suites pass and verify that builder, publish, and runtime journeys run end to end against deterministic fixtures.
 
 ### Milestone
 
 Acceptance criteria:
 
-- The frozen `Switchboard` feature matrix passes.
-- Major-resource API compatibility tests pass for `Switchboard`.
-- Realtime conversation, assignment, notes, and inbox-routing behavior works under shared platform constraints.
-- Core channel support works end to end for website live chat, API, and email.
-- All Phase 5 tests pass.
-- No regressions occur in Phases 1-4 suites.
+- The frozen `Foundry` feature matrix passes.
+- Major-resource API compatibility tests pass for `Foundry`.
+- Builder/runtime workflows, publish flows, and branch-aware collaboration behave consistently under shared platform constraints.
+- Core datasource and widget workflows work end to end against deterministic fixtures.
+- All Phase 6 tests pass.
+- No regressions occur in Phases 1-5 suites.
 
 ## Next Step Plan
 
-Step 5.6 is the Phase 5 green sweep. The implementation modules now exist, so this step should verify the full Switchboard surface end to end and make any final fixes needed for owned conversation-routing benchmarks, realtime updates, and stable fixtures.
+Step 6.1 is the Phase 6 red phase. It should create contract tests first, then run them to confirm they fail only because the Foundry implementation modules do not exist yet.
 
 - Commands to run:
-  - `pnpm exec vitest run apps/switchboard/tests/switchboard-domain.contract.test.ts apps/switchboard/tests/switchboard-api.contract.test.ts apps/switchboard/tests/switchboard-conversations.contract.test.ts apps/switchboard/tests/switchboard-automation.contract.test.ts apps/switchboard/tests/switchboard-channels.contract.test.ts tests/integration/switchboard/switchboard-benchmark-journeys.contract.test.ts`
-  - `pnpm exec vitest run packages apps/admin-console apps/altitude tests/integration/altitude tests/planning`
-  - If both targeted commands pass, run `pnpm test:run` as the final Phase 5 all-repo verification.
-- Files likely to inspect or modify if failures appear:
-  - `apps/switchboard/src/switchboard-domain.ts`
-  - `apps/switchboard/src/switchboard-realtime.ts`
-  - `apps/switchboard/src/switchboard-assignments.ts`
-  - `apps/switchboard/src/switchboard-channels.ts`
-  - `apps/switchboard/src/switchboard-seed.ts`
-  - `apps/switchboard/src/switchboard-benchmark-routes.ts`
+  - `pnpm exec vitest run apps/foundry/tests/foundry-domain.contract.test.ts apps/foundry/tests/foundry-api.contract.test.ts apps/foundry/tests/foundry-builder.contract.test.ts apps/foundry/tests/foundry-runtime.contract.test.ts apps/foundry/tests/foundry-datasources.contract.test.ts apps/foundry/tests/foundry-collaboration.contract.test.ts tests/integration/foundry/foundry-benchmark-journeys.contract.test.ts`
+  - `pnpm exec vitest run packages apps/admin-console apps/altitude apps/switchboard tests/integration/altitude tests/integration/switchboard tests/planning`
+- Files to create:
+  - `apps/foundry/tests/foundry-domain.contract.test.ts`
+  - `apps/foundry/tests/foundry-api.contract.test.ts`
+  - `apps/foundry/tests/foundry-builder.contract.test.ts`
+  - `apps/foundry/tests/foundry-runtime.contract.test.ts`
+  - `apps/foundry/tests/foundry-datasources.contract.test.ts`
+  - `apps/foundry/tests/foundry-collaboration.contract.test.ts`
+  - `tests/integration/foundry/foundry-benchmark-journeys.contract.test.ts`
 - Implementation expectations:
-  - Treat this as verification/fix work, not broad feature expansion.
-  - Confirm all Phase 5 acceptance criteria are satisfied: frozen feature matrix, API compatibility, realtime conversation/assignment/notes/inbox-routing behavior, website/API/email core channels, seed/reset/route coverage, and no Phase 1-4 regressions.
-  - Inspect validation output even on zero exit codes and record any warnings. Fix unexpected failures before marking Step 5.6 complete.
-  - If `pnpm test:run` passes without warnings, mark Step 5.6 complete and prepare the Phase 5 archive/transition workflow.
+  - Follow the red-phase pattern from Altitude Step 4.1 and Switchboard Step 5.1: test imports should clearly name the expected future modules and throw helpful missing-module errors.
+  - Keep tests grounded in `docs/parity/foundry-feature-matrix.md`, `docs/parity/foundry-api-matrix.md`, `tests/fixtures/foundry-seed-reset-plan.md`, and `docs/benchmarks/owned-products.md`.
+  - Do not create implementation modules in Step 6.1.
+  - Mark Step 6.1 complete only after the new Foundry suites fail for expected missing-module reasons and the existing Phase 1-5 baseline remains green.

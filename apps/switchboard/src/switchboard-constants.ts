@@ -48,10 +48,9 @@ export type SwitchboardAssignmentStatus =
 
 export const SWITCHBOARD_AUTOMATION_TRIGGER_TYPES = [
   "conversation-created",
-  "conversation-updated",
   "message-created",
   "assignment-changed",
-  "conversation-resolved",
+  "sla-breached",
 ] as const;
 export type SwitchboardAutomationTriggerType =
   (typeof SWITCHBOARD_AUTOMATION_TRIGGER_TYPES)[number];
@@ -60,9 +59,8 @@ export const SWITCHBOARD_AUTOMATION_ACTION_TYPES = [
   "assign-team",
   "assign-user",
   "add-label",
-  "send-message",
   "set-priority",
-  "change-status",
+  "send-reply",
   "send-webhook",
 ] as const;
 export type SwitchboardAutomationActionType =

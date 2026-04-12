@@ -13,7 +13,8 @@ This file tracks the active work for Phase 5 from [tasks/roadmap.md](/home/georg
 - Step 5.3 Switchboard operational resource modules are complete. The implemented Switchboard scope is green at 4 passing files / 21 passing tests, and the existing Phase 1-4 baseline remains green at 27 passing files / 99 passing tests.
 - Step 5.4 Switchboard channel modules are complete. Native website/API/email channels, public channel adapter boundaries, and webhook event normalization are green with the implemented Switchboard scope at 5 passing files / 27 passing tests. The existing Phase 1-4 baseline remains green at 27 passing files / 99 passing tests. The Step 5.5 seed/benchmark suite remains intentionally red on missing modules for the next implementation step.
 - Step 5.5 Switchboard deterministic seed/reset hooks and benchmark route modules are complete. The Step 5.5 benchmark journey contract is green at 1 passing file / 6 passing tests, all Phase 5 Switchboard suites are green at 6 passing files / 33 passing tests, the existing Phase 1-4 baseline remains green at 27 passing files / 99 passing tests, full `pnpm test:run` is green at 33 passing files / 132 passing tests, and `pnpm exec tsc --noEmit` passes.
-- Next automated step: Step 5.6.
+- Step 5.6 Phase 5 green verification is complete. All Switchboard suites and the existing Phase 1-4 baseline remain green.
+- Next automated step: Phase 5 transition to Phase 6.
 - Known manual blockers: none for Phase 5.
 
 ## Phase 5: Switchboard
@@ -50,7 +51,7 @@ Goal: deliver the second owned parity product, `Switchboard`, as the Chatwoot-pa
 
 ### Green
 
-- [ ] Step 5.6: **Automated** Make the `Switchboard` suites pass and verify that owned conversation-routing benchmarks run end to end with realtime updates and stable fixtures.
+- [x] Step 5.6: **Automated** Make the `Switchboard` suites pass and verify that owned conversation-routing benchmarks run end to end with realtime updates and stable fixtures.
 
 ### Milestone
 

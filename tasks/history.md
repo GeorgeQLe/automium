@@ -87,3 +87,6 @@
 - Confirmed full `pnpm test:run` passes at 33 passing files / 132 passing tests.
 - Confirmed `pnpm exec tsc --noEmit` passes with no warnings after the type-only cleanup.
 - Prepared Step 5.6 in `tasks/todo.md` for the Phase 5 green verification sweep.
+- Completed Step 5.6 by re-running the focused Switchboard verification suite at 6 passing files / 33 passing tests, confirming conversation-routing benchmarks, realtime updates, channel contracts, automation, API routes, and deterministic fixtures remain green.
+- Re-ran the Phase 1-4 baseline with `pnpm exec vitest run packages apps/admin-console apps/altitude tests/integration/altitude tests/planning`; it remains green at 27 passing files / 99 passing tests.
+- Confirmed full `pnpm test:run` passes at 33 passing files / 132 passing tests with no warnings.

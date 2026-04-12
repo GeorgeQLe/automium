@@ -19,3 +19,5 @@ export * from "./switchboard-api-routes";
 export * from "./switchboard-channels";
 export * from "./switchboard-channel-adapters";
 export * from "./switchboard-webhooks";
+export * from "./switchboard-benchmark-routes";
+export * from "./switchboard-seed";

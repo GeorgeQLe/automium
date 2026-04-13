@@ -144,3 +144,8 @@
 - Re-ran the Phase 1-6 baseline with the explicit regression command and confirmed it remains green at 40 files / 169 tests.
 - Fixed the Foundry datasource adapter registry typing with overloads so whole-workspace `pnpm exec tsc --noEmit` passes; confirmed the affected Foundry datasource contract stays green at 1 file / 5 tests.
 - Prepared Step 7.3 in `tasks/todo.md` for implementing the control plane, journey compiler, planner abstraction, policies, orchestrator submission boundaries, and benchmark-runner comparison flows.
+- Completed Step 7.3 by implementing deterministic control-plane journey validation/compilation, queued run submission modeling, natural-language journey validation/compilation, owned-domain and run policy checks, and cross-planner benchmark comparison reporting against the owned benchmark corpus.
+- Confirmed the focused Step 7.3 slice passes with `pnpm exec vitest run apps/control-plane/tests packages/journey-compiler/tests packages/policies/tests tests/e2e/alpha` at 4 files / 9 tests.
+- Re-ran the full Phase 7 suite and confirmed it is expected-red at 11 files / 23 tests with 9 passing tests and 14 remaining placeholder failures isolated to Step 7.4 browser/runtime/executor, Step 7.5 replay/artifacts/vision/context, and Step 7.6 worker orchestration behavior.
+- Confirmed the Phase 1-6 baseline remains green at 40 files / 169 tests and whole-workspace `pnpm exec tsc --noEmit` passes with no warnings.
+- Prepared Step 7.4 in `tasks/todo.md` for the browser engine kernel, semantic runtime, deterministic executor, assertions, and bounded recovery implementation.

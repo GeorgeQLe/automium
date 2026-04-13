@@ -10,10 +10,11 @@ This file tracks the active work for Phase 7 from [tasks/roadmap.md](/home/georg
 - Phase 4 Altitude parity product is complete and archived in [tasks/phases/phase-4.md](/home/georgeqle/projects/tools/dev/automium/tasks/phases/phase-4.md).
 - Phase 5 Switchboard parity product is complete and archived in [tasks/phases/phase-5.md](/home/georgeqle/projects/tools/dev/automium/tasks/phases/phase-5.md).
 - Phase 6 Foundry parity product is complete and archived in [tasks/phases/phase-6.md](/home/georgeqle/projects/tools/dev/automium/tasks/phases/phase-6.md).
-- The Phase 7 scaffold is established: `pnpm exec vitest run apps/control-plane/tests apps/replay-console/tests packages/engine/tests packages/runtime/tests packages/executor/tests packages/artifacts/tests packages/orchestrator/tests packages/journey-compiler/tests packages/vision/tests packages/policies/tests tests/e2e/alpha` runs 11 files / 23 tests with 21 expected failures on explicit not-yet-implemented behavior and 2 passing scaffold/corpus guards.
+- Step 7.3 is complete: control-plane journey validation/compilation, natural-language journey compilation, owned-domain policy checks, run submission modeling, and benchmark comparison reports now pass their focused suites.
+- The Phase 7 suite now runs 11 files / 23 tests with 9 passing tests and 14 expected failures isolated to later Step 7.4, 7.5, and 7.6 placeholders.
 - The Phase 1-6 baseline remains green: `pnpm exec vitest run packages/contracts/tests packages/benchmark/tests packages/realtime/tests packages/jobs/tests packages/auth/tests packages/tenancy/tests packages/rbac/tests packages/search/tests packages/files/tests packages/audit/tests apps/admin-console/tests apps/altitude/tests apps/switchboard/tests apps/foundry/tests tests/integration/altitude tests/integration/switchboard tests/integration/foundry tests/planning` passes at 40 files / 169 tests.
-- Workspace TypeScript now passes with `pnpm exec tsc --noEmit`; Step 7.2 also fixed a narrow Foundry datasource adapter registry type overload discovered during validation.
-- Next automated step: Step 7.3.
+- Workspace TypeScript passes with `pnpm exec tsc --noEmit`.
+- Next automated step: Step 7.4.
 - Known manual blockers: none for Phase 7.
 
 ## Phase 7: Agent Browser Runtime and Platform Integration
@@ -35,7 +36,7 @@ Goal: complete the original QA platform vision against owned products instead of
   - Files: create `apps/control-plane/package.json`, `apps/control-plane/tsconfig.json`, `apps/control-plane/src/index.ts`, `apps/replay-console/package.json`, `apps/replay-console/tsconfig.json`, `apps/replay-console/src/index.ts`
   - Files: create package metadata, `tsconfig.json`, source barrels, constants, and domain modules under `packages/engine/`, `packages/runtime/`, `packages/executor/`, `packages/assertions/`, `packages/event-stream/`, `packages/artifacts/`, `packages/context-manager/`, `packages/vision/`, `packages/orchestrator/`, `packages/worker/`, `packages/policies/`, `packages/journey-compiler/`, `packages/benchmark-runner/`, and any planner-adapter extensions needed under `packages/contracts/` or a dedicated `packages/planner-adapter/`.
   - Scaffold contracts should compile cleanly while leaving Step 7.3-7.6 behavior tests intentionally red until their modules are implemented.
-- [ ] Step 7.3: **Automated** Implement the control plane, shared execution domain model, planner abstraction, and benchmark-run submission flows aligned to the owned benchmark targets.
+- [x] Step 7.3: **Automated** Implement the control plane, shared execution domain model, planner abstraction, and benchmark-run submission flows aligned to the owned benchmark targets.
   - Files likely to change: `apps/control-plane/src/*`, `packages/journey-compiler/src/*`, `packages/orchestrator/src/*`, `packages/benchmark-runner/src/*`, `packages/policies/src/*`, `packages/contracts/src/*`
   - Behavior includes: journey definitions, compiled journey graphs, assertions, recovery rules, fixture/environment references, planner backend metadata, run submission, run status, artifact manifest references, owned-product corpus targeting, and cross-model benchmark request modeling.
 - [ ] Step 7.4: **Automated** Implement the browser engine kernel, semantic runtime, deterministic executor, assertions, and bounded recovery for the supported QA web subset exercised primarily against `Altitude`, `Switchboard`, `Foundry`, and any owned support fixtures.
@@ -65,36 +66,37 @@ Acceptance criteria:
 
 ## Review
 
-Step 7.2 created importable scaffold boundaries for the integrated QA platform apps and packages. The Phase 7 suite now fails on explicit not-yet-implemented behavior rather than missing files or package paths. A small Foundry adapter registry type fix was included because whole-workspace TypeScript validation exposed a pre-existing overload gap in the Phase 6 datasource helper.
+Step 7.3 replaced the control-plane, journey compiler, policy, and benchmark-runner placeholders with deterministic domain functions. The control plane now validates owned-corpus journey definitions, compiles them into v1 graph metadata, and creates queued run submissions with stable artifact and replay references. The journey compiler validates natural-language journeys against owned fixtures and emits a deterministic graph with assertions and bounded recovery. The policy package enforces the owned-domain allowlist and run submission checks. The benchmark runner now returns cross-planner comparison reports with repeatability, pass-rate, latency, token-spend, and recovery metrics over the owned corpus.
 
 - Validation:
-  - `pnpm exec vitest run apps/control-plane/tests apps/replay-console/tests packages/engine/tests packages/runtime/tests packages/executor/tests packages/artifacts/tests packages/orchestrator/tests packages/journey-compiler/tests packages/vision/tests packages/policies/tests tests/e2e/alpha` is expected red at 11 files / 23 tests, with 21 expected failures and 2 passing tests.
+  - `pnpm exec vitest run apps/control-plane/tests packages/journey-compiler/tests packages/policies/tests tests/e2e/alpha` passes at 4 files / 9 tests.
+  - `pnpm exec vitest run apps/control-plane/tests apps/replay-console/tests packages/engine/tests packages/runtime/tests packages/executor/tests packages/artifacts/tests packages/orchestrator/tests packages/journey-compiler/tests packages/vision/tests packages/policies/tests tests/e2e/alpha` is expected red at 11 files / 23 tests, with 9 passing tests and 14 expected failures in Step 7.4 browser/runtime/executor, Step 7.5 replay/artifacts/vision/context, and Step 7.6 worker orchestration placeholders.
   - `pnpm exec vitest run packages/contracts/tests packages/benchmark/tests packages/realtime/tests packages/jobs/tests packages/auth/tests packages/tenancy/tests packages/rbac/tests packages/search/tests packages/files/tests packages/audit/tests apps/admin-console/tests apps/altitude/tests apps/switchboard/tests apps/foundry/tests tests/integration/altitude tests/integration/switchboard tests/integration/foundry tests/planning` passes at 40 files / 169 tests.
   - `pnpm exec tsc --noEmit` passes.
-  - `pnpm exec vitest run apps/foundry/tests/foundry-datasources.contract.test.ts` passes at 1 file / 5 tests after the adapter typing fix.
 - Warnings: none emitted by the validation commands.
 
 ## Next Step Plan
 
-Step 7.3 should implement the control plane, shared execution domain model, planner abstraction, and benchmark-run submission flows aligned to the owned benchmark targets.
+Step 7.4 should implement the browser engine kernel, semantic runtime, deterministic executor, assertions, and bounded recovery for the supported QA web subset exercised against the owned products.
 
 - Commands to run:
+  - `pnpm exec vitest run packages/engine/tests packages/runtime/tests packages/executor/tests`
   - `pnpm exec vitest run apps/control-plane/tests apps/replay-console/tests packages/engine/tests packages/runtime/tests packages/executor/tests packages/artifacts/tests packages/orchestrator/tests packages/journey-compiler/tests packages/vision/tests packages/policies/tests tests/e2e/alpha`
   - `pnpm exec vitest run packages/contracts/tests packages/benchmark/tests packages/realtime/tests packages/jobs/tests packages/auth/tests packages/tenancy/tests packages/rbac/tests packages/search/tests packages/files/tests packages/audit/tests apps/admin-console/tests apps/altitude/tests apps/switchboard/tests apps/foundry/tests tests/integration/altitude tests/integration/switchboard tests/integration/foundry tests/planning`
   - `pnpm exec tsc --noEmit`
 - Files likely to modify:
-  - `apps/control-plane/src/control-plane-domain.ts`
-  - `packages/journey-compiler/src/journey-compiler-domain.ts`
-  - `packages/orchestrator/src/orchestrator-domain.ts`
-  - `packages/benchmark-runner/src/benchmark-runner-domain.ts`
-  - `packages/policies/src/policies-domain.ts`
-  - `packages/planner-adapter/src/planner-adapter-domain.ts`
-  - `packages/contracts/src/*` if the shared contract surface needs additive planner/run exports
+  - `packages/engine/src/engine-domain.ts`
+  - `packages/runtime/src/runtime-domain.ts`
+  - `packages/executor/src/executor-domain.ts`
+  - `packages/assertions/src/assertions-domain.ts`
+  - `packages/policies/src/policies-domain.ts` only if bounded recovery or unsupported-feature policy needs additive shared checks
   - `tasks/todo.md`
   - `tasks/history.md`
 - Implementation expectations:
-  - Replace the Step 7.3 placeholder throws in the control plane, journey compiler, benchmark runner, planner adapter, orchestrator run submission boundary, and policy package with deterministic pure functions.
-  - Keep browser engine, runtime, executor, artifacts, replay, targeted vision, worker execution, and context budgeting placeholders red unless a Step 7.3 flow needs a typed reference to them.
-  - Model journey definitions, compiled journey graphs, assertions, recovery rules, fixture/environment references, planner backend metadata, run submissions, run status, artifact manifest refs, owned-product corpus targeting, and cross-model benchmark request/report shapes.
-  - Re-run the Phase 7 suite and record which Step 7.3 tests turned green while Step 7.4-7.6 behavior remains intentionally red.
-  - Confirm the explicit Phase 1-6 baseline remains green after the scaffold lands.
+  - Replace the Step 7.4 placeholder throws in the engine, runtime, and executor packages with deterministic pure functions.
+  - Model browser document/session/frame/storage/network state and stable interactive element IDs with actionability scoring.
+  - Build semantic snapshots from engine state and compact runtime context within token and crop budgets.
+  - Compile the supported planner intent vocabulary into deterministic executor actions, including fail-fast unsupported outcomes.
+  - Add or wire assertion and bounded recovery helpers only where needed by the Step 7.4 contracts.
+  - Keep replay console, artifacts, targeted vision, context-manager, worker leases, and telemetry placeholders red for Steps 7.5-7.6 unless Step 7.4 requires typed references.
+  - Re-run the full Phase 7 suite and record that Step 7.4 tests turned green while Step 7.5-7.6 behavior remains intentionally red.

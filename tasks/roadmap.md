@@ -228,6 +228,8 @@ Goal: deliver the third owned parity product, `Foundry`, as the Appsmith-parity 
 
 ### Milestone
 
+- [x] Phase 6 milestone completed on 2026-04-13.
+
 Acceptance criteria:
 
 - The frozen `Foundry` feature matrix passes.

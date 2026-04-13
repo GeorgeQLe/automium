@@ -1,6 +1,6 @@
-# Current Phase: Foundry
+# Current Phase: Agent Browser Runtime and Platform Integration
 
-This file tracks the active work for Phase 6 from [tasks/roadmap.md](/home/georgeqle/projects/tools/dev/automium/tasks/roadmap.md). Prior phases are archived in [tasks/phases/](/home/georgeqle/projects/tools/dev/automium/tasks/phases/).
+This file tracks the active work for Phase 7 from [tasks/roadmap.md](/home/georgeqle/projects/tools/dev/automium/tasks/roadmap.md). Prior phases are archived in [tasks/phases/](/home/georgeqle/projects/tools/dev/automium/tasks/phases/).
 
 ## Current Status
 
@@ -9,82 +9,71 @@ This file tracks the active work for Phase 6 from [tasks/roadmap.md](/home/georg
 - Phase 3 shared multi-tenant product platform is complete and archived in [tasks/phases/phase-3.md](/home/georgeqle/projects/tools/dev/automium/tasks/phases/phase-3.md).
 - Phase 4 Altitude parity product is complete and archived in [tasks/phases/phase-4.md](/home/georgeqle/projects/tools/dev/automium/tasks/phases/phase-4.md).
 - Phase 5 Switchboard parity product is complete and archived in [tasks/phases/phase-5.md](/home/georgeqle/projects/tools/dev/automium/tasks/phases/phase-5.md).
-- The Phase 1-5 baseline remains green at 33 passing files / 132 passing tests.
-- The Step 6.2 Foundry domain/constants suite is green at 1 passing file / 5 passing tests.
-- The Step 6.3 Foundry API, builder/editor, datasource factory/query, permission, and realtime slices are green.
-- The Step 6.4 Foundry branch/version, deployment, publish/share/runtime, custom-widget, and datasource adapter slices are green.
-- The Step 6.5 Foundry deterministic seed/reset and benchmark route suite is green.
-- All Phase 6 Foundry contract suites are green at 6 passing files / 32 passing tests.
-- Next automated step: Step 6.6.
-- Known manual blockers: none for Phase 6.
+- Phase 6 Foundry parity product is complete and archived in [tasks/phases/phase-6.md](/home/georgeqle/projects/tools/dev/automium/tasks/phases/phase-6.md).
+- The Phase 1-6 baseline is green: full `pnpm test:run` passes at 40 files / 169 tests.
+- Next automated step: Step 7.1.
+- Known manual blockers: none for Phase 7.
 
-## Phase 6: Foundry
+## Phase 7: Agent Browser Runtime and Platform Integration
 
-Goal: deliver the third owned parity product, `Foundry`, as the Appsmith-parity internal app builder and the most complex benchmark target.
+Goal: complete the original QA platform vision against owned products instead of third-party benchmark dependencies.
 
 > Test strategy: tdd
 
 ### Tests First
 
-- [x] Step 6.1: **Automated** Write failing editor, runtime, datasource, and publish-flow tests in `apps/foundry/tests/`, `packages/adapters/tests/foundry/`, and `tests/integration/foundry/` for apps, pages, widgets, datasources, queries, JavaScript logic, bindings, branching, deployment, and permissions.
-  - Files: create `apps/foundry/tests/foundry-domain.contract.test.ts`, `apps/foundry/tests/foundry-api.contract.test.ts`, `apps/foundry/tests/foundry-builder.contract.test.ts`, `apps/foundry/tests/foundry-runtime.contract.test.ts`, `apps/foundry/tests/foundry-datasources.contract.test.ts`, `apps/foundry/tests/foundry-collaboration.contract.test.ts`, `tests/integration/foundry/foundry-benchmark-journeys.contract.test.ts`
-  - Tests cover: workspace/application/page/widget/datasource/query/JavaScript object/binding/theme/environment/branch/deployment/permission domain shapes, API route manifest completeness, drag-and-drop canvas and widget layout contracts, editor/runtime split, datasource adapters for Postgres-compatible SQL, MySQL-compatible SQL, and REST APIs, query execution and bindings, custom widget registration, branch/version collaboration, publish/share/runtime metadata, deterministic seed/reset hooks, and benchmark route definitions.
-  - Expected red state: new Foundry suites fail on missing Phase 6 implementation modules while the existing Phase 1-5 baseline remains green.
+- [ ] Step 7.1: **Automated** Write failing control-plane, engine, runtime, replay, worker, benchmark-runner, and alpha tests in `apps/control-plane/tests/`, `apps/replay-console/tests/`, `packages/engine/tests/`, `packages/runtime/tests/`, `packages/executor/tests/`, `packages/artifacts/tests/`, `packages/orchestrator/tests/`, and `tests/e2e/alpha/` against the owned product corpus.
+  - Files: create `apps/control-plane/tests/control-plane.contract.test.ts`, `apps/replay-console/tests/replay-console.contract.test.ts`, `packages/engine/tests/engine-runtime.contract.test.ts`, `packages/runtime/tests/semantic-runtime.contract.test.ts`, `packages/executor/tests/deterministic-executor.contract.test.ts`, `packages/artifacts/tests/artifacts.contract.test.ts`, `packages/orchestrator/tests/orchestrator.contract.test.ts`, `packages/journey-compiler/tests/journey-compiler.contract.test.ts`, `packages/vision/tests/targeted-vision.contract.test.ts`, `packages/policies/tests/policies.contract.test.ts`, `tests/e2e/alpha/owned-products-alpha.contract.test.ts`
+  - Tests cover: journey authoring and compile contracts, job submission/status/artifact route manifests, engine document/session/frame/storage/network/semantic graph contracts, semantic snapshot generation and compaction, supported planner intent vocabulary, deterministic executor action compilation, assertion and recovery policy behavior, replay event stream and artifact bundle manifests, worker isolation/queueing/telemetry/quotas, targeted vision trigger and crop metadata, domain allowlist and authorized-use policies, benchmark runner comparison metrics, and alpha journeys across `Altitude`, `Switchboard`, and `Foundry`.
+  - Expected red state: new Phase 7 suites fail on missing integrated-platform modules while the existing Phase 1-6 baseline remains green.
 
 ### Implementation
 
-- [x] Step 6.2: **Automated** Scaffold `apps/foundry/` with frozen constants, the product domain model, package metadata, and barrel exports following the shared-platform and owned-product package pattern.
-  - Files: create `apps/foundry/package.json`, `apps/foundry/tsconfig.json`, `apps/foundry/src/foundry-constants.ts`, `apps/foundry/src/foundry-domain.ts`, `apps/foundry/src/index.ts`
-  - Constants include: workspace roles, application states, page types, widget families, datasource types, query runtimes, binding scopes, branch statuses, deployment statuses, permission actions, realtime topics, and benchmark route categories.
-  - Domain interfaces include: Workspace, FoundryUser, Application, Page, Widget, WidgetBinding, Datasource, Query, JavaScriptObject, Theme, Environment, Branch, Deployment, PermissionGrant, CustomWidgetPackage, FoundryRealtimeEvent, FoundryApiRoute, FoundryBenchmarkRoute.
-  - Validation: `pnpm exec vitest run apps/foundry/tests/foundry-domain.contract.test.ts` passes at 1 file / 5 tests; focused TypeScript check for the new `apps/foundry/src/*.ts` files passes; future Foundry suites remain red only on modules planned for Steps 6.3-6.5; Phase 1-5 baseline remains green at 33 files / 132 tests.
-- [x] Step 6.3: **Automated** Implement organizations or workspaces, applications, pages, editor/runtime split, visual canvas, widget system, datasources, queries, JavaScript logic units, bindings, themes, environments, permissions, and major-resource APIs for `Foundry`.
-  - Files: create `apps/foundry/src/foundry-workspaces.ts`, `apps/foundry/src/foundry-users.ts`, `apps/foundry/src/foundry-applications.ts`, `apps/foundry/src/foundry-pages.ts`, `apps/foundry/src/foundry-widgets.ts`, `apps/foundry/src/foundry-canvas.ts`, `apps/foundry/src/foundry-datasources.ts`, `apps/foundry/src/foundry-queries.ts`, `apps/foundry/src/foundry-javascript.ts`, `apps/foundry/src/foundry-bindings.ts`, `apps/foundry/src/foundry-themes.ts`, `apps/foundry/src/foundry-environments.ts`, `apps/foundry/src/foundry-permissions.ts`, `apps/foundry/src/foundry-api-routes.ts`, `apps/foundry/src/foundry-realtime.ts`
-  - Files: modify `apps/foundry/src/index.ts` to re-export all modules.
-  - Validation: focused strict TypeScript check for `apps/foundry/src/*.ts` passes; Step 6.3 slices of builder, datasource, and collaboration suites pass at 8 tests; `foundry-domain.contract.test.ts` passes at 1 file / 5 tests; full Foundry contract run is still red only on missing Step 6.4/6.5 modules at 5 failing files / 18 expected failures; Phase 1-5 baseline remains green at 33 files / 132 tests.
-- [x] Step 6.4: **Automated** Implement versioning, branching, deployment, publish/share flows, custom-widget hooks, and production-grade datasource support for Postgres-compatible SQL, MySQL-compatible SQL, and REST APIs.
-  - Files: create `apps/foundry/src/foundry-branches.ts`, `apps/foundry/src/foundry-deployments.ts`, `apps/foundry/src/foundry-publishing.ts`, `apps/foundry/src/foundry-runtime.ts`, `apps/foundry/src/foundry-custom-widgets.ts`, `apps/foundry/src/foundry-datasource-adapters.ts`
-  - Adapter contracts cover schema introspection, parameterized query execution, REST request configuration, auth metadata, result normalization, custom widget packaging, and runtime loading metadata.
-  - Files: modify `apps/foundry/src/index.ts` to re-export branch, deployment, runtime, custom-widget, and adapter modules.
-  - Validation: focused Step 6.4 slices pass at 5 files / 19 tests; focused strict TypeScript check for `apps/foundry/src/*.ts` passes; full Foundry contract run is still red only on Step 6.5 seed and benchmark-route modules at 5 passing files / 25 passing tests plus 1 expected failing file / 7 expected failures; Phase 1-5 baseline remains green at 33 files / 132 tests.
-- [x] Step 6.5: **Automated** Add deterministic seeds, reset hooks, and benchmark-friendly routes for the `Foundry` builder and runtime benchmark-critical journeys.
-  - Files: create `apps/foundry/src/foundry-seed.ts`, `apps/foundry/src/foundry-benchmark-routes.ts`
-  - Seed covers one workspace, deterministic editors/viewers/runtime consumers, starter app shell, page graph, datasource credentials, mock endpoint metadata, schema metadata, query templates, action permissions, sample bindings, layout regions, widget defaults, CRUD table/form fixtures, JavaScript object templates, event handlers, custom widget package/registry entry, branch metadata, deployment metadata, and a published runtime snapshot.
-  - Routes cover builder home, datasource configuration, query editor, page builder, CRUD workspace, logic editor, custom widget management, branch/publish, and published runtime URLs.
-  - Files: modify `apps/foundry/src/index.ts` to re-export seed and route modules.
-  - Validation: focused Foundry benchmark journey suite passes at 1 file / 7 tests; all Foundry contract suites pass at 6 files / 32 tests; focused strict TypeScript check for `apps/foundry/src/*.ts` passes; Phase 1-5 baseline remains green at 33 files / 132 tests.
+- [ ] Step 7.2: **Automated** Scaffold the control plane, replay console, planner-adapter, engine, runtime, executor, assertions, event-stream, artifacts, context-manager, vision, orchestrator, worker, policies, journey-compiler, and benchmark-runner packages and apps needed for the integrated QA platform.
+  - Files: create `apps/control-plane/package.json`, `apps/control-plane/tsconfig.json`, `apps/control-plane/src/index.ts`, `apps/replay-console/package.json`, `apps/replay-console/tsconfig.json`, `apps/replay-console/src/index.ts`
+  - Files: create package metadata, `tsconfig.json`, source barrels, constants, and domain modules under `packages/engine/`, `packages/runtime/`, `packages/executor/`, `packages/assertions/`, `packages/event-stream/`, `packages/artifacts/`, `packages/context-manager/`, `packages/vision/`, `packages/orchestrator/`, `packages/worker/`, `packages/policies/`, `packages/journey-compiler/`, `packages/benchmark-runner/`, and any planner-adapter extensions needed under `packages/contracts/` or a dedicated `packages/planner-adapter/`.
+  - Scaffold contracts should compile cleanly while leaving Step 7.3-7.6 behavior tests intentionally red until their modules are implemented.
+- [ ] Step 7.3: **Automated** Implement the control plane, shared execution domain model, planner abstraction, and benchmark-run submission flows aligned to the owned benchmark targets.
+  - Files likely to change: `apps/control-plane/src/*`, `packages/journey-compiler/src/*`, `packages/orchestrator/src/*`, `packages/benchmark-runner/src/*`, `packages/policies/src/*`, `packages/contracts/src/*`
+  - Behavior includes: journey definitions, compiled journey graphs, assertions, recovery rules, fixture/environment references, planner backend metadata, run submission, run status, artifact manifest references, owned-product corpus targeting, and cross-model benchmark request modeling.
+- [ ] Step 7.4: **Automated** Implement the browser engine kernel, semantic runtime, deterministic executor, assertions, and bounded recovery for the supported QA web subset exercised primarily against `Altitude`, `Switchboard`, `Foundry`, and any owned support fixtures.
+  - Files likely to change: `packages/engine/src/*`, `packages/runtime/src/*`, `packages/executor/src/*`, `packages/assertions/src/*`, `packages/policies/src/*`
+  - Behavior includes: document/session/frame/storage/network models, stable interactive element identity, semantic graph generation, actionability scoring, semantic snapshot truncation, supported planner-intent compilation, assertion evaluation, bounded retry/recovery, and unsupported-feature fail-fast outcomes.
+- [ ] Step 7.5: **Automated** Implement replay event streams, artifact packaging, replay/debug console surfaces, targeted vision fallback, and context budgeting across owned-product runs.
+  - Files likely to change: `apps/replay-console/src/*`, `packages/event-stream/src/*`, `packages/artifacts/src/*`, `packages/vision/src/*`, `packages/context-manager/src/*`, `packages/runtime/src/*`
+  - Behavior includes: replay event ordering, semantic snapshot references, targeted crop metadata, network/console/download artifact references, mutation and assertion traces, run summaries, context layers, token/crop caps, and replay-console timeline data.
+- [ ] Step 7.6: **Automated** Implement worker isolation, queueing, telemetry, quotas, policy enforcement, natural-language authoring, cross-model benchmark reporting, and alpha hardening for owned-product execution.
+  - Files likely to change: `packages/worker/src/*`, `packages/orchestrator/src/*`, `packages/benchmark-runner/src/*`, `packages/journey-compiler/src/*`, `packages/policies/src/*`, `apps/control-plane/src/*`, `tests/e2e/alpha/*`
+  - Behavior includes: isolated worker leases, queue priority and concurrency limits, tenant quotas, telemetry summaries, domain allowlists, artifact retention policy, natural-language journey validation/compilation, cross-model pass/repeatability/latency/token/recovery metrics, and alpha journeys over the owned product routes.
 
 ### Green
 
-- [ ] Step 6.6: **Automated** Make the `Foundry` suites pass and verify that builder, publish, and runtime journeys run end to end against deterministic fixtures.
+- [ ] Step 7.7: **Automated** Make the integrated platform suites pass and verify that the QA platform can compile, execute, replay, and benchmark journeys across all owned products without relying on third-party benchmark apps.
 
 ### Milestone
 
 Acceptance criteria:
 
-- The frozen `Foundry` feature matrix passes.
-- Major-resource API compatibility tests pass for `Foundry`.
-- Builder/runtime workflows, publish flows, and branch-aware collaboration behave consistently under shared platform constraints.
-- Core datasource and widget workflows work end to end against deterministic fixtures.
-- All Phase 6 tests pass.
-- No regressions occur in Phases 1-5 suites.
+- The QA platform can compile and execute benchmark journeys against all owned products.
+- Replay and artifact surfaces explain planner intent, executor action, state changes, retries, and verdicts for owned-product runs.
+- Worker isolation and policy controls hold under concurrent benchmark execution.
+- Cross-model benchmarking works against the owned product corpus with repeatability, latency, recovery, and spend reporting.
+- All Phase 7 tests pass.
+- No regressions occur in Phases 1-6 suites.
 
 ## Next Step Plan
 
-Step 6.6 is the Phase 6 green verification sweep. It should prove that all Foundry contracts, deterministic fixtures, builder workflows, publish/runtime flows, datasource workflows, and prior-phase suites remain green after the Step 6.5 seed/route implementation.
+Step 7.1 is the Phase 7 red phase. It should define the executable contract for the integrated QA platform before implementation begins.
 
 - Commands to run:
-  - `pnpm exec vitest run apps/foundry/tests/foundry-api.contract.test.ts apps/foundry/tests/foundry-builder.contract.test.ts apps/foundry/tests/foundry-runtime.contract.test.ts apps/foundry/tests/foundry-datasources.contract.test.ts apps/foundry/tests/foundry-collaboration.contract.test.ts tests/integration/foundry/foundry-benchmark-journeys.contract.test.ts`
-  - `pnpm exec vitest run packages apps/admin-console apps/altitude apps/switchboard tests/integration/altitude tests/integration/switchboard tests/planning`
-  - `pnpm exec tsc --noEmit --target ES2022 --module ESNext --moduleResolution Bundler --strict --esModuleInterop --skipLibCheck apps/foundry/src/*.ts`
+  - `pnpm exec vitest run apps/control-plane/tests apps/replay-console/tests packages/engine/tests packages/runtime/tests packages/executor/tests packages/artifacts/tests packages/orchestrator/tests packages/journey-compiler/tests packages/vision/tests packages/policies/tests tests/e2e/alpha`
+  - `pnpm exec vitest run packages apps/admin-console apps/altitude apps/switchboard apps/foundry tests/integration/altitude tests/integration/switchboard tests/integration/foundry tests/planning`
 - Files likely to modify:
+  - New test files listed in Step 7.1
   - `tasks/todo.md`
-  - `tasks/roadmap.md` if the Phase 6 milestone is satisfied
-  - `tasks/phases/phase-6.md` if the phase is archived
   - `tasks/history.md`
 - Implementation expectations:
-  - Do not add new product behavior unless a verification failure reveals a real defect.
-  - Inspect command output even on success and call out warnings if any appear.
-  - If all validation passes, mark Step 6.6 complete and evaluate the Phase 6 acceptance criteria.
-  - If the phase is complete, archive this file to `tasks/phases/phase-6.md`, mark the Phase 6 milestone in `tasks/roadmap.md`, and prepare `tasks/todo.md` for Phase 7 with just-in-time planning.
-  - Expected result: all Phase 6 Foundry suites pass, the Phase 1-5 regression baseline remains green, and Phase 6 can transition to Phase 7 if the acceptance criteria are satisfied.
+  - Create only tests and minimal empty barrels or package directories if Vitest import discovery requires the paths to exist.
+  - Keep the new tests red because Phase 7 implementation modules should not exist yet.
+  - Confirm the existing Phase 1-6 baseline remains green after adding the red tests.
+  - Update this file with the exact red/green counts and prepare Step 7.2 once the red phase is verified.

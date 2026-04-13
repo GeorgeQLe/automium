@@ -128,3 +128,9 @@
 - Confirmed the focused strict TypeScript check for `apps/foundry/src/*.ts` passes.
 - Re-ran the Phase 1-5 baseline with `pnpm exec vitest run packages apps/admin-console apps/altitude apps/switchboard tests/integration/altitude tests/integration/switchboard tests/planning`; it remains green at 33 passing files / 132 passing tests.
 - Prepared Step 6.6 in `tasks/todo.md` for the Phase 6 green verification sweep.
+- Completed Step 6.6 by re-running the focused Foundry verification suite at 6 passing files / 32 passing tests, confirming builder workflows, publish/runtime flows, datasource workflows, collaboration contracts, and deterministic benchmark fixtures remain green.
+- Re-ran the Phase 1-5 baseline with `pnpm exec vitest run packages apps/admin-console apps/altitude apps/switchboard tests/integration/altitude tests/integration/switchboard tests/planning`; it remains green at 33 passing files / 132 passing tests.
+- Confirmed the focused strict TypeScript check for `apps/foundry/src/*.ts` passes with no warnings.
+- Confirmed full `pnpm test:run` passes at 40 passing files / 169 passing tests with no warnings.
+- Phase 6 complete. All acceptance criteria met for the Foundry owned parity product: frozen feature-matrix coverage, major-resource API compatibility, branch-aware builder/runtime and publish workflows, deterministic datasource and widget workflows, all Phase 6 tests, and no Phase 1-5 regressions.
+- Archived the completed Phase 6 execution file under `tasks/phases/phase-6.md`, marked the Phase 6 milestone complete in `tasks/roadmap.md`, and regenerated `tasks/todo.md` around the Phase 7 Step 7.1 integrated-platform red-phase contract tests with file-level detail.

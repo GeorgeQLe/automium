@@ -48,18 +48,44 @@ export interface RuntimeContextCompaction {
   readonly pinnedInvariants: readonly string[];
 }
 
-function notImplemented<T>(operation: string): T {
-  throw new Error(`Step 7.4/7.5 not implemented: ${operation}`);
-}
+const ESTIMATED_SNAPSHOT_TOKENS = 600;
 
 export function buildSemanticSnapshot(
-  _input: SemanticSnapshotInput
+  input: SemanticSnapshotInput
 ): SemanticSnapshot {
-  return notImplemented("buildSemanticSnapshot");
+  return {
+    schemaVersion: SEMANTIC_RUNTIME_SCHEMA_VERSION,
+    url: input.url,
+    route: input.route,
+    taskContext: input.taskContext,
+    interactiveElements: input.elements
+      .filter((element) => element.visible)
+      .map((element) => ({ ...element })),
+    networkEvents: input.networkEvents.map((event) => ({ ...event }))
+  };
 }
 
 export function compactRuntimeContext(
-  _input: RuntimeContextCompactionInput
+  input: RuntimeContextCompactionInput
 ): RuntimeContextCompaction {
-  return notImplemented("compactRuntimeContext");
+  const maxByTokens =
+    input.tokenBudget <= 0
+      ? 0
+      : Math.max(1, Math.floor(input.tokenBudget / ESTIMATED_SNAPSHOT_TOKENS));
+  const maxByCrops = Math.max(0, input.cropBudget);
+  const retainedCount = Math.min(
+    input.snapshots.length,
+    maxByTokens,
+    maxByCrops
+  );
+  const retained = input.snapshots.slice(0, retainedCount);
+  const dropped = input.snapshots.slice(retainedCount);
+
+  return {
+    tokenBudget: input.tokenBudget,
+    cropBudget: input.cropBudget,
+    retainedSnapshotRefs: retained.map((snapshot) => snapshot.snapshotId),
+    droppedSnapshotRefs: dropped.map((snapshot) => snapshot.snapshotId),
+    pinnedInvariants: [...input.pinnedInvariants]
+  };
 }

@@ -149,3 +149,8 @@
 - Re-ran the full Phase 7 suite and confirmed it is expected-red at 11 files / 23 tests with 9 passing tests and 14 remaining placeholder failures isolated to Step 7.4 browser/runtime/executor, Step 7.5 replay/artifacts/vision/context, and Step 7.6 worker orchestration behavior.
 - Confirmed the Phase 1-6 baseline remains green at 40 files / 169 tests and whole-workspace `pnpm exec tsc --noEmit` passes with no warnings.
 - Prepared Step 7.4 in `tasks/todo.md` for the browser engine kernel, semantic runtime, deterministic executor, assertions, and bounded recovery implementation.
+- Completed Step 7.4 by replacing the browser engine, semantic runtime, and deterministic executor placeholders with pure functions for versioned browser state, stable interactive element IDs, actionability scoring, visible-element semantic snapshots, context compaction, supported planner-intent compilation, and fail-fast unsupported intent handling.
+- Confirmed the focused Step 7.4 slice passes with `pnpm exec vitest run packages/engine/tests packages/runtime/tests packages/executor/tests` at 3 files / 6 tests.
+- Re-ran the full Phase 7 suite and confirmed it is expected-red at 11 files / 23 tests with 15 passing tests and 8 remaining placeholder failures isolated to Step 7.5 replay/artifacts/vision behavior and Step 7.6 worker orchestration behavior.
+- Confirmed the Phase 1-6 baseline remains green at 40 files / 169 tests and whole-workspace `pnpm exec tsc --noEmit` passes with no warnings.
+- Prepared Step 7.5 in `tasks/todo.md` for replay timelines, artifact manifests, retention metadata, targeted vision fallback, and context/event helper integration.

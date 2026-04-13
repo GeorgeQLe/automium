@@ -53,18 +53,76 @@ export interface InteractiveElementDescriptor extends InteractiveElementInput {
   };
 }
 
-function notImplemented<T>(operation: string): T {
-  throw new Error(`Step 7.4 not implemented: ${operation}`);
+function stableHash(input: string): string {
+  let hash = 0x811c9dc5;
+
+  for (let index = 0; index < input.length; index += 1) {
+    hash ^= input.charCodeAt(index);
+    hash = Math.imul(hash, 0x01000193);
+  }
+
+  return (hash >>> 0).toString(36);
+}
+
+function normalizeIdentityPart(value: string): string {
+  return value
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "_")
+    .replace(/^_+|_+$/g, "");
+}
+
+function scoreActionability(input: InteractiveElementInput): number {
+  if (input.visible && input.enabled) {
+    return 1;
+  }
+
+  if (input.visible || input.enabled) {
+    return 0.5;
+  }
+
+  return 0;
 }
 
 export function createBrowserEngineState(
-  _input: BrowserEngineStateInput
+  input: BrowserEngineStateInput
 ): BrowserEngineState {
-  return notImplemented("createBrowserEngineState");
+  return {
+    schemaVersion: BROWSER_ENGINE_SCHEMA_VERSION,
+    sessionId: input.sessionId,
+    document: {
+      url: input.url
+    },
+    frames: input.frames.map((frame) => ({ ...frame })),
+    storage: {
+      cookies: [...input.storage.cookies],
+      localStorage: [...input.storage.localStorage]
+    },
+    network: {
+      requests: [...input.network.requests],
+      blockedDomains: [...input.network.blockedDomains]
+    }
+  };
 }
 
 export function describeInteractiveElement(
-  _input: InteractiveElementInput
+  input: InteractiveElementInput
 ): InteractiveElementDescriptor {
-  return notImplemented("describeInteractiveElement");
+  const labelPart = normalizeIdentityPart(input.label) || "unlabeled";
+  const identity = [
+    input.route,
+    input.frameId,
+    input.role,
+    input.label
+  ].join("|");
+
+  return {
+    ...input,
+    id: `elt_${labelPart}_${stableHash(identity)}`,
+    actionability: {
+      visible: input.visible,
+      enabled: input.enabled,
+      score: scoreActionability(input)
+    }
+  };
 }

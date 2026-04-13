@@ -34,10 +34,40 @@ export type ExecutorAction =
       readonly recoverable: false;
     };
 
-function notImplemented<T>(operation: string): T {
-  throw new Error(`Step 7.4 not implemented: ${operation}`);
+const executorActionByIntent: Record<SupportedExecutorIntent, string> = {
+  navigate: "navigate",
+  click: "click",
+  "type/fill": "fill",
+  select: "select",
+  upload: "upload",
+  "press-key": "press-key",
+  "wait-for-condition": "wait",
+  assert: "assert",
+  extract: "extract",
+  branch: "branch",
+  recover: "recover",
+  finish: "finish"
+};
+
+function isSupportedExecutorIntent(
+  intent: string
+): intent is SupportedExecutorIntent {
+  return SUPPORTED_EXECUTOR_INTENTS.includes(intent as SupportedExecutorIntent);
 }
 
-export function compilePlannerIntent(_intent: PlannerIntentInput): ExecutorAction {
-  return notImplemented("compilePlannerIntent");
+export function compilePlannerIntent(intent: PlannerIntentInput): ExecutorAction {
+  if (!isSupportedExecutorIntent(intent.intent)) {
+    return {
+      type: "unsupported",
+      reason: "unsupported-intent",
+      recoverable: false
+    };
+  }
+
+  return {
+    type: executorActionByIntent[intent.intent],
+    targetElementId: intent.targetElementId,
+    value: intent.value,
+    deterministic: true
+  };
 }

@@ -154,3 +154,8 @@
 - Re-ran the full Phase 7 suite and confirmed it is expected-red at 11 files / 23 tests with 15 passing tests and 8 remaining placeholder failures isolated to Step 7.5 replay/artifacts/vision behavior and Step 7.6 worker orchestration behavior.
 - Confirmed the Phase 1-6 baseline remains green at 40 files / 169 tests and whole-workspace `pnpm exec tsc --noEmit` passes with no warnings.
 - Prepared Step 7.5 in `tasks/todo.md` for replay timelines, artifact manifests, retention metadata, targeted vision fallback, and context/event helper integration.
+- Completed Step 7.5 by replacing the replay-console, artifacts, and targeted-vision placeholders with deterministic pure functions for sequence-sorted replay timelines, lane classification, replay run summaries, schema-versioned artifact manifests, tenant retention expiry metadata, targeted vision gating, and bounded non-full-page crop request metadata.
+- Confirmed the focused Step 7.5 slice passes with `pnpm exec vitest run apps/replay-console/tests packages/artifacts/tests packages/vision/tests` at 3 files / 6 tests.
+- Re-ran the full Phase 7 suite and confirmed it is expected-red at 11 files / 23 tests with 21 passing tests and 2 remaining placeholder failures isolated to Step 7.6 worker orchestration behavior.
+- Confirmed the Phase 1-6 baseline remains green at 40 files / 169 tests and whole-workspace `pnpm exec tsc --noEmit` passes with no warnings.
+- Prepared Step 7.6 in `tasks/todo.md` for worker isolation, queueing, telemetry, quotas, policy enforcement, natural-language authoring, cross-model benchmark reporting, and alpha hardening.

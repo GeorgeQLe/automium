@@ -26,3 +26,28 @@ export * from "./foundry-environments";
 export * from "./foundry-permissions";
 export * from "./foundry-api-routes";
 export { FOUNDRY_REALTIME_TOPICS } from "./foundry-realtime";
+export {
+  createFoundryBranch,
+  compareFoundryBranches,
+  mergeFoundryBranch,
+  restoreFoundryVersion,
+  createFoundryCollaborationHistory,
+  type FoundryBranchComparison,
+  type FoundryMergedBranch,
+  type FoundryVersionRestore,
+  type FoundryPendingChange,
+  type FoundryCollaborationHistory,
+} from "./foundry-branches";
+export {
+  createFoundryDeployment,
+  transitionFoundryDeployment,
+  promoteFoundryDeployment,
+  rollbackFoundryDeployment,
+  listFoundryRollbackTargets,
+  type FoundryDeploymentAudit,
+  type FoundryDeploymentLifecycle,
+} from "./foundry-deployments";
+export * from "./foundry-publishing";
+export * from "./foundry-runtime";
+export * from "./foundry-custom-widgets";
+export * from "./foundry-datasource-adapters";

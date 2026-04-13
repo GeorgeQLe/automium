@@ -40,18 +40,39 @@ export interface ArtifactRetention {
   readonly expiresAt: string;
 }
 
-function notImplemented<T>(operation: string): T {
-  throw new Error(`Step 7.5 not implemented: ${operation}`);
+const RETENTION_DAYS_BY_VERDICT: Record<string, number> = {
+  pass: 14,
+  failed: 30,
+  unsupported: 7
+};
+
+function resolveRetentionDays(verdict: string): number {
+  return RETENTION_DAYS_BY_VERDICT[verdict] ?? 14;
 }
 
 export function createArtifactManifest(
-  _input: ArtifactManifestInput
+  input: ArtifactManifestInput
 ): ArtifactManifest {
-  return notImplemented("createArtifactManifest");
+  return {
+    schemaVersion: ARTIFACT_MANIFEST_SCHEMA_VERSION,
+    runId: input.runId,
+    root: input.root,
+    entries: input.entries.map((entry) => ({ ...entry }))
+  };
 }
 
 export function calculateArtifactRetention(
-  _input: ArtifactRetentionInput
+  input: ArtifactRetentionInput
 ): ArtifactRetention {
-  return notImplemented("calculateArtifactRetention");
+  const retentionDays = resolveRetentionDays(input.runVerdict);
+  const createdAt = new Date(input.createdAt);
+  const expiresAt = new Date(createdAt.getTime());
+
+  expiresAt.setUTCDate(expiresAt.getUTCDate() + retentionDays);
+
+  return {
+    tenantId: input.tenantId,
+    retentionDays,
+    expiresAt: expiresAt.toISOString()
+  };
 }

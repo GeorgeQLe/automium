@@ -25,18 +25,36 @@ export interface TargetedCropRequest extends TargetedCropRequestInput {
   readonly fullPage: false;
 }
 
-function notImplemented<T>(operation: string): T {
-  throw new Error(`Step 7.5 not implemented: ${operation}`);
-}
+const LOW_SEMANTIC_CONFIDENCE_THRESHOLD = 0.7;
+const ACTIONABILITY_FAILURES = new Set([
+  "not-actionable",
+  "not-visible",
+  "disabled",
+  "covered",
+  "ambiguous-target"
+]);
 
 export function shouldRequestTargetedVision(
-  _input: TargetedVisionDecisionInput
+  input: TargetedVisionDecisionInput
 ): boolean {
-  return notImplemented("shouldRequestTargetedVision");
+  if (input.semanticConfidence < LOW_SEMANTIC_CONFIDENCE_THRESHOLD) {
+    return true;
+  }
+
+  return input.recentFailures.some((failure) =>
+    ACTIONABILITY_FAILURES.has(failure)
+  );
 }
 
 export function createTargetedCropRequest(
-  _input: TargetedCropRequestInput
+  input: TargetedCropRequestInput
 ): TargetedCropRequest {
-  return notImplemented("createTargetedCropRequest");
+  return {
+    schemaVersion: TARGETED_VISION_SCHEMA_VERSION,
+    runId: input.runId,
+    elementId: input.elementId,
+    boundingBox: { ...input.boundingBox },
+    reason: input.reason,
+    fullPage: false
+  };
 }

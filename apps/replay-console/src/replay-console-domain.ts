@@ -59,16 +59,51 @@ export interface ReplayRunSummary extends ReplayRunSummaryInput {
   readonly requiredArtifacts: readonly ReplayConsoleArtifactKind[];
 }
 
-function notImplemented<T>(operation: string): T {
-  throw new Error(`Step 7.5 not implemented: ${operation}`);
+function classifyTimelineLane(type: string): ReplayTimelineLane {
+  if (type.startsWith("planner.")) {
+    return "planner";
+  }
+
+  if (type.startsWith("executor.")) {
+    return "executor";
+  }
+
+  if (type.startsWith("runtime.")) {
+    return "runtime";
+  }
+
+  if (type.startsWith("assertion.")) {
+    return "assertions";
+  }
+
+  if (type.startsWith("worker.")) {
+    return "worker";
+  }
+
+  return "artifacts";
 }
 
-export function buildReplayTimeline(_input: ReplayTimelineInput): ReplayTimeline {
-  return notImplemented("buildReplayTimeline");
+export function buildReplayTimeline(input: ReplayTimelineInput): ReplayTimeline {
+  const events = [...input.events].sort(
+    (left, right) => left.sequence - right.sequence
+  );
+
+  return {
+    runId: input.runId,
+    timelineVersion: REPLAY_CONSOLE_TIMELINE_VERSION,
+    entries: events.map((event) => ({
+      sequence: event.sequence,
+      lane: classifyTimelineLane(event.type),
+      event: { ...event }
+    }))
+  };
 }
 
 export function summarizeReplayRun(
-  _input: ReplayRunSummaryInput
+  input: ReplayRunSummaryInput
 ): ReplayRunSummary {
-  return notImplemented("summarizeReplayRun");
+  return {
+    ...input,
+    requiredArtifacts: [...REPLAY_CONSOLE_REQUIRED_ARTIFACTS]
+  };
 }

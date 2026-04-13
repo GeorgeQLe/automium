@@ -51,3 +51,5 @@ export * from "./foundry-publishing";
 export * from "./foundry-runtime";
 export * from "./foundry-custom-widgets";
 export * from "./foundry-datasource-adapters";
+export * from "./foundry-benchmark-routes";
+export * from "./foundry-seed";

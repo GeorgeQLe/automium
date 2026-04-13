@@ -1,3 +1,5 @@
+import { benchmarkFixtureManifest } from "../../benchmark/src/corpus";
+
 export const POLICY_VERSION = "v1";
 
 export const AUTHORIZED_APP_IDS = [
@@ -32,16 +34,55 @@ export interface RunPolicyDecision {
   readonly checks: readonly string[];
 }
 
-function notImplemented<T>(operation: string): T {
-  throw new Error(`Step 7.3/7.6 not implemented: ${operation}`);
+const authorizedAppIds = new Set<string>(AUTHORIZED_APP_IDS);
+const OWNED_HOST = "owned.local";
+
+function fixtureMatchesApp(appId: string, fixtureId: string): boolean {
+  return benchmarkFixtureManifest.some(
+    (fixture) => fixture.id === fixtureId && fixture.appId === appId
+  );
 }
 
 export function evaluateDomainPolicy(
-  _input: DomainPolicyInput
+  input: DomainPolicyInput
 ): DomainPolicyDecision {
-  return notImplemented("evaluateDomainPolicy");
+  if (!authorizedAppIds.has(input.appId)) {
+    return { allowed: false, reason: "domain-not-authorized" };
+  }
+
+  let url: URL;
+
+  try {
+    url = new URL(input.url);
+  } catch {
+    return { allowed: false, reason: "domain-not-authorized" };
+  }
+
+  const expectedRoutePrefix = `/${input.appId}`;
+  const allowed =
+    url.protocol === "https:" &&
+    url.hostname === OWNED_HOST &&
+    url.pathname.startsWith(expectedRoutePrefix);
+
+  return allowed
+    ? { allowed: true, reason: "owned-domain" }
+    : { allowed: false, reason: "domain-not-authorized" };
 }
 
-export function evaluateRunPolicy(_input: RunPolicyInput): RunPolicyDecision {
-  return notImplemented("evaluateRunPolicy");
+export function evaluateRunPolicy(input: RunPolicyInput): RunPolicyDecision {
+  const checks = [
+    "tenant-quota",
+    "domain-allowlist",
+    "artifact-retention"
+  ] as const;
+
+  return {
+    allowed:
+      input.tenantId.trim().length > 0 &&
+      authorizedAppIds.has(input.appId) &&
+      fixtureMatchesApp(input.appId, input.fixtureId) &&
+      input.requestedCapabilities.length > 0,
+    policyVersion: POLICY_VERSION,
+    checks
+  };
 }

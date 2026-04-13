@@ -12,8 +12,9 @@ This file tracks the active work for Phase 6 from [tasks/roadmap.md](/home/georg
 - The Phase 1-5 baseline remains green at 33 passing files / 132 passing tests.
 - The Step 6.2 Foundry domain/constants suite is green at 1 passing file / 5 passing tests.
 - The Step 6.3 Foundry API, builder/editor, datasource factory/query, permission, and realtime slices are green.
-- The remaining Phase 6 Foundry suites are intentionally failing only on Step 6.4 branch/deploy/runtime/custom-widget/adapter modules and Step 6.5 seed/route modules.
-- Next automated step: Step 6.4.
+- The Step 6.4 Foundry branch/version, deployment, publish/share/runtime, custom-widget, and datasource adapter slices are green.
+- The remaining Phase 6 Foundry suites are intentionally failing only on Step 6.5 seed/route modules.
+- Next automated step: Step 6.5.
 - Known manual blockers: none for Phase 6.
 
 ## Phase 6: Foundry
@@ -40,10 +41,11 @@ Goal: deliver the third owned parity product, `Foundry`, as the Appsmith-parity 
   - Files: create `apps/foundry/src/foundry-workspaces.ts`, `apps/foundry/src/foundry-users.ts`, `apps/foundry/src/foundry-applications.ts`, `apps/foundry/src/foundry-pages.ts`, `apps/foundry/src/foundry-widgets.ts`, `apps/foundry/src/foundry-canvas.ts`, `apps/foundry/src/foundry-datasources.ts`, `apps/foundry/src/foundry-queries.ts`, `apps/foundry/src/foundry-javascript.ts`, `apps/foundry/src/foundry-bindings.ts`, `apps/foundry/src/foundry-themes.ts`, `apps/foundry/src/foundry-environments.ts`, `apps/foundry/src/foundry-permissions.ts`, `apps/foundry/src/foundry-api-routes.ts`, `apps/foundry/src/foundry-realtime.ts`
   - Files: modify `apps/foundry/src/index.ts` to re-export all modules.
   - Validation: focused strict TypeScript check for `apps/foundry/src/*.ts` passes; Step 6.3 slices of builder, datasource, and collaboration suites pass at 8 tests; `foundry-domain.contract.test.ts` passes at 1 file / 5 tests; full Foundry contract run is still red only on missing Step 6.4/6.5 modules at 5 failing files / 18 expected failures; Phase 1-5 baseline remains green at 33 files / 132 tests.
-- [ ] Step 6.4: **Automated** Implement versioning, branching, deployment, publish/share flows, custom-widget hooks, and production-grade datasource support for Postgres-compatible SQL, MySQL-compatible SQL, and REST APIs.
+- [x] Step 6.4: **Automated** Implement versioning, branching, deployment, publish/share flows, custom-widget hooks, and production-grade datasource support for Postgres-compatible SQL, MySQL-compatible SQL, and REST APIs.
   - Files: create `apps/foundry/src/foundry-branches.ts`, `apps/foundry/src/foundry-deployments.ts`, `apps/foundry/src/foundry-publishing.ts`, `apps/foundry/src/foundry-runtime.ts`, `apps/foundry/src/foundry-custom-widgets.ts`, `apps/foundry/src/foundry-datasource-adapters.ts`
   - Adapter contracts cover schema introspection, parameterized query execution, REST request configuration, auth metadata, result normalization, custom widget packaging, and runtime loading metadata.
   - Files: modify `apps/foundry/src/index.ts` to re-export branch, deployment, runtime, custom-widget, and adapter modules.
+  - Validation: focused Step 6.4 slices pass at 5 files / 19 tests; focused strict TypeScript check for `apps/foundry/src/*.ts` passes; full Foundry contract run is still red only on Step 6.5 seed and benchmark-route modules at 5 passing files / 25 passing tests plus 1 expected failing file / 7 expected failures; Phase 1-5 baseline remains green at 33 files / 132 tests.
 - [ ] Step 6.5: **Automated** Add deterministic seeds, reset hooks, and benchmark-friendly routes for the `Foundry` builder and runtime benchmark-critical journeys.
   - Files: create `apps/foundry/src/foundry-seed.ts`, `apps/foundry/src/foundry-benchmark-routes.ts`
   - Seed covers one workspace, deterministic editors/viewers/runtime consumers, starter app shell, page graph, datasource credentials, mock endpoint metadata, schema metadata, query templates, action permissions, sample bindings, layout regions, widget defaults, CRUD table/form fixtures, JavaScript object templates, event handlers, custom widget package/registry entry, branch metadata, deployment metadata, and a published runtime snapshot.
@@ -67,30 +69,23 @@ Acceptance criteria:
 
 ## Next Step Plan
 
-Step 6.4 implements Foundry versioning, publish/runtime separation, custom widgets, and production-grade datasource adapters on top of the Step 6.3 resource layer.
+Step 6.5 adds Foundry deterministic seed/reset hooks and stable benchmark routes now that the builder, collaboration, publish/runtime, custom-widget, and datasource adapter layers exist.
 
 - Commands to run:
-  - `pnpm exec vitest run apps/foundry/tests/foundry-builder.contract.test.ts -t 'custom widgets'`
-  - `pnpm exec vitest run apps/foundry/tests/foundry-datasources.contract.test.ts -t 'adapter registry|SQL adapters|REST adapter'`
-  - `pnpm exec vitest run apps/foundry/tests/foundry-collaboration.contract.test.ts`
-  - `pnpm exec vitest run apps/foundry/tests/foundry-runtime.contract.test.ts`
+  - `pnpm exec vitest run tests/integration/foundry/foundry-benchmark-journeys.contract.test.ts`
   - `pnpm exec vitest run apps/foundry/tests/foundry-api.contract.test.ts apps/foundry/tests/foundry-builder.contract.test.ts apps/foundry/tests/foundry-runtime.contract.test.ts apps/foundry/tests/foundry-datasources.contract.test.ts apps/foundry/tests/foundry-collaboration.contract.test.ts tests/integration/foundry/foundry-benchmark-journeys.contract.test.ts`
   - `pnpm exec vitest run packages apps/admin-console apps/altitude apps/switchboard tests/integration/altitude tests/integration/switchboard tests/planning`
+  - `pnpm exec tsc --noEmit --target ES2022 --module ESNext --moduleResolution Bundler --strict --esModuleInterop --skipLibCheck apps/foundry/src/*.ts`
 - Files to create:
-  - `apps/foundry/src/foundry-branches.ts`
-  - `apps/foundry/src/foundry-deployments.ts`
-  - `apps/foundry/src/foundry-publishing.ts`
-  - `apps/foundry/src/foundry-runtime.ts`
-  - `apps/foundry/src/foundry-custom-widgets.ts`
-  - `apps/foundry/src/foundry-datasource-adapters.ts`
+  - `apps/foundry/src/foundry-seed.ts`
+  - `apps/foundry/src/foundry-benchmark-routes.ts`
 - Files to modify:
   - `apps/foundry/src/index.ts`
 - Implementation expectations:
-  - Follow the pure-function module pattern used by the existing Foundry Step 6.3 modules: import types from `foundry-domain.ts` and constants from `foundry-constants.ts`, return new immutable-ish objects, and keep generated IDs/timestamps deterministic enough for contract assertions.
-  - `foundry-branches.ts` should wrap branch lifecycle behavior around `FoundryBranch`: create active feature branches, compare changed pages/queries/widgets, merge branches with actor metadata, restore versions, and report collaboration history with pending changes and publish readiness.
-  - `foundry-deployments.ts` should create deployments, transition publish/promote/rollback statuses, preserve audit metadata, and expose rollback targets.
-  - `foundry-publishing.ts` should snapshot builder state into published runtime metadata, generate share links for editor/viewer/runtime-consumer audiences, and keep runtime URLs under `/foundry/runtime/`.
-  - `foundry-runtime.ts` should create runtime bootstrap metadata without editor paths and support runtime sessions/actions for submit-form, query execution, navigation, modal open, tab, and form flows.
-  - `foundry-custom-widgets.ts` should register custom widget package metadata, list packages, and resolve runtime entrypoints by package ID.
-  - `foundry-datasource-adapters.ts` should expose a registry for `postgres`, `mysql`, and `rest-api`; SQL adapters need schema introspection, test connection, parameterized execution, and normalized tabular results; REST needs request/auth metadata and normalized body handling.
-  - Expected result: builder, datasource, collaboration, and runtime suites pass; full Foundry run remains red only on Step 6.5 benchmark route and seed/reset modules; Phase 1-5 baseline remains green.
+  - Follow the deterministic fixture style used by `apps/altitude/src/altitude-seed.ts` and `apps/switchboard/src/switchboard-seed.ts`: stable IDs, fixed timestamps, no external service calls, and reset returning the same publish-ready seed state with an empty `mutationLog`.
+  - `foundry-benchmark-routes.ts` should export `FOUNDRY_BENCHMARK_ROUTES` with exactly eight routes in this order: `builder-home`, `datasource-configuration`, `query-editor`, `page-builder`, `crud-workspace`, `logic-editor`, `custom-widget-management`, and `branch-publish-runtime`.
+  - Each route path must start with `/foundry/`, use a category from `builder`, `datasource`, `query`, `runtime`, or `publish`, and declare non-empty `requiredSeedKeys` aligned with the seed fields it needs.
+  - `foundry-seed.ts` should export `seedFoundryBenchmarkEnvironment()`, `resetFoundryBenchmarkEnvironment()`, and `verifyFoundryBenchmarkSeed(env)`.
+  - The seed object must include: workspace, at least two editors, at least one viewer, at least one runtime consumer, application, pages, widgets including `table`, `form`, `button`, `modal`, and `custom`, datasources covering `postgres`, `mysql`, and `rest-api`, datasource credentials, schema metadata, query templates, bindings, JavaScript objects, custom widget packages, branches, deployments, `publishedRuntimeSnapshot`, and `mutationLog`.
+  - `publishedRuntimeSnapshot.path` must stay under `/foundry/runtime/`, and verification should check `workspace-users`, `datasource-credentials`, `schema-metadata`, `query-bindings`, and `published-runtime`.
+  - Expected result: the Foundry benchmark journey suite passes, all Phase 6 Foundry contract suites pass, and the Phase 1-5 regression baseline remains green.

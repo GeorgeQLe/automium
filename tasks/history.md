@@ -109,3 +109,10 @@
 - Verified the broader Foundry contract run is still intentionally red only on future Step 6.4/6.5 missing modules: custom widgets, datasource adapters, branches, publish/runtime/deployments, benchmark routes, and seed/reset hooks.
 - Re-ran the Phase 1-5 baseline with `pnpm exec vitest run packages apps/admin-console apps/altitude apps/switchboard tests/integration/altitude tests/integration/switchboard tests/planning`; it remains green at 33 passing files / 132 passing tests.
 - Prepared Step 6.4 in `tasks/todo.md` for branch/version lifecycle, deployments, publish/share/runtime flows, custom widget registration, and datasource adapter support.
+- Completed Step 6.4 by implementing Foundry branch/version helpers, deployment lifecycle helpers, publish/share metadata, runtime bootstrap/session/action handling, custom widget registry support, and Postgres/MySQL/REST datasource adapter contracts.
+- Updated the Foundry barrel exports for the new branch, deployment, publishing, runtime, custom-widget, and datasource adapter modules while preserving explicit exports for helper names that shadow domain constructors.
+- Confirmed Step 6.4 focused slices pass: custom widgets at 1/1, datasource adapters at 3/3, and collaboration/runtime/API route contracts at 15/15.
+- Confirmed a focused strict TypeScript check for `apps/foundry/src/*.ts` passes.
+- Verified the broader Foundry contract run is now intentionally red only on future Step 6.5 missing benchmark route and seed/reset modules at 5 passing files / 25 passing tests plus 1 expected failing file / 7 expected failures.
+- Re-ran the Phase 1-5 baseline with `pnpm exec vitest run packages apps/admin-console apps/altitude apps/switchboard tests/integration/altitude tests/integration/switchboard tests/planning`; it remains green at 33 passing files / 132 passing tests.
+- Prepared Step 6.5 in `tasks/todo.md` for deterministic Foundry seed/reset hooks and benchmark route definitions.

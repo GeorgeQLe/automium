@@ -149,6 +149,24 @@ Expected top-level shape:
 - All products must emit auditable activity streams.
 - All products must be usable both by humans and by the agent-native QA platform.
 
+## Current Repository Implementation Status
+
+As of April 13, 2026, the repository implements the owned products as TypeScript domain modules, route manifests, deterministic seed/reset fixtures, adapter contracts, and contract/integration suites. The current implementation proves the benchmarkable surface and shared-platform contracts; deployed browser UIs, production persistence, and provider-backed infrastructure remain production-hardening follow-up work.
+
+Implemented shared platform surfaces:
+
+- `apps/admin-console/` registers the three products, composes governance/product navigation, and exposes an admin route manifest for governance state, governance mutations, and product registration.
+- `packages/auth/`, `packages/tenancy/`, `packages/rbac/`, `packages/audit/`, `packages/files/`, `packages/search/`, `packages/jobs/`, and `packages/realtime/` cover the shared foundation contracts for identity, membership, permission checks, auditable events, file ownership, search indexing, job lifecycle, and ordered realtime delivery.
+- `packages/adapters/`, `packages/api-contracts/`, `packages/domain-model/`, and `packages/ui/` define the shared adapter, API surface, domain resource, and app-shell primitives.
+
+Implemented product surfaces:
+
+- `Altitude` has domain modules, adapter boundaries, realtime events, webhook configuration, 11 API route-manifest entries, eight stable benchmark routes, and deterministic seed/reset fixtures for workspace, project, work item, cycle, module, wiki, attachment, and analytics journeys.
+- `Switchboard` has support-domain modules, native website/API/email channels, deferred public-channel adapters, realtime and webhook events, 16 API route-manifest entries, seven stable benchmark routes, and deterministic seed/reset fixtures for inbox, conversation, note, shortcut, automation, and reporting journeys.
+- `Foundry` has builder/runtime domain modules, datasource adapters for Postgres, MySQL, and REST, widget/canvas/binding/JavaScript/custom-widget support, branch/deployment/permission/realtime modules, 13 API route-manifest entries, eight stable benchmark routes, and deterministic seed/reset fixtures for builder, datasource, query, CRUD, custom-widget, publish, and runtime journeys.
+
+Known production-hardening gaps are tracked in `tasks/todo.md`: deployed product UIs and UI workflow suites, production persistence/adapters for Postgres/object storage/queues/realtime transports, credential/secret vault integration, and richer operator surfaces for command palette, help-center/self-service, presence/collision handling, and bulk actions.
+
 ## Product 1: Altitude
 
 `Altitude` is the Plane-parity product.

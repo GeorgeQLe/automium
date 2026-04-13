@@ -149,6 +149,24 @@ v1 includes:
 - replay/debug console
 - job control plane and worker fleet
 
+### Current Repository Implementation Status
+
+As of April 13, 2026, the repository implements the v1 platform as TypeScript contract, domain, route-manifest, fixture, and benchmark-runner surfaces. The current code is sufficient for contract-level benchmark validation against owned fixtures, but it is not yet a deployed production browser service.
+
+Implemented surfaces:
+
+- `packages/engine/` models browser session, document, frame, storage, network, stable interactive element identity, and actionability scoring.
+- `packages/runtime/` builds compact semantic snapshots and applies token/crop-budget compaction.
+- `packages/contracts/` freezes the semantic snapshot, replay event, and planner adapter contracts.
+- `packages/executor/` compiles supported planner intents into deterministic executor actions and rejects unsupported capabilities.
+- `apps/control-plane/` exposes the v1 route manifest for journey compilation, run submission, run status, artifacts, and replay.
+- `packages/journey-compiler/` validates natural-language journey inputs and compiles them into graph nodes, assertions, recovery rules, and fixture references.
+- `packages/orchestrator/`, `packages/worker/`, and `packages/policies/` model worker leasing, queue policy, telemetry, tenancy quota checks, owned-domain authorization, and fixture-scoped run policy.
+- `packages/artifacts/`, `packages/event-stream/`, and `apps/replay-console/` model artifact manifests, retention, replay event streams, replay timelines, and run summaries.
+- `packages/benchmark/` and `packages/benchmark-runner/` define the owned benchmark corpus and compare planner backends by repeatability, pass rate, latency, token spend, and recovery success.
+
+Production hardening still tracked outside this spec includes executable HTML/CSS/JS parsing, real browser sandboxing, deployed worker pools, provider-backed planner calls, credential vault integration, and production persistence.
+
 ## System Architecture
 
 ## High-Level Components
@@ -296,8 +314,8 @@ Supported planner intents:
 - type/fill
 - select
 - upload
-- press key
-- wait for condition
+- press-key
+- wait-for-condition
 - assert
 - extract
 - branch
@@ -336,6 +354,14 @@ They handle:
 - flaky async timing
 - recoverable authentication/session issues
 - benchmarkable replay across models
+
+### Benchmark Corpus Current Scope
+
+The v1 checked-in corpus targets only owned or controlled surfaces:
+
+- `Altitude`, `Switchboard`, and `Foundry` as the owned benchmark products.
+- `iframe-fixture` as a controlled support fixture for cross-frame and session edge-case coverage.
+- Environment profiles for owned baseline data, uploads, session churn, and iframe execution.
 
 ## Execution Model
 
@@ -688,13 +714,13 @@ Exit criteria:
 
 ## Open Questions and Follow-Up
 
-These are intentionally left open for the next planning pass:
+These are tracked for the next production-hardening planning pass:
 
 - exact JS engine strategy: embed an existing engine versus implement a new one
 - exact CSS/layout coverage target for v1
 - browser security sandbox architecture at the engine level
-- fixture/environment specification format
-- benchmark corpus composition and publication policy
+- fixture/environment specification format beyond the current checked-in corpus manifest
+- benchmark corpus publication policy beyond the current owned-only corpus
 - enterprise deployment timeline for single-tenant/private environments
 
 ## Acceptance Criteria for the Spec

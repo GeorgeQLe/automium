@@ -279,3 +279,26 @@ Acceptance criteria:
 - Enforce legal, branding, and naming boundaries so owned parity products remain distinct from the upstream products they reference internally.
 - Treat shared platform quality as a force multiplier: shortcuts in tenancy, audit, realtime, or permissions will multiply across all three products.
 - Maintain an integration ladder: contract tests first, subsystem tests second, owned-product integration suites third, and full alpha smoke tests last.
+
+## Maintenance Plan: Spec Drift Fix All
+
+Goal: reconcile the finalized specs with the completed Phase 1-7 implementation without changing production code.
+
+### Audit Scope
+
+- Verify all claims in `specs/agent-native-browser-qa-platform.md` against the implemented control-plane, engine, runtime, executor, artifact, replay, policy, orchestration, compiler, and benchmark-runner surfaces.
+- Verify all claims in `specs/owned-parity-benchmark-products.md` against the implemented shared platform, `Altitude`, `Switchboard`, `Foundry`, benchmark fixtures, parity matrices, and product integration suites.
+- Scan significant implemented public surfaces for missing spec coverage, especially routes, product APIs, model abstractions, benchmark APIs, policy controls, and benchmark-owned product artifacts.
+
+### Resolution Rules
+
+- Verified claims remain unchanged and are cited in `specs/drift-report.md`.
+- Diverged claims are not auto-resolved; they require an explicit code-right or spec-right decision before changing specs or adding follow-up tasks.
+- Unimplemented or uncertain claims are recorded in `tasks/todo.md` as follow-up work unless the spec clearly needs a documentation update.
+- Significant undocumented public surfaces are added to the relevant spec when they represent completed behavior, or recorded as follow-up documentation work.
+
+### Verification
+
+- Run targeted text checks against the updated specs and drift report.
+- Run the repository TypeScript and Vitest suites that demonstrate the cited implementation surfaces still pass.
+- Commit and push the spec-drift documentation changes to `master` after verification.

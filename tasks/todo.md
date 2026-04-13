@@ -2,6 +2,29 @@
 
 This file tracks active execution work from [tasks/roadmap.md](/home/georgeqle/projects/tools/dev/automium/tasks/roadmap.md). All roadmap phases are complete and archived in [tasks/phases/](/home/georgeqle/projects/tools/dev/automium/tasks/phases/).
 
+## Active Task: Spec Drift Fix All
+
+Goal: reconcile the specs with the completed implementation and produce an audit trail without changing production code.
+
+### Plan
+
+- [x] Inventory spec claims in `specs/agent-native-browser-qa-platform.md` and `specs/owned-parity-benchmark-products.md`.
+- [x] Verify claims against implemented apps, packages, fixtures, docs, and tests.
+- [x] Identify divergences, unimplemented claims, removed claims, and significant undocumented public surfaces.
+- [x] Update specs only for completed behavior that is missing or stale, and add follow-up todos for unresolved work.
+- [x] Write `specs/drift-report.md` with verified, resolved, deferred, and remaining findings.
+- [x] Run documentation checks plus TypeScript/Vitest verification.
+- [x] Commit and push intended changes to `master`.
+
+### Deferred Spec-Drift Follow-Up
+
+- [ ] Production browser engine: implement executable HTML/CSS/JS parsing, layout, event/input dispatch, and semantic graph generation beyond the current engine state and interactive-element contract.
+- [ ] Production orchestration: deploy real worker pools, queue transports, concurrency controls, telemetry persistence, and tenant quota enforcement beyond the current domain contracts.
+- [ ] Production persistence and infrastructure adapters: wire Postgres, object storage, job queues, realtime transports, and search backends behind the checked-in shared platform contracts.
+- [ ] Credential and secret vault integration: replace current seed `secretRef` metadata and policy placeholders with scoped runtime secret retrieval.
+- [ ] Product UI workflow layer: add deployed browser UIs and browser-driven UI workflow suites for `Altitude`, `Switchboard`, and `Foundry` instead of only domain/contract/integration tests.
+- [ ] Operator surface hardening: add explicit command palette/global action support, help-center/self-service flows, presence/collision handling, and bulk action surfaces where still represented only by specs or parity matrices.
+
 ## Current Status
 
 - Phase 1 benchmark foundation reset is complete and archived in [tasks/phases/phase-1.md](/home/georgeqle/projects/tools/dev/automium/tasks/phases/phase-1.md).
@@ -25,7 +48,7 @@ This file tracks active execution work from [tasks/roadmap.md](/home/georgeqle/p
 - [ ] `$devtool-adoption` - create `research/devtool-adoption.md` using the installed `devtool-adoption` skill.
 - [ ] `$devtool-positioning` - create `research/devtool-positioning.md` using the installed `devtool-positioning` skill.
 - [ ] `$devtool-monetization` - create `research/devtool-monetization.md` using the installed `devtool-monetization` skill.
-- [ ] `$spec-drift fix all` - reconcile specs against implementation because `specs/agent-native-browser-qa-platform.md` and `specs/owned-parity-benchmark-products.md` were last updated on 2026-04-07, while the implementation and phase archives were completed through 2026-04-13.
+- [x] `$spec-drift fix all` - reconciled specs against implementation because `specs/agent-native-browser-qa-platform.md` and `specs/owned-parity-benchmark-products.md` were last updated on 2026-04-07, while the implementation and phase archives were completed through 2026-04-13.
 
 ## Review
 
@@ -33,7 +56,12 @@ Step 7.7 completed the final integrated-platform verification sweep. The QA plat
 
 `$devtool-user-map` completed the developer-facing audience map for Automium, covering primary developer users, secondary users, economic buyers, champions, maintainers, operational stakeholders, high-value use cases, adoption blockers, adoption sequencing, persona messaging, and open research questions.
 
+`$spec-drift fix all` completed the spec-to-code reconciliation pass. The drift report recorded 29 verified claims, 0 unresolved errors, 6 deferred production-hardening warnings, and 5 resolved documentation drift items. The specs now document the current contract/domain implementation status, exact planner intent tokens, owned benchmark corpus scope, product route-manifest coverage, deterministic seed/reset surfaces, and explicit hardening follow-ups.
+
 - Validation:
+  - `test -f specs/drift-report.md`
+  - `rg -n "Current Repository Implementation Status|Benchmark Corpus Current Scope|press-key|wait-for-condition|Production hardening|Spec Drift Report|Deferred Warnings|Verified Claims" specs tasks`
+  - `pnpm test:run` passes at 51 files / 192 tests.
   - `test -f research/devtool-user-map.md`
   - `rg -n "Primary Developer Users|Economic Buyers|Champions|Maintainers And Contributors|Operational Stakeholders|Adoption Blockers" research/devtool-user-map.md`
   - `pnpm exec vitest run apps/control-plane/tests apps/replay-console/tests packages/engine/tests packages/runtime/tests packages/executor/tests packages/artifacts/tests packages/orchestrator/tests packages/journey-compiler/tests packages/vision/tests packages/policies/tests tests/e2e/alpha` passes at 11 files / 23 tests.

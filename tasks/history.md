@@ -175,3 +175,7 @@
 - Marked `$pack install devtool` complete in `tasks/todo.md`, cleared the stale pack-install blockers from the remaining research queue, and prepared `$devtool-user-map` as the next documentation step.
 - Completed `$devtool-user-map` by creating `research/devtool-user-map.md` with Automium's developer users, secondary users, economic buyers, champions, maintainers, operational stakeholders, high-value use cases, adoption blockers, adoption sequence, persona messaging, and open research questions.
 - Updated `tasks/todo.md` to mark `$devtool-user-map` complete and prepared `$devtool-integration-map` as the next priority documentation step.
+- Ran `$spec-drift fix all` across `specs/agent-native-browser-qa-platform.md` and `specs/owned-parity-benchmark-products.md`, producing `specs/drift-report.md` with 29 verified claims, 0 unresolved errors, 6 deferred production-hardening warnings, and 5 resolved documentation drift items.
+- Updated the QA platform spec with the current contract/domain implementation status, exact planner intent tokens, owned benchmark corpus scope, and production-hardening follow-up framing.
+- Updated the owned parity products spec with current shared-platform, product route-manifest, seed/reset, adapter, and benchmark implementation checkpoints, plus explicit production-hardening gaps now tracked in `tasks/todo.md`.
+- Verified the spec-drift reconciliation with `test -f specs/drift-report.md`, a targeted `rg` check for the updated documentation anchors, `pnpm exec tsc --noEmit`, and full `pnpm test:run` at 51 files / 192 tests.

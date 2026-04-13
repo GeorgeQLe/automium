@@ -18,13 +18,13 @@ This file tracks active execution work from [tasks/roadmap.md](/home/georgeqle/p
 
 ## Priority Documentation Todo
 
-- [ ] `$pack install devtool` - install the devtool project pack because no `.agents/project.json` exists, this repository is inferred as a developer tool from the browser QA platform specs and package-first monorepo structure, and no devtool research-producing skills are currently available.
-- [ ] `$devtool-user-map` - create `research/devtool-user-map.md` after `$pack install devtool`; currently blocked because `research/` is missing and the devtool project pack is not installed.
-- [ ] `$devtool-integration-map` - create `research/devtool-integration-map.md` after `$pack install devtool`; currently blocked because `research/` is missing and the devtool project pack is not installed.
-- [ ] `$devtool-dx-journey` - create `research/devtool-dx-journey.md` after `$pack install devtool`; currently blocked because `research/` is missing and the devtool project pack is not installed.
-- [ ] `$devtool-adoption` - create `research/devtool-adoption.md` after `$pack install devtool`; currently blocked because `research/` is missing and the devtool project pack is not installed.
-- [ ] `$devtool-positioning` - create `research/devtool-positioning.md` after `$pack install devtool`; currently blocked because `research/` is missing and the devtool project pack is not installed.
-- [ ] `$devtool-monetization` - create `research/devtool-monetization.md` after `$pack install devtool`; currently blocked because `research/` is missing and the devtool project pack is not installed.
+- [x] `$pack install devtool` - verified `.agents/project.json` declares `project_type: "devtool"` with `enabled_packs: ["devtool"]`, and `pack status` confirms the local Claude/Codex devtool skill links exist.
+- [ ] `$devtool-user-map` - create `research/devtool-user-map.md` using the installed `devtool-user-map` skill.
+- [ ] `$devtool-integration-map` - create `research/devtool-integration-map.md` using the installed `devtool-integration-map` skill.
+- [ ] `$devtool-dx-journey` - create `research/devtool-dx-journey.md` using the installed `devtool-dx-journey` skill.
+- [ ] `$devtool-adoption` - create `research/devtool-adoption.md` using the installed `devtool-adoption` skill.
+- [ ] `$devtool-positioning` - create `research/devtool-positioning.md` using the installed `devtool-positioning` skill.
+- [ ] `$devtool-monetization` - create `research/devtool-monetization.md` using the installed `devtool-monetization` skill.
 - [ ] `$spec-drift fix all` - reconcile specs against implementation because `specs/agent-native-browser-qa-platform.md` and `specs/owned-parity-benchmark-products.md` were last updated on 2026-04-07, while the implementation and phase archives were completed through 2026-04-13.
 
 ## Review
@@ -39,4 +39,10 @@ Step 7.7 completed the final integrated-platform verification sweep. The QA plat
 
 ## Next Action
 
-- [ ] Start with `$pack install devtool` from the priority documentation queue.
+- [ ] Run `$devtool-user-map` from the priority documentation queue.
+
+### Next Step Implementation Plan
+
+1. Read the `devtool-user-map` skill instructions and the core product context in `specs/agent-native-browser-qa-platform.md`, `specs/owned-parity-benchmark-products.md`, `tasks/roadmap.md`, and the completed phase archives as needed.
+2. Create `research/` if it does not exist, then write `research/devtool-user-map.md` covering developer users, economic buyers, champions, maintainers, operators, use cases, and adoption blockers for Automium as an agent-native browser QA platform.
+3. Update this file and `tasks/history.md` with the completed research artifact, then run lightweight documentation validation before committing and pushing to `master`.

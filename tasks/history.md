@@ -116,3 +116,15 @@
 - Verified the broader Foundry contract run is now intentionally red only on future Step 6.5 missing benchmark route and seed/reset modules at 5 passing files / 25 passing tests plus 1 expected failing file / 7 expected failures.
 - Re-ran the Phase 1-5 baseline with `pnpm exec vitest run packages apps/admin-console apps/altitude apps/switchboard tests/integration/altitude tests/integration/switchboard tests/planning`; it remains green at 33 passing files / 132 passing tests.
 - Prepared Step 6.5 in `tasks/todo.md` for deterministic Foundry seed/reset hooks and benchmark route definitions.
+
+## 2026-04-13
+
+- Completed Step 6.5 by adding `foundry-benchmark-routes.ts` with the eight stable builder, datasource, query, page-builder, CRUD, logic, custom-widget, and branch/publish/runtime benchmark URLs.
+- Added `foundry-seed.ts` with deterministic Foundry benchmark fixtures covering workspace users, application pages, table/form/button/modal/custom widgets, Postgres/MySQL/REST datasources, credentials, schema metadata, query templates, bindings, JavaScript logic, permissions, layout regions, widget defaults, CRUD fixtures, event handlers, custom widget packages, branches, deployments, and a published runtime snapshot.
+- Added `seedFoundryBenchmarkEnvironment()`, `resetFoundryBenchmarkEnvironment()`, and `verifyFoundryBenchmarkSeed()` for stable reset and readiness checks covering workspace users, datasource credentials, schema metadata, query bindings, and published runtime metadata.
+- Updated the Foundry barrel exports for the new seed and benchmark route modules.
+- Confirmed the Step 6.5 benchmark journey suite passes with `pnpm exec vitest run tests/integration/foundry/foundry-benchmark-journeys.contract.test.ts` at 1 passing file / 7 passing tests.
+- Confirmed all Phase 6 Foundry suites pass with `pnpm exec vitest run apps/foundry/tests/foundry-api.contract.test.ts apps/foundry/tests/foundry-builder.contract.test.ts apps/foundry/tests/foundry-runtime.contract.test.ts apps/foundry/tests/foundry-datasources.contract.test.ts apps/foundry/tests/foundry-collaboration.contract.test.ts tests/integration/foundry/foundry-benchmark-journeys.contract.test.ts` at 6 passing files / 32 passing tests.
+- Confirmed the focused strict TypeScript check for `apps/foundry/src/*.ts` passes.
+- Re-ran the Phase 1-5 baseline with `pnpm exec vitest run packages apps/admin-console apps/altitude apps/switchboard tests/integration/altitude tests/integration/switchboard tests/planning`; it remains green at 33 passing files / 132 passing tests.
+- Prepared Step 6.6 in `tasks/todo.md` for the Phase 6 green verification sweep.

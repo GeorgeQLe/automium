@@ -138,3 +138,9 @@
 - The new Phase 7 suite intentionally fails on missing integrated-platform modules at 11 files / 23 tests with 22 expected failures and 1 owned-corpus guard passing.
 - Confirmed the Phase 1-6 baseline remains green with the explicit regression command at 40 passing files / 169 passing tests.
 - Prepared Step 7.2 in `tasks/todo.md` for scaffolding the integrated QA platform apps and packages.
+- Completed Step 7.2 by scaffolding importable integrated-platform boundaries for `apps/control-plane`, `apps/replay-console`, `packages/engine`, `packages/runtime`, `packages/executor`, `packages/assertions`, `packages/event-stream`, `packages/artifacts`, `packages/context-manager`, `packages/vision`, `packages/orchestrator`, `packages/worker`, `packages/policies`, `packages/journey-compiler`, `packages/benchmark-runner`, and `packages/planner-adapter`.
+- Added package metadata, local `tsconfig.json` files, source barrels, typed constants, and domain interfaces for the Phase 7 apps and packages, with explicit not-yet-implemented placeholders preserving Step 7.3-7.6 behavioral ownership.
+- Re-ran the Phase 7 suite and confirmed failures moved from missing modules to expected behavior placeholders: 11 files / 23 tests with 21 expected failures and 2 passing scaffold/corpus guards.
+- Re-ran the Phase 1-6 baseline with the explicit regression command and confirmed it remains green at 40 files / 169 tests.
+- Fixed the Foundry datasource adapter registry typing with overloads so whole-workspace `pnpm exec tsc --noEmit` passes; confirmed the affected Foundry datasource contract stays green at 1 file / 5 tests.
+- Prepared Step 7.3 in `tasks/todo.md` for implementing the control plane, journey compiler, planner abstraction, policies, orchestrator submission boundaries, and benchmark-runner comparison flows.

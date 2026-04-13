@@ -1,0 +1,8 @@
+{
+  "name": "@automium/artifacts",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  }
+}

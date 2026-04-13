@@ -10,9 +10,10 @@ This file tracks the active work for Phase 7 from [tasks/roadmap.md](/home/georg
 - Phase 4 Altitude parity product is complete and archived in [tasks/phases/phase-4.md](/home/georgeqle/projects/tools/dev/automium/tasks/phases/phase-4.md).
 - Phase 5 Switchboard parity product is complete and archived in [tasks/phases/phase-5.md](/home/georgeqle/projects/tools/dev/automium/tasks/phases/phase-5.md).
 - Phase 6 Foundry parity product is complete and archived in [tasks/phases/phase-6.md](/home/georgeqle/projects/tools/dev/automium/tasks/phases/phase-6.md).
-- The Phase 7 red suite is established: `pnpm exec vitest run apps/control-plane/tests apps/replay-console/tests packages/engine/tests packages/runtime/tests packages/executor/tests packages/artifacts/tests packages/orchestrator/tests packages/journey-compiler/tests packages/vision/tests packages/policies/tests tests/e2e/alpha` runs 11 files / 23 tests with 22 expected failures on missing integrated-platform modules and 1 owned-corpus guard passing.
+- The Phase 7 scaffold is established: `pnpm exec vitest run apps/control-plane/tests apps/replay-console/tests packages/engine/tests packages/runtime/tests packages/executor/tests packages/artifacts/tests packages/orchestrator/tests packages/journey-compiler/tests packages/vision/tests packages/policies/tests tests/e2e/alpha` runs 11 files / 23 tests with 21 expected failures on explicit not-yet-implemented behavior and 2 passing scaffold/corpus guards.
 - The Phase 1-6 baseline remains green: `pnpm exec vitest run packages/contracts/tests packages/benchmark/tests packages/realtime/tests packages/jobs/tests packages/auth/tests packages/tenancy/tests packages/rbac/tests packages/search/tests packages/files/tests packages/audit/tests apps/admin-console/tests apps/altitude/tests apps/switchboard/tests apps/foundry/tests tests/integration/altitude tests/integration/switchboard tests/integration/foundry tests/planning` passes at 40 files / 169 tests.
-- Next automated step: Step 7.2.
+- Workspace TypeScript now passes with `pnpm exec tsc --noEmit`; Step 7.2 also fixed a narrow Foundry datasource adapter registry type overload discovered during validation.
+- Next automated step: Step 7.3.
 - Known manual blockers: none for Phase 7.
 
 ## Phase 7: Agent Browser Runtime and Platform Integration
@@ -30,7 +31,7 @@ Goal: complete the original QA platform vision against owned products instead of
 
 ### Implementation
 
-- [ ] Step 7.2: **Automated** Scaffold the control plane, replay console, planner-adapter, engine, runtime, executor, assertions, event-stream, artifacts, context-manager, vision, orchestrator, worker, policies, journey-compiler, and benchmark-runner packages and apps needed for the integrated QA platform.
+- [x] Step 7.2: **Automated** Scaffold the control plane, replay console, planner-adapter, engine, runtime, executor, assertions, event-stream, artifacts, context-manager, vision, orchestrator, worker, policies, journey-compiler, and benchmark-runner packages and apps needed for the integrated QA platform.
   - Files: create `apps/control-plane/package.json`, `apps/control-plane/tsconfig.json`, `apps/control-plane/src/index.ts`, `apps/replay-console/package.json`, `apps/replay-console/tsconfig.json`, `apps/replay-console/src/index.ts`
   - Files: create package metadata, `tsconfig.json`, source barrels, constants, and domain modules under `packages/engine/`, `packages/runtime/`, `packages/executor/`, `packages/assertions/`, `packages/event-stream/`, `packages/artifacts/`, `packages/context-manager/`, `packages/vision/`, `packages/orchestrator/`, `packages/worker/`, `packages/policies/`, `packages/journey-compiler/`, `packages/benchmark-runner/`, and any planner-adapter extensions needed under `packages/contracts/` or a dedicated `packages/planner-adapter/`.
   - Scaffold contracts should compile cleanly while leaving Step 7.3-7.6 behavior tests intentionally red until their modules are implemented.
@@ -62,22 +63,38 @@ Acceptance criteria:
 - All Phase 7 tests pass.
 - No regressions occur in Phases 1-6 suites.
 
+## Review
+
+Step 7.2 created importable scaffold boundaries for the integrated QA platform apps and packages. The Phase 7 suite now fails on explicit not-yet-implemented behavior rather than missing files or package paths. A small Foundry adapter registry type fix was included because whole-workspace TypeScript validation exposed a pre-existing overload gap in the Phase 6 datasource helper.
+
+- Validation:
+  - `pnpm exec vitest run apps/control-plane/tests apps/replay-console/tests packages/engine/tests packages/runtime/tests packages/executor/tests packages/artifacts/tests packages/orchestrator/tests packages/journey-compiler/tests packages/vision/tests packages/policies/tests tests/e2e/alpha` is expected red at 11 files / 23 tests, with 21 expected failures and 2 passing tests.
+  - `pnpm exec vitest run packages/contracts/tests packages/benchmark/tests packages/realtime/tests packages/jobs/tests packages/auth/tests packages/tenancy/tests packages/rbac/tests packages/search/tests packages/files/tests packages/audit/tests apps/admin-console/tests apps/altitude/tests apps/switchboard/tests apps/foundry/tests tests/integration/altitude tests/integration/switchboard tests/integration/foundry tests/planning` passes at 40 files / 169 tests.
+  - `pnpm exec tsc --noEmit` passes.
+  - `pnpm exec vitest run apps/foundry/tests/foundry-datasources.contract.test.ts` passes at 1 file / 5 tests after the adapter typing fix.
+- Warnings: none emitted by the validation commands.
+
 ## Next Step Plan
 
-Step 7.2 should scaffold the integrated QA platform packages and apps so the Phase 7 contract tests fail on behavior and missing exports rather than missing package paths.
+Step 7.3 should implement the control plane, shared execution domain model, planner abstraction, and benchmark-run submission flows aligned to the owned benchmark targets.
 
 - Commands to run:
   - `pnpm exec vitest run apps/control-plane/tests apps/replay-console/tests packages/engine/tests packages/runtime/tests packages/executor/tests packages/artifacts/tests packages/orchestrator/tests packages/journey-compiler/tests packages/vision/tests packages/policies/tests tests/e2e/alpha`
   - `pnpm exec vitest run packages/contracts/tests packages/benchmark/tests packages/realtime/tests packages/jobs/tests packages/auth/tests packages/tenancy/tests packages/rbac/tests packages/search/tests packages/files/tests packages/audit/tests apps/admin-console/tests apps/altitude/tests apps/switchboard/tests apps/foundry/tests tests/integration/altitude tests/integration/switchboard tests/integration/foundry tests/planning`
+  - `pnpm exec tsc --noEmit`
 - Files likely to modify:
-  - `apps/control-plane/package.json`, `apps/control-plane/tsconfig.json`, `apps/control-plane/src/index.ts`
-  - `apps/replay-console/package.json`, `apps/replay-console/tsconfig.json`, `apps/replay-console/src/index.ts`
-  - Package metadata, `tsconfig.json`, and source barrels under `packages/engine/`, `packages/runtime/`, `packages/executor/`, `packages/assertions/`, `packages/event-stream/`, `packages/artifacts/`, `packages/context-manager/`, `packages/vision/`, `packages/orchestrator/`, `packages/worker/`, `packages/policies/`, `packages/journey-compiler/`, and `packages/benchmark-runner/`
-  - Planner-adapter extensions under `packages/contracts/` or a dedicated `packages/planner-adapter/` if the scaffold needs a clearer package boundary.
+  - `apps/control-plane/src/control-plane-domain.ts`
+  - `packages/journey-compiler/src/journey-compiler-domain.ts`
+  - `packages/orchestrator/src/orchestrator-domain.ts`
+  - `packages/benchmark-runner/src/benchmark-runner-domain.ts`
+  - `packages/policies/src/policies-domain.ts`
+  - `packages/planner-adapter/src/planner-adapter-domain.ts`
+  - `packages/contracts/src/*` if the shared contract surface needs additive planner/run exports
   - `tasks/todo.md`
   - `tasks/history.md`
 - Implementation expectations:
-  - Create scaffold modules with typed constants, domain interfaces, source barrels, and minimal package metadata following the existing workspace style.
-  - Keep behavior out of the scaffold unless needed to make imports compile; Step 7.3-7.6 should own the operational behavior.
-  - Re-run the Phase 7 suite and record which missing-module failures have moved to behavior/export failures.
+  - Replace the Step 7.3 placeholder throws in the control plane, journey compiler, benchmark runner, planner adapter, orchestrator run submission boundary, and policy package with deterministic pure functions.
+  - Keep browser engine, runtime, executor, artifacts, replay, targeted vision, worker execution, and context budgeting placeholders red unless a Step 7.3 flow needs a typed reference to them.
+  - Model journey definitions, compiled journey graphs, assertions, recovery rules, fixture/environment references, planner backend metadata, run submissions, run status, artifact manifest refs, owned-product corpus targeting, and cross-model benchmark request/report shapes.
+  - Re-run the Phase 7 suite and record which Step 7.3 tests turned green while Step 7.4-7.6 behavior remains intentionally red.
   - Confirm the explicit Phase 1-6 baseline remains green after the scaffold lands.

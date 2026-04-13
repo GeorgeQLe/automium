@@ -1,0 +1,8 @@
+{
+  "name": "@automium/journey-compiler",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  }
+}

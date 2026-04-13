@@ -101,3 +101,11 @@
 - Re-ran the Phase 1-5 baseline with `pnpm exec vitest run packages apps/admin-console apps/altitude apps/switchboard tests/integration/altitude tests/integration/switchboard tests/planning`; it remains green at 33 passing files / 132 passing tests.
 - Verified the remaining Foundry red suites are expected future-step failures only: Step 6.3 is missing API, builder, datasource, permission, and realtime modules; Step 6.4 is missing branch, deployment, publish/runtime, custom-widget, and adapter modules; Step 6.5 is missing benchmark route plus seed/reset modules.
 - Prepared Step 6.3 in `tasks/todo.md` for the Foundry builder/editor resource layer, major-resource API route manifest, datasource/query helpers, permission policy, and realtime event helpers.
+- Completed Step 6.3 by implementing the Foundry builder/editor resource layer: workspaces, users, applications, pages, widget library, drag/drop canvas, datasource factories, query execution bindings, JavaScript logic units, binding evaluation, themes, environments, permission policies, realtime events, and the 13-resource API route manifest.
+- Updated the Foundry barrel exports for the new Step 6.3 modules while avoiding duplicate factory exports that are already available from the domain module.
+- Confirmed a focused strict TypeScript check for `apps/foundry/src/*.ts` passes.
+- Confirmed Step 6.3 slices pass: builder canvas/widget/binding/JavaScript tests at 4/4, datasource factory/query tests at 2/2, and permissions/realtime collaboration tests at 2/2.
+- Confirmed `foundry-domain.contract.test.ts` remains green at 1 passing file / 5 passing tests and `foundry-api.contract.test.ts` passes inside the broader Foundry run.
+- Verified the broader Foundry contract run is still intentionally red only on future Step 6.4/6.5 missing modules: custom widgets, datasource adapters, branches, publish/runtime/deployments, benchmark routes, and seed/reset hooks.
+- Re-ran the Phase 1-5 baseline with `pnpm exec vitest run packages apps/admin-console apps/altitude apps/switchboard tests/integration/altitude tests/integration/switchboard tests/planning`; it remains green at 33 passing files / 132 passing tests.
+- Prepared Step 6.4 in `tasks/todo.md` for branch/version lifecycle, deployments, publish/share/runtime flows, custom widget registration, and datasource adapter support.

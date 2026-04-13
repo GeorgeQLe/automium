@@ -173,3 +173,5 @@
 - Ran the post-roadmap workflow pass and populated `tasks/todo.md` with the next priority documentation queue: install the devtool project pack, create missing devtool research artifacts, and reconcile specs against the completed implementation.
 - Verified the devtool project pack is already installed: `.agents/project.json` declares `project_type: "devtool"` with `enabled_packs: ["devtool"]`, and `pack status` confirms the local Claude/Codex devtool skill links exist.
 - Marked `$pack install devtool` complete in `tasks/todo.md`, cleared the stale pack-install blockers from the remaining research queue, and prepared `$devtool-user-map` as the next documentation step.
+- Completed `$devtool-user-map` by creating `research/devtool-user-map.md` with Automium's developer users, secondary users, economic buyers, champions, maintainers, operational stakeholders, high-value use cases, adoption blockers, adoption sequence, persona messaging, and open research questions.
+- Updated `tasks/todo.md` to mark `$devtool-user-map` complete and prepared `$devtool-integration-map` as the next priority documentation step.

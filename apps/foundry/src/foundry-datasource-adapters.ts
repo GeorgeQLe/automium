@@ -48,17 +48,38 @@ export interface FoundryRestExecutionResult {
   normalizedAt: string;
 }
 
-export interface FoundryDatasourceAdapter {
+type FoundrySqlDatasourceType = Exclude<FoundryDatasourceType, "rest-api">;
+
+interface FoundryDatasourceAdapterBase {
   type: FoundryDatasourceType;
   testConnection(input: { datasourceId: string }): Promise<FoundryConnectionResult>;
   introspectSchema(input: { datasourceId: string }): Promise<FoundrySchemaTable[]>;
-  execute(
-    request: FoundrySqlExecutionRequest | FoundryRestExecutionRequest
-  ): Promise<FoundrySqlExecutionResult | FoundryRestExecutionResult>;
 }
+
+export interface FoundrySqlDatasourceAdapter
+  extends FoundryDatasourceAdapterBase {
+  type: FoundrySqlDatasourceType;
+  execute(
+    request: FoundrySqlExecutionRequest
+  ): Promise<FoundrySqlExecutionResult>;
+}
+
+export interface FoundryRestDatasourceAdapter
+  extends FoundryDatasourceAdapterBase {
+  type: "rest-api";
+  execute(
+    request: FoundryRestExecutionRequest
+  ): Promise<FoundryRestExecutionResult>;
+}
+
+export type FoundryDatasourceAdapter =
+  | FoundrySqlDatasourceAdapter
+  | FoundryRestDatasourceAdapter;
 
 export interface FoundryDatasourceAdapterRegistry {
   supportedTypes: FoundryDatasourceType[];
+  getAdapter(type: FoundrySqlDatasourceType): FoundrySqlDatasourceAdapter;
+  getAdapter(type: "rest-api"): FoundryRestDatasourceAdapter;
   getAdapter(type: FoundryDatasourceType): FoundryDatasourceAdapter;
 }
 
@@ -67,40 +88,52 @@ export function createFoundryDatasourceAdapterRegistry(): FoundryDatasourceAdapt
     FOUNDRY_DATASOURCE_TYPES.map((type) => [type, createAdapter(type)])
   );
 
+  function getAdapter(type: FoundrySqlDatasourceType): FoundrySqlDatasourceAdapter;
+  function getAdapter(type: "rest-api"): FoundryRestDatasourceAdapter;
+  function getAdapter(type: FoundryDatasourceType): FoundryDatasourceAdapter;
+  function getAdapter(type: FoundryDatasourceType): FoundryDatasourceAdapter {
+    const adapter = adapters.get(type);
+
+    if (!adapter) {
+      throw new Error(`Unsupported Foundry datasource adapter: ${type}`);
+    }
+
+    return adapter;
+  }
+
   return {
     supportedTypes: [...FOUNDRY_DATASOURCE_TYPES],
-    getAdapter(type) {
-      const adapter = adapters.get(type);
-
-      if (!adapter) {
-        throw new Error(`Unsupported Foundry datasource adapter: ${type}`);
-      }
-
-      return adapter;
-    },
+    getAdapter,
   };
 }
 
 function createAdapter(type: FoundryDatasourceType): FoundryDatasourceAdapter {
-  return {
-    type,
-    async testConnection(input) {
-      return {
-        datasourceId: input.datasourceId,
-        ok: true,
-        testedAt: new Date().toISOString(),
-      };
-    },
-    async introspectSchema(input) {
-      if (type === "rest-api") {
+  if (type === "rest-api") {
+    return {
+      type,
+      async testConnection(input) {
+        return createConnectionResult(input.datasourceId);
+      },
+      async introspectSchema(input) {
         return [
           {
             tableName: `${input.datasourceId}.endpoints`,
             columns: ["method", "path", "responseBinding"],
           },
         ];
-      }
+      },
+      async execute(request) {
+        return executeRestRequest(request);
+      },
+    };
+  }
 
+  return {
+    type,
+    async testConnection(input) {
+      return createConnectionResult(input.datasourceId);
+    },
+    async introspectSchema() {
       return [
         {
           tableName: "orders",
@@ -109,12 +142,16 @@ function createAdapter(type: FoundryDatasourceType): FoundryDatasourceAdapter {
       ];
     },
     async execute(request) {
-      if (type === "rest-api") {
-        return executeRestRequest(request as FoundryRestExecutionRequest);
-      }
-
-      return executeSqlRequest(request as FoundrySqlExecutionRequest);
+      return executeSqlRequest(request);
     },
+  };
+}
+
+function createConnectionResult(datasourceId: string): FoundryConnectionResult {
+  return {
+    datasourceId,
+    ok: true,
+    testedAt: new Date().toISOString(),
   };
 }
 

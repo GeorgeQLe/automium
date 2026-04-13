@@ -10,8 +10,9 @@ This file tracks the active work for Phase 7 from [tasks/roadmap.md](/home/georg
 - Phase 4 Altitude parity product is complete and archived in [tasks/phases/phase-4.md](/home/georgeqle/projects/tools/dev/automium/tasks/phases/phase-4.md).
 - Phase 5 Switchboard parity product is complete and archived in [tasks/phases/phase-5.md](/home/georgeqle/projects/tools/dev/automium/tasks/phases/phase-5.md).
 - Phase 6 Foundry parity product is complete and archived in [tasks/phases/phase-6.md](/home/georgeqle/projects/tools/dev/automium/tasks/phases/phase-6.md).
-- The Phase 1-6 baseline is green: full `pnpm test:run` passes at 40 files / 169 tests.
-- Next automated step: Step 7.1.
+- The Phase 7 red suite is established: `pnpm exec vitest run apps/control-plane/tests apps/replay-console/tests packages/engine/tests packages/runtime/tests packages/executor/tests packages/artifacts/tests packages/orchestrator/tests packages/journey-compiler/tests packages/vision/tests packages/policies/tests tests/e2e/alpha` runs 11 files / 23 tests with 22 expected failures on missing integrated-platform modules and 1 owned-corpus guard passing.
+- The Phase 1-6 baseline remains green: `pnpm exec vitest run packages/contracts/tests packages/benchmark/tests packages/realtime/tests packages/jobs/tests packages/auth/tests packages/tenancy/tests packages/rbac/tests packages/search/tests packages/files/tests packages/audit/tests apps/admin-console/tests apps/altitude/tests apps/switchboard/tests apps/foundry/tests tests/integration/altitude tests/integration/switchboard tests/integration/foundry tests/planning` passes at 40 files / 169 tests.
+- Next automated step: Step 7.2.
 - Known manual blockers: none for Phase 7.
 
 ## Phase 7: Agent Browser Runtime and Platform Integration
@@ -22,7 +23,7 @@ Goal: complete the original QA platform vision against owned products instead of
 
 ### Tests First
 
-- [ ] Step 7.1: **Automated** Write failing control-plane, engine, runtime, replay, worker, benchmark-runner, and alpha tests in `apps/control-plane/tests/`, `apps/replay-console/tests/`, `packages/engine/tests/`, `packages/runtime/tests/`, `packages/executor/tests/`, `packages/artifacts/tests/`, `packages/orchestrator/tests/`, and `tests/e2e/alpha/` against the owned product corpus.
+- [x] Step 7.1: **Automated** Write failing control-plane, engine, runtime, replay, worker, benchmark-runner, and alpha tests in `apps/control-plane/tests/`, `apps/replay-console/tests/`, `packages/engine/tests/`, `packages/runtime/tests/`, `packages/executor/tests/`, `packages/artifacts/tests/`, `packages/orchestrator/tests/`, and `tests/e2e/alpha/` against the owned product corpus.
   - Files: create `apps/control-plane/tests/control-plane.contract.test.ts`, `apps/replay-console/tests/replay-console.contract.test.ts`, `packages/engine/tests/engine-runtime.contract.test.ts`, `packages/runtime/tests/semantic-runtime.contract.test.ts`, `packages/executor/tests/deterministic-executor.contract.test.ts`, `packages/artifacts/tests/artifacts.contract.test.ts`, `packages/orchestrator/tests/orchestrator.contract.test.ts`, `packages/journey-compiler/tests/journey-compiler.contract.test.ts`, `packages/vision/tests/targeted-vision.contract.test.ts`, `packages/policies/tests/policies.contract.test.ts`, `tests/e2e/alpha/owned-products-alpha.contract.test.ts`
   - Tests cover: journey authoring and compile contracts, job submission/status/artifact route manifests, engine document/session/frame/storage/network/semantic graph contracts, semantic snapshot generation and compaction, supported planner intent vocabulary, deterministic executor action compilation, assertion and recovery policy behavior, replay event stream and artifact bundle manifests, worker isolation/queueing/telemetry/quotas, targeted vision trigger and crop metadata, domain allowlist and authorized-use policies, benchmark runner comparison metrics, and alpha journeys across `Altitude`, `Switchboard`, and `Foundry`.
   - Expected red state: new Phase 7 suites fail on missing integrated-platform modules while the existing Phase 1-6 baseline remains green.
@@ -63,17 +64,20 @@ Acceptance criteria:
 
 ## Next Step Plan
 
-Step 7.1 is the Phase 7 red phase. It should define the executable contract for the integrated QA platform before implementation begins.
+Step 7.2 should scaffold the integrated QA platform packages and apps so the Phase 7 contract tests fail on behavior and missing exports rather than missing package paths.
 
 - Commands to run:
   - `pnpm exec vitest run apps/control-plane/tests apps/replay-console/tests packages/engine/tests packages/runtime/tests packages/executor/tests packages/artifacts/tests packages/orchestrator/tests packages/journey-compiler/tests packages/vision/tests packages/policies/tests tests/e2e/alpha`
-  - `pnpm exec vitest run packages apps/admin-console apps/altitude apps/switchboard apps/foundry tests/integration/altitude tests/integration/switchboard tests/integration/foundry tests/planning`
+  - `pnpm exec vitest run packages/contracts/tests packages/benchmark/tests packages/realtime/tests packages/jobs/tests packages/auth/tests packages/tenancy/tests packages/rbac/tests packages/search/tests packages/files/tests packages/audit/tests apps/admin-console/tests apps/altitude/tests apps/switchboard/tests apps/foundry/tests tests/integration/altitude tests/integration/switchboard tests/integration/foundry tests/planning`
 - Files likely to modify:
-  - New test files listed in Step 7.1
+  - `apps/control-plane/package.json`, `apps/control-plane/tsconfig.json`, `apps/control-plane/src/index.ts`
+  - `apps/replay-console/package.json`, `apps/replay-console/tsconfig.json`, `apps/replay-console/src/index.ts`
+  - Package metadata, `tsconfig.json`, and source barrels under `packages/engine/`, `packages/runtime/`, `packages/executor/`, `packages/assertions/`, `packages/event-stream/`, `packages/artifacts/`, `packages/context-manager/`, `packages/vision/`, `packages/orchestrator/`, `packages/worker/`, `packages/policies/`, `packages/journey-compiler/`, and `packages/benchmark-runner/`
+  - Planner-adapter extensions under `packages/contracts/` or a dedicated `packages/planner-adapter/` if the scaffold needs a clearer package boundary.
   - `tasks/todo.md`
   - `tasks/history.md`
 - Implementation expectations:
-  - Create only tests and minimal empty barrels or package directories if Vitest import discovery requires the paths to exist.
-  - Keep the new tests red because Phase 7 implementation modules should not exist yet.
-  - Confirm the existing Phase 1-6 baseline remains green after adding the red tests.
-  - Update this file with the exact red/green counts and prepare Step 7.2 once the red phase is verified.
+  - Create scaffold modules with typed constants, domain interfaces, source barrels, and minimal package metadata following the existing workspace style.
+  - Keep behavior out of the scaffold unless needed to make imports compile; Step 7.3-7.6 should own the operational behavior.
+  - Re-run the Phase 7 suite and record which missing-module failures have moved to behavior/export failures.
+  - Confirm the explicit Phase 1-6 baseline remains green after the scaffold lands.

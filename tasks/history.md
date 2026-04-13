@@ -134,3 +134,7 @@
 - Confirmed full `pnpm test:run` passes at 40 passing files / 169 passing tests with no warnings.
 - Phase 6 complete. All acceptance criteria met for the Foundry owned parity product: frozen feature-matrix coverage, major-resource API compatibility, branch-aware builder/runtime and publish workflows, deterministic datasource and widget workflows, all Phase 6 tests, and no Phase 1-5 regressions.
 - Archived the completed Phase 6 execution file under `tasks/phases/phase-6.md`, marked the Phase 6 milestone complete in `tasks/roadmap.md`, and regenerated `tasks/todo.md` around the Phase 7 Step 7.1 integrated-platform red-phase contract tests with file-level detail.
+- Completed Step 7.1 (red phase) by adding 11 Phase 7 contract suites across the new control-plane app, replay console app, engine, runtime, executor, artifacts, orchestrator, journey compiler, vision, policies, and owned-products alpha paths.
+- The new Phase 7 suite intentionally fails on missing integrated-platform modules at 11 files / 23 tests with 22 expected failures and 1 owned-corpus guard passing.
+- Confirmed the Phase 1-6 baseline remains green with the explicit regression command at 40 passing files / 169 passing tests.
+- Prepared Step 7.2 in `tasks/todo.md` for scaffolding the integrated QA platform apps and packages.

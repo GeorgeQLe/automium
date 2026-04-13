@@ -10,11 +10,11 @@ This file tracks the active work for Phase 7 from [tasks/roadmap.md](/home/georg
 - Phase 4 Altitude parity product is complete and archived in [tasks/phases/phase-4.md](/home/georgeqle/projects/tools/dev/automium/tasks/phases/phase-4.md).
 - Phase 5 Switchboard parity product is complete and archived in [tasks/phases/phase-5.md](/home/georgeqle/projects/tools/dev/automium/tasks/phases/phase-5.md).
 - Phase 6 Foundry parity product is complete and archived in [tasks/phases/phase-6.md](/home/georgeqle/projects/tools/dev/automium/tasks/phases/phase-6.md).
-- Step 7.5 is complete: replay timelines, replay run summaries, artifact manifests, artifact retention metadata, targeted vision trigger decisions, and bounded crop request metadata now pass their focused suites.
-- The Phase 7 suite now runs 11 files / 23 tests with 21 passing tests and 2 expected failures isolated to later Step 7.6 orchestrator placeholders.
+- Step 7.6 is complete: worker leases, queue priority metadata, tenant quota decisions, worker concurrency decisions, capability enforcement, and telemetry summaries now pass their focused suites.
+- The Phase 7 suite now runs 11 files / 23 tests with all 23 tests passing.
 - The Phase 1-6 baseline remains green: `pnpm exec vitest run packages/contracts/tests packages/benchmark/tests packages/realtime/tests packages/jobs/tests packages/auth/tests packages/tenancy/tests packages/rbac/tests packages/search/tests packages/files/tests packages/audit/tests apps/admin-console/tests apps/altitude/tests apps/switchboard/tests apps/foundry/tests tests/integration/altitude tests/integration/switchboard tests/integration/foundry tests/planning` passes at 40 files / 169 tests.
 - Workspace TypeScript passes with `pnpm exec tsc --noEmit`.
-- Next automated step: Step 7.6.
+- Next automated step: Step 7.7.
 - Known manual blockers: none for Phase 7.
 
 ## Phase 7: Agent Browser Runtime and Platform Integration
@@ -45,7 +45,7 @@ Goal: complete the original QA platform vision against owned products instead of
 - [x] Step 7.5: **Automated** Implement replay event streams, artifact packaging, replay/debug console surfaces, targeted vision fallback, and context budgeting across owned-product runs.
   - Files likely to change: `apps/replay-console/src/*`, `packages/event-stream/src/*`, `packages/artifacts/src/*`, `packages/vision/src/*`, `packages/context-manager/src/*`, `packages/runtime/src/*`
   - Behavior includes: replay event ordering, semantic snapshot references, targeted crop metadata, network/console/download artifact references, mutation and assertion traces, run summaries, context layers, token/crop caps, and replay-console timeline data.
-- [ ] Step 7.6: **Automated** Implement worker isolation, queueing, telemetry, quotas, policy enforcement, natural-language authoring, cross-model benchmark reporting, and alpha hardening for owned-product execution.
+- [x] Step 7.6: **Automated** Implement worker isolation, queueing, telemetry, quotas, policy enforcement, natural-language authoring, cross-model benchmark reporting, and alpha hardening for owned-product execution.
   - Files likely to change: `packages/worker/src/*`, `packages/orchestrator/src/*`, `packages/benchmark-runner/src/*`, `packages/journey-compiler/src/*`, `packages/policies/src/*`, `apps/control-plane/src/*`, `tests/e2e/alpha/*`
   - Behavior includes: isolated worker leases, queue priority and concurrency limits, tenant quotas, telemetry summaries, domain allowlists, artifact retention policy, natural-language journey validation/compilation, cross-model pass/repeatability/latency/token/recovery metrics, and alpha journeys over the owned product routes.
 
@@ -66,38 +66,31 @@ Acceptance criteria:
 
 ## Review
 
-Step 7.5 replaced the replay-console, artifacts, and targeted-vision placeholders with pure domain functions. Replay timelines now sort events by sequence and classify stable lanes for planner, executor, runtime, assertions, worker, and artifact events. Replay summaries include the required artifact bundle contract, artifact manifests clone replay-critical references with schema metadata, retention metadata derives deterministic expiry from tenant/verdict/timestamp input, and targeted vision fallback is limited to low semantic confidence or actionability failures with `fullPage: false` crop requests.
+Step 7.6 replaced the orchestrator worker placeholders with deterministic pure functions. Worker leasing now returns stable per-run worker IDs, per-run browser-context isolation, priority queue placement, normalized tenant quota metadata, capability validation, and explicit denied outcomes for missing capabilities, tenant quota exhaustion, and worker concurrency exhaustion. Run telemetry summaries now derive latency from event bounds, accumulate non-negative token spend, and return the latest verdict for benchmark reporting.
 
 - Validation:
-  - `pnpm exec vitest run apps/replay-console/tests packages/artifacts/tests packages/vision/tests` passes at 3 files / 6 tests.
-  - `pnpm exec vitest run apps/control-plane/tests apps/replay-console/tests packages/engine/tests packages/runtime/tests packages/executor/tests packages/artifacts/tests packages/orchestrator/tests packages/journey-compiler/tests packages/vision/tests packages/policies/tests tests/e2e/alpha` is expected red at 11 files / 23 tests, with 21 passing tests and 2 expected failures in Step 7.6 worker orchestration placeholders.
+  - `pnpm exec vitest run packages/orchestrator/tests` passes at 1 file / 2 tests.
+  - `pnpm exec vitest run apps/control-plane/tests apps/replay-console/tests packages/engine/tests packages/runtime/tests packages/executor/tests packages/artifacts/tests packages/orchestrator/tests packages/journey-compiler/tests packages/vision/tests packages/policies/tests tests/e2e/alpha` passes at 11 files / 23 tests.
   - `pnpm exec vitest run packages/contracts/tests packages/benchmark/tests packages/realtime/tests packages/jobs/tests packages/auth/tests packages/tenancy/tests packages/rbac/tests packages/search/tests packages/files/tests packages/audit/tests apps/admin-console/tests apps/altitude/tests apps/switchboard/tests apps/foundry/tests tests/integration/altitude tests/integration/switchboard tests/integration/foundry tests/planning` passes at 40 files / 169 tests.
   - `pnpm exec tsc --noEmit` passes.
 - Warnings: none emitted by the validation commands.
 
 ## Next Step Plan
 
-Step 7.6 should implement worker isolation, queueing, telemetry, quotas, policy enforcement, natural-language authoring, cross-model benchmark reporting, and alpha hardening for owned-product execution.
+Step 7.7 should make the integrated platform suites pass and verify that the QA platform can compile, execute, replay, and benchmark journeys across all owned products without relying on third-party benchmark apps.
 
 - Commands to run:
-  - `pnpm exec vitest run packages/orchestrator/tests`
   - `pnpm exec vitest run apps/control-plane/tests apps/replay-console/tests packages/engine/tests packages/runtime/tests packages/executor/tests packages/artifacts/tests packages/orchestrator/tests packages/journey-compiler/tests packages/vision/tests packages/policies/tests tests/e2e/alpha`
   - `pnpm exec vitest run packages/contracts/tests packages/benchmark/tests packages/realtime/tests packages/jobs/tests packages/auth/tests packages/tenancy/tests packages/rbac/tests packages/search/tests packages/files/tests packages/audit/tests apps/admin-console/tests apps/altitude/tests apps/switchboard/tests apps/foundry/tests tests/integration/altitude tests/integration/switchboard tests/integration/foundry tests/planning`
   - `pnpm exec tsc --noEmit`
 - Files likely to modify:
-  - `packages/orchestrator/src/orchestrator-domain.ts`
-  - `packages/worker/src/worker-domain.ts` if isolated worker lease state belongs in the worker package
-  - `packages/benchmark-runner/src/benchmark-runner-domain.ts` if telemetry summaries need benchmark report integration
-  - `packages/journey-compiler/src/journey-compiler-domain.ts` only if natural-language authoring coverage expands beyond existing compilation helpers
-  - `packages/policies/src/policies-domain.ts` only if quota or allowlist policy enforcement needs additive shared decisions
-  - `apps/control-plane/src/control-plane-domain.ts` only if Step 7.6 requires surfacing worker/telemetry fields through run status
-  - `tests/e2e/alpha/owned-products-alpha.contract.test.ts` only if alpha hardening needs additional owned-product assertions
   - `tasks/todo.md`
+  - `tasks/roadmap.md`
+  - `tasks/phases/phase-7.md`
   - `tasks/history.md`
 - Implementation expectations:
-  - Replace Step 7.6 placeholder throws in orchestrator with deterministic pure functions for worker leasing and telemetry summaries.
-  - Lease isolated workers with stable IDs, queue priority ordering, concurrency caps, and tenant quota checks.
-  - Preserve explicit denied/unsupported outcomes instead of partial lease objects when quotas or concurrency limits block execution.
-  - Summarize telemetry for benchmark reporting with pass/retry/recovery/latency/token/spend fields that remain deterministic from input.
-  - Add worker, policy, benchmark-runner, or control-plane helpers only where required by the Step 7.6 contracts.
-  - Keep the final Step 7.7 green sweep responsible for proving all integrated platform suites pass together.
+  - Re-run the full Phase 7 suite and confirm all 11 files / 23 tests pass together.
+  - Re-run the Phase 1-6 baseline and confirm all 40 files / 169 tests still pass.
+  - Re-run workspace TypeScript and confirm it passes with no warnings.
+  - If validation remains green, mark Step 7.7 complete and check each Phase 7 acceptance criterion against the verified suites.
+  - Archive the completed phase to `tasks/phases/phase-7.md`, mark the Phase 7 milestone complete in `tasks/roadmap.md`, and prepare the next planning action if no further phases remain.

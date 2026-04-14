@@ -2,17 +2,17 @@
 
 This file tracks active execution work from [tasks/roadmap.md](/home/georgeqle/projects/tools/dev/automium/tasks/roadmap.md). All roadmap phases are complete and archived in [tasks/phases/](/home/georgeqle/projects/tools/dev/automium/tasks/phases/).
 
-## Active Task: Devtool Positioning
+## Active Task: Devtool Monetization
 
-Goal: create `research/devtool-positioning.md` using the installed `devtool-positioning` skill.
+Goal: create `research/devtool-monetization.md` using the installed `devtool-monetization` skill.
 
 ### Plan
 
-- [x] Read the `devtool-positioning` skill instructions.
-- [x] Review existing user, integration, DX journey, adoption, benchmark, spec, and spec-drift context.
-- [x] Research current alternative categories and official competitor positioning.
-- [x] Map alternatives, unique workflow advantages, ecosystem fit, trust claims, switching cost, and concise positioning.
-- [x] Create `research/devtool-positioning.md`.
+- [x] Read the `devtool-monetization` skill instructions.
+- [x] Review existing user, integration, DX journey, adoption, positioning, benchmark, spec, and spec-drift context.
+- [x] Research current official pricing and packaging references from adjacent devtool categories.
+- [x] Map Automium's free/open-source stance, packaging, usage limits, team conversion, enterprise triggers, and unit economics.
+- [x] Create `research/devtool-monetization.md`.
 - [x] Update `tasks/todo.md`, `tasks/roadmap.md`, and `tasks/history.md` with results.
 - [x] Run targeted documentation validation.
 - [ ] Commit and push intended documentation changes to `master`.
@@ -48,7 +48,7 @@ Goal: create `research/devtool-positioning.md` using the installed `devtool-posi
 - [x] `$devtool-dx-journey` - created `research/devtool-dx-journey.md` using the installed `devtool-dx-journey` skill.
 - [x] `$devtool-adoption` - created `research/devtool-adoption.md` using the installed `devtool-adoption` skill.
 - [x] `$devtool-positioning` - created `research/devtool-positioning.md` using the installed `devtool-positioning` skill.
-- [ ] `$devtool-monetization` - create `research/devtool-monetization.md` using the installed `devtool-monetization` skill.
+- [x] `$devtool-monetization` - created `research/devtool-monetization.md` using the installed `devtool-monetization` skill.
 - [x] `$spec-drift fix all` - reconciled specs against implementation because `specs/agent-native-browser-qa-platform.md` and `specs/owned-parity-benchmark-products.md` were last updated on 2026-04-07, while the implementation and phase archives were completed through 2026-04-13.
 
 ## Review
@@ -67,6 +67,8 @@ Step 7.7 completed the final integrated-platform verification sweep. The QA plat
 
 `$devtool-positioning` completed the developer-facing positioning map for Automium. The artifact compares Automium against browser automation standards, selector-first E2E frameworks, hosted synthetic monitoring, AI browser-agent SDKs, model-native computer-use loops, and low-code QA platforms. It positions Automium around governed agent-native workflow QA and planner benchmarking, while keeping current local contract-level readiness separate from production service claims.
 
+`$devtool-monetization` completed the developer-facing monetization model for Automium. The artifact defines an open-core stance, free local proof, proposed cloud and enterprise packages, run-credit usage limits, team conversion moments, enterprise triggers, unit economics, gross-margin rules, and a staged monetization sequence. It explicitly separates current local contract-level readiness from future hosted browser-service pricing.
+
 - Validation:
   - `test -f research/devtool-integration-map.md`
   - `rg -n "Integration Map|Planner And Model Ecosystem|Product Integration Surfaces|Setup Path|Compatibility Constraints|Migration And Adoption Risks|Integration Priorities" research/devtool-integration-map.md`
@@ -84,7 +86,11 @@ Step 7.7 completed the final integrated-platform verification sweep. The QA plat
   - `test -f research/devtool-positioning.md`
   - `rg -n "Market Map|Alternative Analysis|Unique Workflow Advantages|Ecosystem Fit|Trust Claims|Switching Cost|Concise Positioning|Positioning Rules" research/devtool-positioning.md`
   - `rg -n "Playwright|Cypress|Browserbase|Stagehand|Selenium|WebDriver|computer use|planner benchmarking" research/devtool-positioning.md`
+  - `test -f research/devtool-monetization.md`
+  - `rg -n "Free And Open-Source Stance|Packaging|Usage Units And Limits|Team Conversion|Enterprise Triggers|Unit Economics|Recommended First Monetization Sequence" research/devtool-monetization.md`
+  - `rg -n "Playwright|Cypress|Browserbase|BrowserStack|Sauce Labs|OpenAI API|run credit|managed pass-through" research/devtool-monetization.md`
   - `git diff --check`
+  - `pnpm test:run` passes at 51 files / 192 tests.
   - `pnpm test:run` passes at 51 files / 192 tests.
   - `pnpm exec vitest run apps/control-plane/tests apps/replay-console/tests packages/engine/tests packages/runtime/tests packages/executor/tests packages/artifacts/tests packages/orchestrator/tests packages/journey-compiler/tests packages/vision/tests packages/policies/tests tests/e2e/alpha` passes at 11 files / 23 tests.
   - `pnpm exec vitest run packages/contracts/tests packages/benchmark/tests packages/realtime/tests packages/jobs/tests packages/auth/tests packages/tenancy/tests packages/rbac/tests packages/search/tests packages/files/tests packages/audit/tests apps/admin-console/tests apps/altitude/tests apps/switchboard/tests apps/foundry/tests tests/integration/altitude tests/integration/switchboard tests/integration/foundry tests/planning` passes at 40 files / 169 tests.
@@ -93,10 +99,9 @@ Step 7.7 completed the final integrated-platform verification sweep. The QA plat
 
 ## Next Action
 
-- [ ] Run `$devtool-monetization` from the priority documentation queue.
+- [ ] Commit and push the `$devtool-monetization` documentation changes to `master`.
 
 ### Next Step Implementation Plan
 
-1. Read the `devtool-monetization` skill instructions and existing research artifacts.
-2. Create `research/devtool-monetization.md` covering pricing, packaging, limits, open-source strategy, and team conversion for Automium.
-3. Update this file and `tasks/history.md` with the completed research artifact, then run lightweight documentation validation before committing and pushing to `master`.
+1. Commit the completed monetization documentation changes.
+2. Push the commit to `master`.

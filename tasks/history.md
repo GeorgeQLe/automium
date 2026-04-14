@@ -197,3 +197,8 @@
 - Updated `tasks/roadmap.md` with a maintenance plan for the positioning research artifact.
 - Updated `tasks/todo.md` to mark `$devtool-positioning` complete and prepared `$devtool-monetization` as the next priority documentation step.
 - Verified the positioning artifact with `test -f research/devtool-positioning.md`, targeted `rg` section and competitor checks, `git diff --check`, and full `pnpm test:run` at 51 files / 192 tests.
+- Completed `$devtool-monetization` by creating `research/devtool-monetization.md` with Automium's free/open-source stance, open-core packaging, usage limits, run-credit model, team conversion path, enterprise triggers, unit economics, gross-margin rules, pricing rules, and first monetization sequence.
+- The monetization artifact uses current official pricing references from Playwright, Cypress Cloud, Browserbase, BrowserStack, Sauce Labs, and OpenAI API pricing to keep Automium's proposed packaging grounded in adjacent developer-tool pricing patterns. It separates the current free local contract-level proof from future hosted execution, replay retention, team governance, managed planner billing, and enterprise controls.
+- Updated `tasks/roadmap.md` with a maintenance plan for the monetization research artifact.
+- Updated `tasks/todo.md` to mark `$devtool-monetization` complete and prepared the final documentation validation, commit, and push step.
+- Verified the monetization artifact with `test -f research/devtool-monetization.md`, targeted `rg` section and pricing-reference checks, `git diff --check`, and full `pnpm test:run` at 51 files / 192 tests.

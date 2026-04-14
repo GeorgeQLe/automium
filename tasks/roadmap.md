@@ -363,3 +363,24 @@ Goal: position Automium against browser automation, E2E testing, synthetic monit
 - Run targeted documentation checks proving the expected positioning sections exist.
 - Run `git diff --check`.
 - Commit and push the documentation changes to `master` after verification.
+
+## Maintenance Plan: Devtool Monetization
+
+Goal: design Automium's monetization model using the installed `devtool-monetization` skill.
+
+### Research Scope
+
+- Review existing developer-facing context in `research/devtool-user-map.md`, `research/devtool-integration-map.md`, `research/devtool-dx-journey.md`, `research/devtool-adoption.md`, `research/devtool-positioning.md`, the core specs, benchmark docs, and the spec drift report.
+- Research current official pricing and packaging references from adjacent developer-tool categories such as browser automation infrastructure, E2E testing platforms, synthetic monitoring, and model APIs.
+- Define the free/open-source stance, packaging, usage limits, team conversion path, enterprise triggers, and unit economics while keeping local contract-level readiness separate from future production-service pricing.
+
+### Deliverable
+
+- Create `research/devtool-monetization.md`.
+- Update `tasks/todo.md` and `tasks/history.md` with the completed research result and validation evidence.
+
+### Verification
+
+- Run targeted documentation checks proving the expected monetization sections exist.
+- Run `git diff --check`.
+- Commit and push the documentation changes to `master` after verification.

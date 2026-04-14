@@ -181,3 +181,10 @@
 - Verified the spec-drift reconciliation with `test -f specs/drift-report.md`, a targeted `rg` check for the updated documentation anchors, `pnpm exec tsc --noEmit`, and full `pnpm test:run` at 51 files / 192 tests.
 - Completed `$devtool-integration-map` by creating `research/devtool-integration-map.md` with Automium's planner, journey, control-plane, owned product, benchmark fixture, browser/runtime, executor, replay/artifact, targeted vision, orchestration, policy/governance, shared platform, setup, compatibility, migration, and integration-priority map.
 - Updated `tasks/todo.md` to mark `$devtool-integration-map` complete and prepared `$devtool-dx-journey` as the next priority documentation step.
+
+## 2026-04-14
+
+- Completed `$devtool-dx-journey` by creating `research/devtool-dx-journey.md` with Automium's install, quickstart, first successful owned-product journey, journey authoring, error recovery, debugging and replay, production adoption, team rollout, retention, documentation backlog, and open DX questions.
+- Updated `tasks/roadmap.md` with a maintenance plan for the DX journey research artifact.
+- Updated `tasks/todo.md` to mark `$devtool-dx-journey` complete and prepared `$devtool-adoption` as the next priority documentation step.
+- Verified the DX journey artifact with `test -f research/devtool-dx-journey.md`, targeted `rg` section checks, and `git diff --check`.

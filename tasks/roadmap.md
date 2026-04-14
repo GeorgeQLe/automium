@@ -302,3 +302,23 @@ Goal: reconcile the finalized specs with the completed Phase 1-7 implementation 
 - Run targeted text checks against the updated specs and drift report.
 - Run the repository TypeScript and Vitest suites that demonstrate the cited implementation surfaces still pass.
 - Commit and push the spec-drift documentation changes to `master` after verification.
+
+## Maintenance Plan: Devtool DX Journey
+
+Goal: map Automium's developer experience from local install through production adoption using the installed `devtool-dx-journey` skill.
+
+### Research Scope
+
+- Review existing developer-facing context in `research/devtool-user-map.md`, `research/devtool-integration-map.md`, the core specs, benchmark docs, contract docs, and Phase 7 archive.
+- Map the install, quickstart, first successful journey, debugging and replay, production adoption, team rollout, and retention paths.
+- Call out current repo maturity versus production hardening gaps so the journey map does not overstate readiness.
+
+### Deliverable
+
+- Create `research/devtool-dx-journey.md`.
+- Update `tasks/todo.md` and `tasks/history.md` with the completed research result and validation evidence.
+
+### Verification
+
+- Run targeted documentation checks proving the expected DX journey sections exist.
+- Commit and push the documentation changes to `master` after verification.

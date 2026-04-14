@@ -202,3 +202,6 @@
 - Updated `tasks/roadmap.md` with a maintenance plan for the monetization research artifact.
 - Updated `tasks/todo.md` to mark `$devtool-monetization` complete and prepared the final documentation validation, commit, and push step.
 - Verified the monetization artifact with `test -f research/devtool-monetization.md`, targeted `rg` section and pricing-reference checks, `git diff --check`, and full `pnpm test:run` at 51 files / 192 tests.
+- Confirmed production readiness blockers after reviewing the repo implementation: `packages/engine` and `packages/runtime` are domain/model helpers rather than real browser drivers, no `packages/mcp-server` or stdio/SSE MCP entrypoint exists, `packages/planner-adapter` exposes metadata/envelope types without provider-backed Claude API calls, and production persistence/storage/queue/vault integrations remain adapter contracts or local behavior.
+- Updated `tasks/lessons.md` with the rule that Automium status summaries must distinguish contract/domain completeness from production runtime readiness.
+- Updated `tasks/todo.md` so MCP server transport and provider-backed planner integrations are explicit deferred blockers alongside the existing browser engine and production infrastructure follow-ups.

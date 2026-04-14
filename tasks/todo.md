@@ -19,7 +19,9 @@ Goal: create `research/devtool-monetization.md` using the installed `devtool-mon
 
 ### Deferred Spec-Drift Follow-Up
 
-- [ ] Production browser engine: implement executable HTML/CSS/JS parsing, layout, event/input dispatch, and semantic graph generation beyond the current engine state and interactive-element contract.
+- [ ] Production browser engine: implement real browser driving or executable engine support beyond the current TypeScript state shapes, including page loading, DOM/runtime extraction, event/input dispatch, and semantic graph generation through a Playwright/Puppeteer/Chromium integration or a purpose-built browser engine.
+- [ ] MCP server transport: add a `packages/mcp-server/` entrypoint that exposes Automium control-plane operations as MCP tools over stdio and/or SSE, with tool schemas, request validation, and run/replay/artifact mappings.
+- [ ] Provider-backed planner integrations: implement concrete planner adapters for Claude/Anthropic and other target providers beyond the current planner metadata and intent-envelope interfaces.
 - [ ] Production orchestration: deploy real worker pools, queue transports, concurrency controls, telemetry persistence, and tenant quota enforcement beyond the current domain contracts.
 - [ ] Production persistence and infrastructure adapters: wire Postgres, object storage, job queues, realtime transports, and search backends behind the checked-in shared platform contracts.
 - [ ] Credential and secret vault integration: replace current seed `secretRef` metadata and policy placeholders with scoped runtime secret retrieval.
@@ -68,6 +70,8 @@ Step 7.7 completed the final integrated-platform verification sweep. The QA plat
 `$devtool-positioning` completed the developer-facing positioning map for Automium. The artifact compares Automium against browser automation standards, selector-first E2E frameworks, hosted synthetic monitoring, AI browser-agent SDKs, model-native computer-use loops, and low-code QA platforms. It positions Automium around governed agent-native workflow QA and planner benchmarking, while keeping current local contract-level readiness separate from production service claims.
 
 `$devtool-monetization` completed the developer-facing monetization model for Automium. The artifact defines an open-core stance, free local proof, proposed cloud and enterprise packages, run-credit usage limits, team conversion moments, enterprise triggers, unit economics, gross-margin rules, and a staged monetization sequence. It explicitly separates current local contract-level readiness from future hosted browser-service pricing.
+
+Production readiness blocker confirmation completed after reviewing the implementation. The findings are confirmed: the repo has contract/domain models for engine/runtime, planner adapters, orchestration, worker leases, and infrastructure adapters, but no real browser-driving implementation, no MCP server transport, no provider-backed Claude planner adapter, and no production persistence/storage/queue/vault implementations.
 
 - Validation:
   - `test -f research/devtool-integration-map.md`

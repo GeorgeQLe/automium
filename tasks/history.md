@@ -192,3 +192,8 @@
 - Updated `tasks/roadmap.md` with a maintenance plan for the adoption research artifact.
 - Updated `tasks/todo.md` to mark `$devtool-adoption` complete and prepared `$devtool-positioning` as the next priority documentation step.
 - Verified the adoption artifact with `test -f research/devtool-adoption.md`, targeted `rg` section checks, `git diff --check`, and full `pnpm test:run` at 51 files / 192 tests.
+- Completed `$devtool-positioning` by creating `research/devtool-positioning.md` with Automium's market map, alternative analysis, unique workflow advantages, ecosystem fit, trust claims, switching-cost analysis, concise positioning, persona messaging, positioning rules, backlog, and open positioning questions.
+- The positioning artifact compares Automium against Playwright, Cypress, Selenium/WebDriver, Browserbase/Stagehand, hosted browser infrastructure, synthetic monitoring, low-code QA, model-native computer-use tools, and browser-agent benchmark harnesses. It explicitly positions Automium as governed agent-native workflow QA and planner benchmarking rather than a full replacement for selector-level E2E suites or a currently production-ready browser service.
+- Updated `tasks/roadmap.md` with a maintenance plan for the positioning research artifact.
+- Updated `tasks/todo.md` to mark `$devtool-positioning` complete and prepared `$devtool-monetization` as the next priority documentation step.
+- Verified the positioning artifact with `test -f research/devtool-positioning.md`, targeted `rg` section and competitor checks, `git diff --check`, and full `pnpm test:run` at 51 files / 192 tests.

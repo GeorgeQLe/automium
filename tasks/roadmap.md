@@ -342,3 +342,24 @@ Goal: plan how developers find, try, trust, and keep using Automium using the in
 
 - Run targeted documentation checks proving the expected adoption sections exist.
 - Commit and push the documentation changes to `master` after verification.
+
+## Maintenance Plan: Devtool Positioning
+
+Goal: position Automium against browser automation, E2E testing, synthetic monitoring, AI browser-agent, and low-code QA alternatives using the installed `devtool-positioning` skill.
+
+### Research Scope
+
+- Review existing developer-facing context in `research/devtool-user-map.md`, `research/devtool-integration-map.md`, `research/devtool-dx-journey.md`, `research/devtool-adoption.md`, the core specs, benchmark docs, and the spec drift report.
+- Compare Automium against established selector-first E2E frameworks, browser automation standards, hosted monitoring platforms, AI browser-agent SDKs, model-native computer-use loops, and low-code QA platforms.
+- Keep the positioning honest about Automium's current local contract-level readiness and the production hardening required before it can claim live browser-service maturity.
+
+### Deliverable
+
+- Create `research/devtool-positioning.md`.
+- Update `tasks/todo.md` and `tasks/history.md` with the completed research result and validation evidence.
+
+### Verification
+
+- Run targeted documentation checks proving the expected positioning sections exist.
+- Run `git diff --check`.
+- Commit and push the documentation changes to `master` after verification.

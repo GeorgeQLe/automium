@@ -1,112 +1,67 @@
-# Current Phase: Complete
+# Current Phase: MCP Server Package Shell And Registry Foundation
 
-This file tracks active execution work from [tasks/roadmap.md](/home/georgeqle/projects/tools/dev/automium/tasks/roadmap.md). All roadmap phases are complete and archived in [tasks/phases/](/home/georgeqle/projects/tools/dev/automium/tasks/phases/).
+This file tracks Phase 1 from [tasks/roadmap.md](/home/georgeqle/projects/tools/dev/automium/tasks/roadmap.md). The full phased plan is in `tasks/roadmap.md`; this active document intentionally contains only the current phase.
 
-## Active Task: Devtool Monetization
+## Phase 1: Package Shell And MCP Registry Foundation
 
-Goal: create `research/devtool-monetization.md` using the installed `devtool-monetization` skill.
+Goal: introduce the `packages/mcp-server/` package and a testable server-registration boundary before implementing individual tool behavior.
 
-### Plan
+> Test strategy: tdd
 
-- [x] Read the `devtool-monetization` skill instructions.
-- [x] Review existing user, integration, DX journey, adoption, positioning, benchmark, spec, and spec-drift context.
-- [x] Research current official pricing and packaging references from adjacent devtool categories.
-- [x] Map Automium's free/open-source stance, packaging, usage limits, team conversion, enterprise triggers, and unit economics.
-- [x] Create `research/devtool-monetization.md`.
-- [x] Update `tasks/todo.md`, `tasks/roadmap.md`, and `tasks/history.md` with results.
-- [x] Run targeted documentation validation.
-- [x] Commit and push intended documentation changes to `master`.
+### Tests First
 
-### Deferred Spec-Drift Follow-Up
+- [ ] Step 1.1: **Automated** Write failing package and registry tests for the MCP server shell.
+  - Files: create `packages/mcp-server/tests/mcp-server-registration.contract.test.ts`
+  - Tests cover: package exports a server factory, v1 capability manifest exists, tool/resource/prompt registries can be inspected in tests without starting stdio, and the package does not register unsupported remote transports.
 
-- [ ] Production browser engine: implement real browser driving or executable engine support beyond the current TypeScript state shapes, including page loading, DOM/runtime extraction, event/input dispatch, and semantic graph generation through a Playwright/Puppeteer/Chromium integration or a purpose-built browser engine.
-- [ ] MCP server transport: add a `packages/mcp-server/` entrypoint that exposes Automium control-plane operations as MCP tools over stdio and/or SSE, with tool schemas, request validation, and run/replay/artifact mappings.
-- [ ] Provider-backed planner integrations: implement concrete planner adapters for Claude/Anthropic and other target providers beyond the current planner metadata and intent-envelope interfaces.
-- [ ] Production orchestration: deploy real worker pools, queue transports, concurrency controls, telemetry persistence, and tenant quota enforcement beyond the current domain contracts.
-- [ ] Production persistence and infrastructure adapters: wire Postgres, object storage, job queues, realtime transports, and search backends behind the checked-in shared platform contracts.
-- [ ] Credential and secret vault integration: replace current seed `secretRef` metadata and policy placeholders with scoped runtime secret retrieval.
-- [ ] Product UI workflow layer: add deployed browser UIs and browser-driven UI workflow suites for `Altitude`, `Switchboard`, and `Foundry` instead of only domain/contract/integration tests.
-- [ ] Operator surface hardening: add explicit command palette/global action support, help-center/self-service flows, presence/collision handling, and bulk action surfaces where still represented only by specs or parity matrices.
+### Implementation
 
-## Current Status
+- [ ] Step 1.2: **Automated** Scaffold `packages/mcp-server/` using the existing workspace package conventions.
+  - Files: create `packages/mcp-server/package.json`, `packages/mcp-server/tsconfig.json`, `packages/mcp-server/src/index.ts`
+  - Include package exports and a future `bin` entry, but do not wire stdio process startup until Phase 4.
+- [ ] Step 1.3: **Automated** Add the MCP SDK dependency boundary and server factory.
+  - Files: create `packages/mcp-server/src/server.ts`
+  - The server factory should isolate SDK-specific construction inside `packages/mcp-server/` and expose a test-friendly registration surface.
+- [ ] Step 1.4: **Automated** Define v1 schema, error, and capability primitives for the MCP boundary.
+  - Files: create `packages/mcp-server/src/schemas.ts`, `packages/mcp-server/src/errors.ts`
+  - Schemas cover supported tool names, fixed resource URIs, prompt names, modeled-output metadata, planner references, journey input shapes, replay summary input, artifact manifest input, and benchmark comparison input.
+  - Errors cover invalid app ID, fixture/app mismatch, unsupported planner intent, invalid artifact kind, unsupported corpus version, malformed planner metadata, unsupported resource URI, and unsupported v1 operation.
+- [ ] Step 1.5: **Automated** Register placeholder descriptors for the v1 tools, resources, and prompts without implementing domain behavior yet.
+  - Files: create `packages/mcp-server/src/tools.ts`, `packages/mcp-server/src/resources.ts`, `packages/mcp-server/src/prompts.ts`
+  - Descriptors must include every v1 name from the spec and must keep remote Streamable HTTP/SSE out of scope.
 
-- Phase 1 benchmark foundation reset is complete and archived in [tasks/phases/phase-1.md](/home/georgeqle/projects/tools/dev/automium/tasks/phases/phase-1.md).
-- Phase 2 frozen parity audit and benchmark target design is complete and archived in [tasks/phases/phase-2.md](/home/georgeqle/projects/tools/dev/automium/tasks/phases/phase-2.md).
-- Phase 3 shared multi-tenant product platform is complete and archived in [tasks/phases/phase-3.md](/home/georgeqle/projects/tools/dev/automium/tasks/phases/phase-3.md).
-- Phase 4 Altitude parity product is complete and archived in [tasks/phases/phase-4.md](/home/georgeqle/projects/tools/dev/automium/tasks/phases/phase-4.md).
-- Phase 5 Switchboard parity product is complete and archived in [tasks/phases/phase-5.md](/home/georgeqle/projects/tools/dev/automium/tasks/phases/phase-5.md).
-- Phase 6 Foundry parity product is complete and archived in [tasks/phases/phase-6.md](/home/georgeqle/projects/tools/dev/automium/tasks/phases/phase-6.md).
-- Phase 7 agent browser runtime and platform integration is complete and archived in [tasks/phases/phase-7.md](/home/georgeqle/projects/tools/dev/automium/tasks/phases/phase-7.md).
-- Final Phase 7 suite: `pnpm exec vitest run apps/control-plane/tests apps/replay-console/tests packages/engine/tests packages/runtime/tests packages/executor/tests packages/artifacts/tests packages/orchestrator/tests packages/journey-compiler/tests packages/vision/tests packages/policies/tests tests/e2e/alpha` passes at 11 files / 23 tests.
-- Final Phase 1-6 baseline: `pnpm exec vitest run packages/contracts/tests packages/benchmark/tests packages/realtime/tests packages/jobs/tests packages/auth/tests packages/tenancy/tests packages/rbac/tests packages/search/tests packages/files/tests packages/audit/tests apps/admin-console/tests apps/altitude/tests apps/switchboard/tests apps/foundry/tests tests/integration/altitude tests/integration/switchboard tests/integration/foundry tests/planning` passes at 40 files / 169 tests.
-- Workspace TypeScript passes with `pnpm exec tsc --noEmit`.
-- Known manual blockers: none.
+### Green
 
-## Priority Documentation Todo
+- [ ] Step 1.6: **Automated** Make the Phase 1 registration tests pass and run targeted workspace validation.
+  - Commands: `pnpm exec vitest run packages/mcp-server/tests/mcp-server-registration.contract.test.ts`, `pnpm exec tsc --noEmit`
 
-- [x] `$pack install devtool` - verified `.agents/project.json` declares `project_type: "devtool"` with `enabled_packs: ["devtool"]`, and `pack status` confirms the local Claude/Codex devtool skill links exist.
-- [x] `$devtool-user-map` - created `research/devtool-user-map.md` using the installed `devtool-user-map` skill.
-- [x] `$devtool-integration-map` - created `research/devtool-integration-map.md` using the installed `devtool-integration-map` skill.
-- [x] `$devtool-dx-journey` - created `research/devtool-dx-journey.md` using the installed `devtool-dx-journey` skill.
-- [x] `$devtool-adoption` - created `research/devtool-adoption.md` using the installed `devtool-adoption` skill.
-- [x] `$devtool-positioning` - created `research/devtool-positioning.md` using the installed `devtool-positioning` skill.
-- [x] `$devtool-monetization` - created `research/devtool-monetization.md` using the installed `devtool-monetization` skill.
-- [x] `$spec-drift fix all` - reconciled specs against implementation because `specs/agent-native-browser-qa-platform.md` and `specs/owned-parity-benchmark-products.md` were last updated on 2026-04-07, while the implementation and phase archives were completed through 2026-04-13.
+### Milestone
+
+- [ ] Package shell and MCP registry foundation complete.
+
+Acceptance criteria:
+
+- `packages/mcp-server/` exists in the workspace.
+- The package exports a server factory and a test-inspectable v1 registration surface.
+- All v1 tool, resource, and prompt names are present as descriptors.
+- No remote MCP transport is registered.
+- All phase tests pass.
+- No regressions.
 
 ## Review
 
-Step 7.7 completed the final integrated-platform verification sweep. The QA platform can compile, execute, replay, and benchmark journeys across `Altitude`, `Switchboard`, `Foundry`, and the owned support fixture without relying on third-party benchmark apps.
+Plan generated from `specs/mcp-server.md` on 2026-04-14. Implementation has not started; the next action is the required check-in before executing Step 1.1.
 
-`$devtool-user-map` completed the developer-facing audience map for Automium, covering primary developer users, secondary users, economic buyers, champions, maintainers, operational stakeholders, high-value use cases, adoption blockers, adoption sequencing, persona messaging, and open research questions.
+Validation performed for this planning step:
 
-`$devtool-integration-map` completed the developer-facing ecosystem map for Automium, covering planner adapters, journey/control-plane APIs, owned product integrations, benchmark fixtures, browser/runtime boundaries, deterministic executor contracts, replay/artifact surfaces, targeted vision, orchestration, worker leases, policy/governance, shared platform contracts, setup paths, compatibility constraints, migration risks, and integration priorities.
-
-`$spec-drift fix all` completed the spec-to-code reconciliation pass. The drift report recorded 29 verified claims, 0 unresolved errors, 6 deferred production-hardening warnings, and 5 resolved documentation drift items. The specs now document the current contract/domain implementation status, exact planner intent tokens, owned benchmark corpus scope, product route-manifest coverage, deterministic seed/reset surfaces, and explicit hardening follow-ups.
-
-`$devtool-dx-journey` completed the developer-experience journey map for Automium. The artifact covers install, quickstart, first successful owned-product journey, journey authoring, error recovery, debugging and replay, production adoption, team rollout, retention loops, documentation backlog, and open DX questions. It explicitly separates the current local contract-level path from the production hardening path.
-
-`$devtool-adoption` completed the developer-facing adoption plan for Automium. The artifact covers adoption thesis, adoption loops, examples, templates, community channels, proof artifacts, activation metrics, adoption risks, recommended adoption backlog, and open adoption questions. It explicitly positions Automium around high-value workflow QA, causal replay, and planner benchmarking instead of full replacement of selector-level E2E tools.
-
-`$devtool-positioning` completed the developer-facing positioning map for Automium. The artifact compares Automium against browser automation standards, selector-first E2E frameworks, hosted synthetic monitoring, AI browser-agent SDKs, model-native computer-use loops, and low-code QA platforms. It positions Automium around governed agent-native workflow QA and planner benchmarking, while keeping current local contract-level readiness separate from production service claims.
-
-`$devtool-monetization` completed the developer-facing monetization model for Automium. The artifact defines an open-core stance, free local proof, proposed cloud and enterprise packages, run-credit usage limits, team conversion moments, enterprise triggers, unit economics, gross-margin rules, and a staged monetization sequence. It explicitly separates current local contract-level readiness from future hosted browser-service pricing.
-
-Production readiness blocker confirmation completed after reviewing the implementation. The findings are confirmed: the repo has contract/domain models for engine/runtime, planner adapters, orchestration, worker leases, and infrastructure adapters, but no real browser-driving implementation, no MCP server transport, no provider-backed Claude planner adapter, and no production persistence/storage/queue/vault implementations.
-
-- Validation:
-  - `test -f research/devtool-integration-map.md`
-  - `rg -n "Integration Map|Planner And Model Ecosystem|Product Integration Surfaces|Setup Path|Compatibility Constraints|Migration And Adoption Risks|Integration Priorities" research/devtool-integration-map.md`
-  - `test -f specs/drift-report.md`
-  - `rg -n "Current Repository Implementation Status|Benchmark Corpus Current Scope|press-key|wait-for-condition|Production hardening|Spec Drift Report|Deferred Warnings|Verified Claims" specs tasks`
-  - `pnpm test:run` passes at 51 files / 192 tests.
-  - `test -f research/devtool-user-map.md`
-  - `rg -n "Primary Developer Users|Economic Buyers|Champions|Maintainers And Contributors|Operational Stakeholders|Adoption Blockers" research/devtool-user-map.md`
-  - `test -f research/devtool-dx-journey.md`
-  - `rg -n "Install Journey|Quickstart Journey|First Successful Journey|Error Recovery Journey|Debugging And Replay Journey|Production Adoption Journey|Team Rollout Journey|Retention Journey" research/devtool-dx-journey.md`
-  - `rg -n "foundry-baseline-builder|CONTROL_PLANE_ROUTES|compileNaturalLanguageJourney|comparePlannerBackends|Production readiness blockers|Documentation And Example Backlog" research/devtool-dx-journey.md`
-  - `test -f research/devtool-adoption.md`
-  - `rg -n "Adoption Loops|Examples|Templates|Community Channels|Proof Artifacts|Activation Metrics|Adoption Risks|Recommended Adoption Backlog" research/devtool-adoption.md`
-  - `rg -n "foundry-baseline-builder|examples/first-journey.ts|Replay Triage Template|Planner Adapter Template|Security review packet|Playwright/Cypress" research/devtool-adoption.md`
-  - `test -f research/devtool-positioning.md`
-  - `rg -n "Market Map|Alternative Analysis|Unique Workflow Advantages|Ecosystem Fit|Trust Claims|Switching Cost|Concise Positioning|Positioning Rules" research/devtool-positioning.md`
-  - `rg -n "Playwright|Cypress|Browserbase|Stagehand|Selenium|WebDriver|computer use|planner benchmarking" research/devtool-positioning.md`
-  - `test -f research/devtool-monetization.md`
-  - `rg -n "Free And Open-Source Stance|Packaging|Usage Units And Limits|Team Conversion|Enterprise Triggers|Unit Economics|Recommended First Monetization Sequence" research/devtool-monetization.md`
-  - `rg -n "Playwright|Cypress|Browserbase|BrowserStack|Sauce Labs|OpenAI API|run credit|managed pass-through" research/devtool-monetization.md`
-  - `git diff --check`
-  - `pnpm test:run` passes at 51 files / 192 tests.
-  - `pnpm test:run` passes at 51 files / 192 tests.
-  - `pnpm exec vitest run apps/control-plane/tests apps/replay-console/tests packages/engine/tests packages/runtime/tests packages/executor/tests packages/artifacts/tests packages/orchestrator/tests packages/journey-compiler/tests packages/vision/tests packages/policies/tests tests/e2e/alpha` passes at 11 files / 23 tests.
-  - `pnpm exec vitest run packages/contracts/tests packages/benchmark/tests packages/realtime/tests packages/jobs/tests packages/auth/tests packages/tenancy/tests packages/rbac/tests packages/search/tests packages/files/tests packages/audit/tests apps/admin-console/tests apps/altitude/tests apps/switchboard/tests apps/foundry/tests tests/integration/altitude tests/integration/switchboard tests/integration/foundry tests/planning` passes at 40 files / 169 tests.
-  - `pnpm exec tsc --noEmit` passes.
-- Warnings: none emitted by the validation commands.
+- Read `/home/georgeqle/projects/tools/dev/agentic-skills/global/codex/plan-phases/SKILL.md`.
+- Read `tasks/lessons.md` and preserved the production-readiness boundary around MCP transport.
+- Read `specs/mcp-server.md`.
+- Inspected existing package exports in `packages/benchmark/`, `apps/control-plane/`, `apps/replay-console/`, `packages/artifacts/`, `packages/benchmark-runner/`, and `packages/contracts/`.
+- `rg -n "Automium MCP Server Transport Roadmap|Phase Overview|## Phase 1: Package Shell And MCP Registry Foundation|## Phase 4: Stdio Entrypoint And Hardening|## Cross-Phase Concerns|Current Phase: MCP Server Package Shell And Registry Foundation|Review" tasks/roadmap.md tasks/todo.md`
+- `git diff --check`
+- `pnpm test:run` passes at 51 files / 192 tests.
 
 ## Next Action
 
-- [ ] Choose the next production-hardening follow-up to plan and execute.
-
-### Next Step Implementation Plan
-
-1. Select one deferred production-hardening follow-up from this file.
-2. Expand the selected follow-up into a focused execution plan in `tasks/todo.md`.
-3. Implement, validate, commit, and push the selected follow-up.
+- [ ] Check in on this Phase 1 plan before implementation, then begin Step 1.1 with failing tests.

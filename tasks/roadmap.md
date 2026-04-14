@@ -322,3 +322,23 @@ Goal: map Automium's developer experience from local install through production 
 
 - Run targeted documentation checks proving the expected DX journey sections exist.
 - Commit and push the documentation changes to `master` after verification.
+
+## Maintenance Plan: Devtool Adoption
+
+Goal: plan how developers find, try, trust, and keep using Automium using the installed `devtool-adoption` skill.
+
+### Research Scope
+
+- Review existing developer-facing context in `research/devtool-user-map.md`, `research/devtool-integration-map.md`, `research/devtool-dx-journey.md`, the core specs, benchmark docs, and the spec drift report.
+- Map adoption loops, examples, templates, community channels, proof artifacts, and activation metrics.
+- Keep the adoption motion aligned with Automium's current local contract-level readiness and its deferred production-hardening requirements.
+
+### Deliverable
+
+- Create `research/devtool-adoption.md`.
+- Update `tasks/todo.md` and `tasks/history.md` with the completed research result and validation evidence.
+
+### Verification
+
+- Run targeted documentation checks proving the expected adoption sections exist.
+- Commit and push the documentation changes to `master` after verification.

@@ -188,3 +188,7 @@
 - Updated `tasks/roadmap.md` with a maintenance plan for the DX journey research artifact.
 - Updated `tasks/todo.md` to mark `$devtool-dx-journey` complete and prepared `$devtool-adoption` as the next priority documentation step.
 - Verified the DX journey artifact with `test -f research/devtool-dx-journey.md`, targeted `rg` section checks, and `git diff --check`.
+- Completed `$devtool-adoption` by creating `research/devtool-adoption.md` with Automium's adoption thesis, local first-success loop, debugging trust loop, planner benchmark loop, high-value journey pilot loop, platform rollout loop, examples, templates, community channels, proof artifacts, activation metrics, risks, backlog, and open adoption questions.
+- Updated `tasks/roadmap.md` with a maintenance plan for the adoption research artifact.
+- Updated `tasks/todo.md` to mark `$devtool-adoption` complete and prepared `$devtool-positioning` as the next priority documentation step.
+- Verified the adoption artifact with `test -f research/devtool-adoption.md`, targeted `rg` section checks, `git diff --check`, and full `pnpm test:run` at 51 files / 192 tests.

@@ -15,7 +15,7 @@ Goal: create `research/devtool-monetization.md` using the installed `devtool-mon
 - [x] Create `research/devtool-monetization.md`.
 - [x] Update `tasks/todo.md`, `tasks/roadmap.md`, and `tasks/history.md` with results.
 - [x] Run targeted documentation validation.
-- [ ] Commit and push intended documentation changes to `master`.
+- [x] Commit and push intended documentation changes to `master`.
 
 ### Deferred Spec-Drift Follow-Up
 
@@ -103,9 +103,10 @@ Production readiness blocker confirmation completed after reviewing the implemen
 
 ## Next Action
 
-- [ ] Commit and push the `$devtool-monetization` documentation changes to `master`.
+- [ ] Choose the next production-hardening follow-up to plan and execute.
 
 ### Next Step Implementation Plan
 
-1. Commit the completed monetization documentation changes.
-2. Push the commit to `master`.
+1. Select one deferred production-hardening follow-up from this file.
+2. Expand the selected follow-up into a focused execution plan in `tasks/todo.md`.
+3. Implement, validate, commit, and push the selected follow-up.

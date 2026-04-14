@@ -43,7 +43,7 @@ Goal: reconcile the specs with the completed implementation and produce an audit
 
 - [x] `$pack install devtool` - verified `.agents/project.json` declares `project_type: "devtool"` with `enabled_packs: ["devtool"]`, and `pack status` confirms the local Claude/Codex devtool skill links exist.
 - [x] `$devtool-user-map` - created `research/devtool-user-map.md` using the installed `devtool-user-map` skill.
-- [ ] `$devtool-integration-map` - create `research/devtool-integration-map.md` using the installed `devtool-integration-map` skill.
+- [x] `$devtool-integration-map` - created `research/devtool-integration-map.md` using the installed `devtool-integration-map` skill.
 - [ ] `$devtool-dx-journey` - create `research/devtool-dx-journey.md` using the installed `devtool-dx-journey` skill.
 - [ ] `$devtool-adoption` - create `research/devtool-adoption.md` using the installed `devtool-adoption` skill.
 - [ ] `$devtool-positioning` - create `research/devtool-positioning.md` using the installed `devtool-positioning` skill.
@@ -56,9 +56,13 @@ Step 7.7 completed the final integrated-platform verification sweep. The QA plat
 
 `$devtool-user-map` completed the developer-facing audience map for Automium, covering primary developer users, secondary users, economic buyers, champions, maintainers, operational stakeholders, high-value use cases, adoption blockers, adoption sequencing, persona messaging, and open research questions.
 
+`$devtool-integration-map` completed the developer-facing ecosystem map for Automium, covering planner adapters, journey/control-plane APIs, owned product integrations, benchmark fixtures, browser/runtime boundaries, deterministic executor contracts, replay/artifact surfaces, targeted vision, orchestration, worker leases, policy/governance, shared platform contracts, setup paths, compatibility constraints, migration risks, and integration priorities.
+
 `$spec-drift fix all` completed the spec-to-code reconciliation pass. The drift report recorded 29 verified claims, 0 unresolved errors, 6 deferred production-hardening warnings, and 5 resolved documentation drift items. The specs now document the current contract/domain implementation status, exact planner intent tokens, owned benchmark corpus scope, product route-manifest coverage, deterministic seed/reset surfaces, and explicit hardening follow-ups.
 
 - Validation:
+  - `test -f research/devtool-integration-map.md`
+  - `rg -n "Integration Map|Planner And Model Ecosystem|Product Integration Surfaces|Setup Path|Compatibility Constraints|Migration And Adoption Risks|Integration Priorities" research/devtool-integration-map.md`
   - `test -f specs/drift-report.md`
   - `rg -n "Current Repository Implementation Status|Benchmark Corpus Current Scope|press-key|wait-for-condition|Production hardening|Spec Drift Report|Deferred Warnings|Verified Claims" specs tasks`
   - `pnpm test:run` passes at 51 files / 192 tests.
@@ -71,10 +75,10 @@ Step 7.7 completed the final integrated-platform verification sweep. The QA plat
 
 ## Next Action
 
-- [ ] Run `$devtool-integration-map` from the priority documentation queue.
+- [ ] Run `$devtool-dx-journey` from the priority documentation queue.
 
 ### Next Step Implementation Plan
 
-1. Read the `devtool-integration-map` skill instructions and the core product context in `specs/agent-native-browser-qa-platform.md`, `specs/owned-parity-benchmark-products.md`, `tasks/phases/phase-7.md`, and the implemented app/package boundaries.
-2. Create `research/devtool-integration-map.md` covering planner integrations, owned benchmark products, runtime/control-plane APIs, artifacts/replay, policy/governance, and potential downstream platform integrations.
+1. Read the `devtool-dx-journey` skill instructions and the core product context in `research/devtool-user-map.md`, `research/devtool-integration-map.md`, `specs/agent-native-browser-qa-platform.md`, `docs/benchmarks/v1-corpus.md`, `docs/contracts/*-v1.md`, and `tasks/phases/phase-7.md`.
+2. Create `research/devtool-dx-journey.md` covering install, first successful journey, journey authoring, planner setup, owned fixture selection, run submission, replay/artifact inspection, debugging, benchmark comparison, and production adoption handoff.
 3. Update this file and `tasks/history.md` with the completed research artifact, then run lightweight documentation validation before committing and pushing to `master`.

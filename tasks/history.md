@@ -179,3 +179,5 @@
 - Updated the QA platform spec with the current contract/domain implementation status, exact planner intent tokens, owned benchmark corpus scope, and production-hardening follow-up framing.
 - Updated the owned parity products spec with current shared-platform, product route-manifest, seed/reset, adapter, and benchmark implementation checkpoints, plus explicit production-hardening gaps now tracked in `tasks/todo.md`.
 - Verified the spec-drift reconciliation with `test -f specs/drift-report.md`, a targeted `rg` check for the updated documentation anchors, `pnpm exec tsc --noEmit`, and full `pnpm test:run` at 51 files / 192 tests.
+- Completed `$devtool-integration-map` by creating `research/devtool-integration-map.md` with Automium's planner, journey, control-plane, owned product, benchmark fixture, browser/runtime, executor, replay/artifact, targeted vision, orchestration, policy/governance, shared platform, setup, compatibility, migration, and integration-priority map.
+- Updated `tasks/todo.md` to mark `$devtool-integration-map` complete and prepared `$devtool-dx-journey` as the next priority documentation step.

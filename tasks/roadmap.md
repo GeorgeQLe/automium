@@ -54,7 +54,7 @@ Goal: introduce the `packages/mcp-server/` package and a testable server-registr
 
 ### Milestone
 
-- [ ] Package shell and MCP registry foundation complete.
+- [x] Phase 1 milestone completed on 2026-04-14.
 
 Acceptance criteria:
 

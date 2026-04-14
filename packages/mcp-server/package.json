@@ -1,0 +1,14 @@
+{
+  "name": "@automium/mcp-server",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "bin": {
+    "automium-mcp-server": "./src/stdio.ts"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0"
+  }
+}

@@ -1,10 +1,15 @@
 import {
+  BENCHMARK_CORPUS_VERSION,
   authorizedBenchmarkApps,
   benchmarkFixtureManifest,
   type AuthorizedBenchmarkApp,
   type AuthorizedBenchmarkAppId,
   type BenchmarkFixtureDefinition
 } from "../../benchmark/src/corpus";
+import {
+  comparePlannerBackends,
+  type BenchmarkComparisonReport
+} from "../../benchmark-runner/src/benchmark-runner-domain";
 import { PLANNER_INTENT_VOCABULARY } from "../../contracts/src/planner-adapter";
 import {
   ARTIFACT_KINDS,
@@ -575,6 +580,91 @@ function handleGetArtifactManifest(args: unknown): GetArtifactManifestResult {
   return { manifest, ...modeledMetadata };
 }
 
+interface ComparePlannersResult {
+  readonly report: BenchmarkComparisonReport;
+  readonly modeled: true;
+  readonly liveBrowserExecuted: false;
+  readonly providerCallsMade: false;
+  readonly filesystemMutated: false;
+}
+
+function handleComparePlanners(args: unknown): ComparePlannersResult {
+  if (!isPlainObject(args)) {
+    throw new AutomiumMcpError(
+      "unsupported_v1_operation",
+      "automium_compare_planners arguments must be an object."
+    );
+  }
+
+  const corpusVersion = readRequiredString(args, "corpusVersion");
+  if (corpusVersion === "") {
+    throw new AutomiumMcpError(
+      "unsupported_v1_operation",
+      "automium_compare_planners requires a non-empty corpusVersion."
+    );
+  }
+
+  const rawAppIds = readArray(args, "appIds");
+
+  if (corpusVersion !== BENCHMARK_CORPUS_VERSION) {
+    throw new AutomiumMcpError(
+      "unsupported_corpus_version",
+      `Unsupported benchmark corpus version: ${corpusVersion}`
+    );
+  }
+
+  if (rawAppIds.length === 0) {
+    throw new AutomiumMcpError(
+      "unsupported_v1_operation",
+      "automium_compare_planners requires at least one appId."
+    );
+  }
+
+  const appIds = rawAppIds.map((appId, index) => {
+    if (typeof appId !== "string") {
+      throw new AutomiumMcpError(
+        "unsupported_v1_operation",
+        `appIds[${index}] must be a string.`
+      );
+    }
+    return appId;
+  });
+
+  const rawPlanners = readArray(args, "planners");
+  if (rawPlanners.length === 0) {
+    throw new AutomiumMcpError(
+      "unsupported_v1_operation",
+      "automium_compare_planners requires at least one planner."
+    );
+  }
+  const planners = rawPlanners.map((planner) => parsePlannerMetadata(planner));
+
+  const repetitions = args.repetitions;
+  if (typeof repetitions !== "number" || !Number.isFinite(repetitions)) {
+    throw new AutomiumMcpError(
+      "unsupported_v1_operation",
+      "automium_compare_planners repetitions must be a finite number."
+    );
+  }
+
+  let report: BenchmarkComparisonReport;
+  try {
+    report = comparePlannerBackends({
+      corpusVersion,
+      appIds,
+      planners,
+      repetitions
+    });
+  } catch (error) {
+    throw new AutomiumMcpError(
+      "unsupported_v1_operation",
+      error instanceof Error ? error.message : "Failed to compare planners."
+    );
+  }
+
+  return { report, ...modeledMetadata };
+}
+
 export function callAutomiumMcpTool(
   _server: AutomiumMcpServer,
   name: string,
@@ -594,10 +684,7 @@ export function callAutomiumMcpTool(
     case "automium_get_artifact_manifest":
       return handleGetArtifactManifest(args);
     case "automium_compare_planners":
-      throw new AutomiumMcpError(
-        "unsupported_v1_operation",
-        `Tool "${name}" is not yet implemented in this step.`
-      );
+      return handleComparePlanners(args);
     default:
       throw new AutomiumMcpError(
         "unsupported_v1_operation",

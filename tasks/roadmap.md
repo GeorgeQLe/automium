@@ -107,7 +107,7 @@ Goal: implement the seven v1 MCP tools by validating inputs at the MCP boundary 
 
 ### Milestone
 
-- [ ] Tool adapters complete.
+- [x] Phase 2 milestone completed on 2026-04-23.
 
 Acceptance criteria:
 

@@ -7,6 +7,13 @@ import {
 } from "../../benchmark/src/corpus";
 import { PLANNER_INTENT_VOCABULARY } from "../../contracts/src/planner-adapter";
 import {
+  ARTIFACT_KINDS,
+  createArtifactManifest,
+  type ArtifactKind,
+  type ArtifactManifest,
+  type ArtifactManifestEntry
+} from "../../artifacts/src/artifacts-domain";
+import {
   compileJourneyDefinition,
   createRunSubmission,
   type CompiledJourneyDefinition,
@@ -17,6 +24,10 @@ import {
   type PlannerBackendRef,
   type RunSubmission
 } from "../../../apps/control-plane/src/control-plane-domain";
+import {
+  summarizeReplayRun,
+  type ReplayRunSummary
+} from "../../../apps/replay-console/src/replay-console-domain";
 
 import { AutomiumMcpError } from "./errors";
 import type { AutomiumMcpServer } from "./server";
@@ -425,6 +436,145 @@ function handleCreateRunSubmission(args: unknown): CreateRunSubmissionResult {
   return { submission, ...modeledMetadata };
 }
 
+const artifactKindSet = new Set<string>(ARTIFACT_KINDS);
+
+interface GetReplaySummaryResult {
+  readonly summary: ReplayRunSummary;
+  readonly modeled: true;
+  readonly liveBrowserExecuted: false;
+  readonly providerCallsMade: false;
+  readonly filesystemMutated: false;
+}
+
+function handleGetReplaySummary(args: unknown): GetReplaySummaryResult {
+  if (!isPlainObject(args)) {
+    throw new AutomiumMcpError(
+      "unsupported_v1_operation",
+      "automium_get_replay_summary arguments must be an object."
+    );
+  }
+
+  const runId = readRequiredString(args, "runId");
+  const verdict = readRequiredString(args, "verdict");
+  const artifactManifestRef = readRequiredString(args, "artifactManifestRef");
+
+  if (
+    runId.trim() === "" ||
+    verdict.trim() === "" ||
+    artifactManifestRef.trim() === ""
+  ) {
+    throw new AutomiumMcpError(
+      "unsupported_v1_operation",
+      "Replay summary requires non-empty runId, verdict, and artifactManifestRef."
+    );
+  }
+
+  const retryCountRaw = args.retryCount;
+  if (
+    typeof retryCountRaw !== "number" ||
+    !Number.isFinite(retryCountRaw)
+  ) {
+    throw new AutomiumMcpError(
+      "unsupported_v1_operation",
+      "Replay summary retryCount must be a finite number."
+    );
+  }
+
+  let summary: ReplayRunSummary;
+  try {
+    summary = summarizeReplayRun({
+      runId,
+      verdict,
+      retryCount: retryCountRaw,
+      artifactManifestRef
+    });
+  } catch (error) {
+    throw new AutomiumMcpError(
+      "unsupported_v1_operation",
+      error instanceof Error ? error.message : "Failed to summarize replay run."
+    );
+  }
+
+  return { summary, ...modeledMetadata };
+}
+
+interface GetArtifactManifestResult {
+  readonly manifest: ArtifactManifest;
+  readonly modeled: true;
+  readonly liveBrowserExecuted: false;
+  readonly providerCallsMade: false;
+  readonly filesystemMutated: false;
+}
+
+function parseArtifactManifestEntry(
+  raw: unknown,
+  index: number
+): ArtifactManifestEntry {
+  if (!isPlainObject(raw)) {
+    throw new AutomiumMcpError(
+      "unsupported_v1_operation",
+      `Artifact entry ${index + 1} must be an object.`
+    );
+  }
+  const kind = readRequiredString(raw, "kind");
+  const path = readRequiredString(raw, "path");
+
+  if (!artifactKindSet.has(kind)) {
+    throw new AutomiumMcpError(
+      "invalid_artifact_kind",
+      `Artifact entry ${index + 1} uses unsupported kind "${kind}".`
+    );
+  }
+
+  if (path.startsWith("/")) {
+    throw new AutomiumMcpError(
+      "unsupported_v1_operation",
+      `Artifact entry ${index + 1} path must be relative, not absolute.`
+    );
+  }
+
+  return { kind: kind as ArtifactKind, path };
+}
+
+function handleGetArtifactManifest(args: unknown): GetArtifactManifestResult {
+  if (!isPlainObject(args)) {
+    throw new AutomiumMcpError(
+      "unsupported_v1_operation",
+      "automium_get_artifact_manifest arguments must be an object."
+    );
+  }
+
+  const runId = readRequiredString(args, "runId");
+  const appId = readRequiredString(args, "appId");
+  const root = readRequiredString(args, "root");
+
+  if (runId.trim() === "" || appId.trim() === "" || root.trim() === "") {
+    throw new AutomiumMcpError(
+      "unsupported_v1_operation",
+      "Artifact manifest requires non-empty runId, appId, and root."
+    );
+  }
+
+  assertAuthorizedAppId(appId);
+
+  const rawEntries = readArray(args, "entries");
+  const entries = rawEntries.map((entry, index) =>
+    parseArtifactManifestEntry(entry, index)
+  );
+
+  let manifest: ArtifactManifest;
+  try {
+    manifest = createArtifactManifest({ runId, root, entries });
+  } catch (error) {
+    throw new AutomiumMcpError(
+      "unsupported_v1_operation",
+      error instanceof Error ? error.message : "Failed to create artifact manifest."
+    );
+  }
+
+  return { manifest, ...modeledMetadata };
+}
+
 export function callAutomiumMcpTool(
   _server: AutomiumMcpServer,
   name: string,
@@ -440,7 +590,9 @@ export function callAutomiumMcpTool(
     case "automium_create_run_submission":
       return handleCreateRunSubmission(args);
     case "automium_get_replay_summary":
+      return handleGetReplaySummary(args);
     case "automium_get_artifact_manifest":
+      return handleGetArtifactManifest(args);
     case "automium_compare_planners":
       throw new AutomiumMcpError(
         "unsupported_v1_operation",

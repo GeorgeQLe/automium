@@ -33,7 +33,7 @@ Goal: implement the seven v1 MCP tools by validating inputs at the MCP boundary 
 - [x] Step 2.6: **Automated** Implement `automium_compare_planners` over the benchmark-runner report model.
   - Files: modify `packages/mcp-server/src/tools.ts`
   - Reuse `packages/benchmark-runner/src/benchmark-runner-domain.ts` and add deterministic MCP-safe errors for unsupported corpus versions and malformed planner metadata.
-- [ ] Step 2.7: **Automated** Add modeled-output markers to every tool that models instead of executes work.
+- [x] Step 2.7: **Automated** Add modeled-output markers to every tool that models instead of executes work.
   - Files: modify `packages/mcp-server/src/tools.ts`, `packages/mcp-server/src/schemas.ts`
   - The run, replay, artifact, and planner-comparison responses must explicitly state that no browser execution, provider calls, persistence, queueing, or artifact fetching occurred.
 
@@ -79,74 +79,81 @@ Acceptance criteria:
 - Contract suite breakdown: 17 passing / 8 failing in `packages/mcp-server/tests/mcp-tools.contract.test.ts` (3 create-run-submission tests flipped green on top of Step 2.3's 14).
 - `pnpm exec tsc --noEmit` → pass. `git diff --check` → clean. `pnpm test:run` → 213 passing / 8 failing; no regressions outside the in-progress MCP suite.
 
+## Step 2.7 Completion Summary
+
+- Extended the shared modeled-output marker set with `queued: false` and `artifactsFetched: false` in `AutomiumModeledOutputMetadata` (`packages/mcp-server/src/schemas.ts`) and in the shared `modeledMetadata` constant (`packages/mcp-server/src/tools.ts`). All five `handle*` Result interfaces (`CompileJourneyResult`, `CreateRunSubmissionResult`, `GetReplaySummaryResult`, `GetArtifactManifestResult`, `ComparePlannersResult`) now extend `AutomiumModeledOutputMetadata` directly instead of redeclaring literal-false fields. The `expectModeledMetadata` helper in `packages/mcp-server/tests/mcp-tools.contract.test.ts` now asserts the two new markers via `toMatchObject`, keeping the test count at 25.
+- Non-modeled discovery tools (`automium_list_apps`, `automium_list_fixtures`) intentionally remain without these markers — their descriptors have `modeled: false`.
+- Contract suite: 25 passing / 0 failing. `pnpm exec tsc --noEmit` → pass. `git diff --check` → clean. `pnpm test:run` → 53 passing files / 221 passing tests; no regressions.
+
 ## Step 2.6 Completion Summary
 
 - Implemented `handleComparePlanners(args)` in `packages/mcp-server/src/tools.ts` and wired it into the `automium_compare_planners` dispatch branch. The handler parses inputs defensively from `unknown`, applies pre-domain validation in the order non-object-args/empty-required → `unsupported_corpus_version` → empty-`appIds`/non-string entry → planners non-array/empty → `malformed_planner_metadata` (via reused `parsePlannerMetadata`) → finite-`repetitions` → `unsupported_v1_operation`. Happy path delegates to `comparePlannerBackends` from `packages/benchmark-runner/src/benchmark-runner-domain.ts` and wraps as `{ report, ...modeledMetadata }`.
 - Contract suite breakdown: 25 passing / 0 failing in `packages/mcp-server/tests/mcp-tools.contract.test.ts` (4 compare-planners tests flipped green on top of Step 2.5's 21).
 - `pnpm exec tsc --noEmit` → pass. `git diff --check` → clean. `pnpm test:run` → 221 passing / 0 failing; no regressions.
 
-## Next Step Plan — Step 2.7 (modeled-output markers audit)
+## Next Step Plan — Step 2.8 (Phase 2 green-phase verification sweep)
 
 ### Execution Profile
-- **Mode:** implementation-safe (serial, single-package edits; schema/type-only surface changes if any)
-- **Depends on:** Step 2.6 (all seven tool branches landed, `modeledMetadata` applied to every modeled response)
-- **Owns:** `packages/mcp-server/src/tools.ts`, `packages/mcp-server/src/schemas.ts` (only if the descriptor surface needs to expose the marker contract)
+- **Mode:** implementation-safe (verification-only — no behavior changes expected)
+- **Depends on:** Step 2.7 (all seven tools implemented with full modeled-output markers)
+- **Owns:** `tasks/todo.md`, `tasks/history.md`, `tasks/roadmap.md` (milestone marker), `tasks/phases/phase-2.md` (archive)
 
 ### What to build
-Step 2.7 is an audit step. Every tool that models instead of executes work (`automium_compile_journey`, `automium_create_run_submission`, `automium_get_replay_summary`, `automium_get_artifact_manifest`, `automium_compare_planners`) must make it unambiguous in the response payload that **no browser execution, provider calls, persistence, queueing, or artifact fetching occurred**. Verify current coverage, extend the shared `modeledMetadata` if any bucket is missing, and align the `AutomiumMcpToolDescriptor` `modeled` flag with the implementation.
+Step 2.8 is the Phase 2 green-phase checkpoint: re-run the full reused-domain + MCP tool suite matrix and confirm the seven v1 MCP tools remain green alongside every package whose exports they delegate to. No code changes are expected. If regressions surface, diagnose and fix the root cause in the relevant package before declaring Phase 2 done.
 
-### Files to create/modify
-- `packages/mcp-server/src/tools.ts` — audit every `handle*` return site. The shared `modeledMetadata` already asserts `modeled: true`, `liveBrowserExecuted: false`, `providerCallsMade: false`, `filesystemMutated: false`. If the roadmap wording ("no browser execution, provider calls, persistence, queueing, or artifact fetching") requires additional explicit markers — notably `queued: false` (no run was queued to the control-plane) and `artifactsFetched: false` (no files were read or downloaded) — extend `modeledMetadata` with those two boolean literals so every modeled handler emits them too. Non-modeled tools (`automium_list_apps`, `automium_list_fixtures`) stay unchanged.
-- `packages/mcp-server/src/schemas.ts` — re-verify that `modeled` in the descriptor matches actual handler behavior for all seven tools. No runtime change expected beyond confirmation.
-- `packages/mcp-server/tests/mcp-tools.contract.test.ts` — if new marker keys are added to `modeledMetadata`, extend the shared `expectModeledMetadata` helper to assert them. Keep the test-count contract at 25 unless new assertions are required by the roadmap wording; new keys should be checked inside existing happy-path tests, not as net-new test cases.
+### Files to touch (expected)
+- None under `packages/` or `apps/` unless a regression is found.
+- `tasks/todo.md` — mark Step 2.8 and the Phase 2 milestone complete; drop the Phase 2 active block and replace with Phase 3's opening.
+- `tasks/history.md` — record Step 2.8 completion plus the Phase 2 archival.
+- `tasks/roadmap.md` — check off the Phase 2 milestone row.
+- `tasks/phases/phase-2.md` — archive the completed Phase 2 plan (move the current `## Phase 2: Tool Adapters` block out of `tasks/todo.md` into this archive, matching the Phase 1 archival pattern).
 
 ### Technical decisions
-
-**Marker set (proposed):**
-```
-modeled: true
-liveBrowserExecuted: false
-providerCallsMade: false
-filesystemMutated: false
-queued: false            // new
-artifactsFetched: false  // new
-```
-
-- All five modeled handlers spread `...modeledMetadata` already, so extending the constant propagates the two new markers with zero per-handler churn.
-- `modeled: true` stays a literal `true`; the other five stay literal `false`. This keeps the types narrow so test assertions (`expect(result.modeled).toBe(true)` etc.) remain type-safe.
-- Non-modeled discovery tools (`automium_list_apps`, `automium_list_fixtures`) intentionally omit these markers — their descriptors have `modeled: false`, and callers distinguish via that flag.
-
-**Audit checklist (no behavior change; just confirm):**
-1. `handleCompileJourney` — no browser, no provider, no fs, no queue, no artifact fetch. ✅ modeled.
-2. `handleCreateRunSubmission` — builds a `RunSubmission` object; does not submit to any queue. ✅ modeled; `queued: false` marker is meaningful here.
-3. `handleGetReplaySummary` — summarizes caller-provided metadata; no log/artifact fetch. ✅ modeled; `artifactsFetched: false` is meaningful here.
-4. `handleGetArtifactManifest` — builds a manifest from caller-provided entries; no filesystem scan. ✅ modeled; `artifactsFetched: false` is meaningful here.
-5. `handleComparePlanners` — builds a `BenchmarkComparisonReport` from static corpus data; no provider calls, no runs queued. ✅ modeled.
-
-**Open question:** the existing contract test `expectModeledMetadata(result)` already asserts the four current markers. If adding `queued` and `artifactsFetched` would force rewriting that helper (and implicitly tighten every happy-path test), the safer read of the roadmap is to interpret the five boolean markers as the authoritative set and leave tests as-is. Implementer: first read `expectModeledMetadata` in `packages/mcp-server/tests/mcp-tools.contract.test.ts`; if it uses `toEqual`/`toMatchObject` on the full `modeledMetadata` object, expanding the set will break tests — either extend the helper to cover the new keys, or keep the marker set at four and document the roadmap coverage via descriptor `modeled: true` and inline comments.
-
-Do NOT import the SDK; keep the dispatcher pure.
+- Run the single verification command called out in the roadmap:
+  ```
+  pnpm exec vitest run \
+    packages/mcp-server/tests/mcp-tools.contract.test.ts \
+    apps/control-plane/tests \
+    packages/artifacts/tests \
+    apps/replay-console/tests \
+    packages/benchmark-runner/tests \
+    packages/benchmark/tests \
+    packages/contracts/tests
+  ```
+  Expect every suite green.
+- Run `pnpm exec tsc --noEmit` for a repo-wide typecheck.
+- Run full `pnpm test:run` to confirm no regressions beyond the reused-domain matrix.
+- If anything fails, STOP, diagnose root cause, and fix in the owning package. Do not edit the MCP dispatcher unless the regression is specifically in the MCP boundary.
 
 ### Test expectations
-- If `modeledMetadata` is extended: update `expectModeledMetadata` so all five happy-path modeled tests still pass, keeping the total at 25 passing / 0 failing.
-- If no fields are added (audit-only outcome): the test count stays at 25 passing / 0 failing with zero code churn beyond comments or descriptor confirmation.
+- Single reused-domain command: all listed suites pass.
+- `pnpm exec tsc --noEmit`: pass.
+- `pnpm test:run`: 53 passing files / 221+ passing tests, 0 failing.
+- `git diff --check`: clean (before commit).
 
 ### Acceptance criteria
-- `pnpm exec vitest run packages/mcp-server/tests/mcp-tools.contract.test.ts` — 25 passing / 0 failing.
-- `pnpm exec tsc --noEmit` passes.
-- `git diff --check` clean.
-- `pnpm test:run` — no regressions.
+- Reused-domain matrix vitest command: all listed suites pass.
+- `pnpm exec tsc --noEmit`: pass.
+- `pnpm test:run`: no regressions; 53 passing files / 221+ passing tests.
+- `git diff --check`: clean.
+- Phase 2 milestone marked complete in `tasks/roadmap.md`.
 
 ### Ship-one-step handoff contract
 After approval, the fresh-context implementation session must:
-1. Implement only Step 2.7 as scoped above.
-2. Validate: MCP tool contract tests + `pnpm exec tsc --noEmit` + `git diff --check` + `pnpm test:run`.
-3. Mark Step 2.7 done in `tasks/todo.md` and update `tasks/history.md`.
+1. Execute only Step 2.8 as scoped above.
+2. Validate: reused-domain vitest matrix + `pnpm exec tsc --noEmit` + `git diff --check` + `pnpm test:run`.
+3. Mark Step 2.8 and the Phase 2 milestone done in `tasks/todo.md` and `tasks/roadmap.md`; archive the Phase 2 execution block to `tasks/phases/phase-2.md` matching the Phase 1 archival pattern; update `tasks/history.md`.
 4. Commit and push to `master` via `/commit-and-push-by-feature`.
 5. Skip deploy (no `deploy.md` or `tasks/deploy.md` contract exists).
-6. Write the Step 2.8 plan (green-phase verification sweep) into `tasks/todo.md` as a self-contained handoff.
+6. Write the Phase 3 Step 3.1 opening plan into `tasks/todo.md` as a self-contained handoff.
 7. Ensure `.claude/settings.local.json` has `"showClearContextOnPlanAccept": true` and `"defaultMode": "acceptEdits"`.
-8. Call `EnterPlanMode`, write a brief pass-through plan referencing `tasks/todo.md`, call `ExitPlanMode`, and stop before implementing Step 2.8. Do not call `ExitPlanMode` from normal mode. If `EnterPlanMode` is denied, stop and ask the user to explicitly run `/plan` for Step 2.8.
+8. Call `EnterPlanMode`, write a brief pass-through plan referencing `tasks/todo.md`, call `ExitPlanMode`, and stop before implementing Phase 3. Do not call `ExitPlanMode` from normal mode. If `EnterPlanMode` is denied, stop and ask the user to explicitly run `/plan` for Phase 3.
+
+---
+
+## Prior Plan (archived) — Step 2.7 (modeled-output markers audit)
+
+Implemented in commit-log Step 2.7. Extended `AutomiumModeledOutputMetadata` (`packages/mcp-server/src/schemas.ts`) and the shared `modeledMetadata` constant (`packages/mcp-server/src/tools.ts`) with `queued: false` and `artifactsFetched: false`. Refactored all five modeled `handle*` Result interfaces to extend `AutomiumModeledOutputMetadata`. Extended `expectModeledMetadata` in the contract test to assert the two new markers. Contract suite: 25 passing / 0 failing; full `pnpm test:run`: 221 passing / 0 failing.
 
 ---
 

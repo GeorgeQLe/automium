@@ -79,7 +79,74 @@ Acceptance criteria:
 - Contract suite breakdown: 17 passing / 8 failing in `packages/mcp-server/tests/mcp-tools.contract.test.ts` (3 create-run-submission tests flipped green on top of Step 2.3's 14).
 - `pnpm exec tsc --noEmit` → pass. `git diff --check` → clean. `pnpm test:run` → 213 passing / 8 failing; no regressions outside the in-progress MCP suite.
 
-## Next Step Plan — Step 2.5 (automium_get_replay_summary + automium_get_artifact_manifest)
+## Next Step Plan — Step 2.6 (automium_compare_planners)
+
+### Execution Profile
+- **Mode:** implementation-safe (serial, single-package edits, no cross-package surface changes)
+- **Depends on:** Step 2.5 (dispatcher + replay/artifact branches landed, `modeledMetadata` constant in place)
+- **Owns:** `packages/mcp-server/src/tools.ts` (primary)
+
+### What to build
+Replace the `unsupported_v1_operation` placeholder for `automium_compare_planners` with a real handler that delegates to `comparePlannerBackends` from `packages/benchmark-runner/src/benchmark-runner-domain.ts`. Enforce MCP boundary validation for unsupported corpus versions, malformed planner metadata, and empty `appIds` arrays. Leave Step 2.7 placeholder alone.
+
+### Files to create/modify
+- `packages/mcp-server/src/tools.ts` — add `handleComparePlanners(args)` and wire it into the `automium_compare_planners` switch case. Add import for `BENCHMARK_CORPUS_VERSION` from `packages/benchmark/src/corpus` and `comparePlannerBackends` + `BenchmarkComparisonReport` from `packages/benchmark-runner/src/benchmark-runner-domain`. Reuse existing helpers (`isPlainObject`, `readRequiredString`, `readArray`, `parsePlannerMetadata`, `modeledMetadata`).
+
+### Technical decisions
+
+**Response shape (exact):** `{ report: BenchmarkComparisonReport, modeled: true, liveBrowserExecuted: false, providerCallsMade: false, filesystemMutated: false }`.
+
+**Input parsing:** narrow `unknown` to `{ corpusVersion, appIds, planners, repetitions }`:
+- `corpusVersion`: required non-empty string. If not equal to `BENCHMARK_CORPUS_VERSION` → `unsupported_corpus_version`.
+- `appIds`: required array of strings. If empty → `unsupported_v1_operation`. (Do not reject unknown app IDs at the boundary — the domain filters them; the contract test passes `["foundry", "altitude"]`.)
+- `planners`: required array of at least one planner metadata object; each validated with existing `parsePlannerMetadata` helper → `malformed_planner_metadata` on any violation.
+- `repetitions`: required finite number (can be `0`; domain normalizes to `>= 1`). Non-number → `unsupported_v1_operation`.
+
+**Pre-domain validation order:**
+1. `args` not a plain object → `unsupported_v1_operation`.
+2. Missing/empty `corpusVersion` or `appIds` not an array → `unsupported_v1_operation`.
+3. `corpusVersion` !== `BENCHMARK_CORPUS_VERSION` → `unsupported_corpus_version`.
+4. `appIds` empty array → `unsupported_v1_operation`.
+5. Any `appId` entry not a string → `unsupported_v1_operation`.
+6. `planners` not an array or empty → `unsupported_v1_operation`.
+7. Any planner entry fails `parsePlannerMetadata` → `malformed_planner_metadata`.
+8. `repetitions` not a finite number → `unsupported_v1_operation`.
+9. Any other domain failure → `unsupported_v1_operation`.
+
+Delegate successful path to `comparePlannerBackends({ corpusVersion, appIds, planners, repetitions })` and wrap as `{ report, ...modeledMetadata }`.
+
+Do NOT import the SDK; keep the dispatcher a pure function.
+
+### Test expectations
+After Step 2.6 the 4 `automium_compare_planners` tests must go green:
+- "returns a modeled comparison report" — `result.report` equals `comparePlannerBackends(validCompareInput)` and `reportVersion === "v1"`, modeled metadata matches.
+- "rejects unsupported corpus versions" — throws `unsupported_corpus_version` for `corpusVersion: "v0"`.
+- "rejects malformed planner metadata" — throws `malformed_planner_metadata` when a planner has empty `vendor`.
+- "normalizes repetitions to at least one" — `result.report.plannerReports[*].repetitions >= 1` when `repetitions: 0` is passed.
+- "rejects empty appIds arrays" — throws `unsupported_v1_operation` for `appIds: []`.
+
+After Step 2.6 the net MCP suite should be 25 passing / 0 failing. (Step 2.7 adds modeled-output markers, which are already present in all modeled handlers — confirm during 2.7 that no additional test fixtures are affected.)
+
+### Acceptance criteria
+- `pnpm exec vitest run packages/mcp-server/tests/mcp-tools.contract.test.ts` — all 25 tests pass; record the pass/fail breakdown in `tasks/history.md`.
+- `pnpm exec tsc --noEmit` passes.
+- `git diff --check` clean.
+- `pnpm test:run` — no regressions in other suites.
+
+### Ship-one-step handoff contract
+After approval, the fresh-context implementation session must:
+1. Implement only Step 2.6 as scoped above.
+2. Validate: MCP tool contract tests + `pnpm exec tsc --noEmit` + `git diff --check` + `pnpm test:run`.
+3. Mark Step 2.6 done in `tasks/todo.md` and update `tasks/history.md`.
+4. Commit and push to `master` via `/commit-and-push-by-feature`.
+5. Skip deploy (no `deploy.md` or `tasks/deploy.md` contract exists).
+6. Write the Step 2.7 plan (modeled-output markers audit) into `tasks/todo.md` as a self-contained handoff.
+7. Ensure `.claude/settings.local.json` has `"showClearContextOnPlanAccept": true` and `"defaultMode": "acceptEdits"`.
+8. Call `EnterPlanMode`, write a brief pass-through plan referencing `tasks/todo.md`, call `ExitPlanMode`, and stop before implementing Step 2.7. Do not call `ExitPlanMode` from normal mode. If `EnterPlanMode` is denied, stop and ask the user to explicitly run `/plan` for Step 2.7.
+
+---
+
+## Prior Plan (archived) — Step 2.5 (automium_get_replay_summary + automium_get_artifact_manifest)
 
 ### Execution Profile
 - **Mode:** implementation-safe (serial, single-package edits, no cross-package surface changes)

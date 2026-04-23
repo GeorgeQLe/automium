@@ -17,7 +17,7 @@ Goal: implement the seven v1 MCP tools by validating inputs at the MCP boundary 
 
 ### Implementation
 
-- [ ] Step 2.2: **Automated** Implement corpus discovery tools over the owned benchmark package.
+- [x] Step 2.2: **Automated** Implement corpus discovery tools over the owned benchmark package.
   - Files: modify `packages/mcp-server/src/tools.ts`, `packages/mcp-server/src/schemas.ts`, `packages/mcp-server/src/errors.ts`
   - Reuse `packages/benchmark/src/corpus.ts` exports for app, fixture, environment profile, and corpus version data.
 - [ ] Step 2.3: **Automated** Implement `automium_compile_journey` over the control-plane compiler contract.
@@ -61,46 +61,64 @@ Acceptance criteria:
 - `pnpm exec tsc --noEmit` → passes.
 - `git diff --check` → clean.
 
-## Next Step Plan — Step 2.2 (Corpus Discovery Tools)
+## Step 2.2 Completion Summary
+
+- Implemented `callAutomiumMcpTool(server, name, args)` dispatcher in `packages/mcp-server/src/tools.ts` plus `automium_list_apps` + `automium_list_fixtures` branches. Other tools throw `AutomiumMcpError("unsupported_v1_operation", …)` placeholders.
+- Contract suite breakdown: 10 passing / 15 failing in `packages/mcp-server/tests/mcp-tools.contract.test.ts` (the expected 6 corpus-discovery tests plus 4 later-step tests whose expected error happens to be `unsupported_v1_operation`).
+- `pnpm exec tsc --noEmit` → pass. `git diff --check` → clean. `pnpm test:run` → 206 passing / 15 failing (MCP suite in-progress); no regressions elsewhere.
+
+## Next Step Plan — Step 2.3 (automium_compile_journey)
 
 ### Execution Profile
 - **Mode:** implementation-safe (serial, single-package edits, no cross-package surface changes)
-- **Depends on:** Step 2.1 red (complete on master at `a5bb126`)
-- **Owns:** `packages/mcp-server/src/tools.ts`, `packages/mcp-server/src/schemas.ts`, `packages/mcp-server/src/errors.ts`
+- **Depends on:** Step 2.2 (dispatcher landed with corpus-discovery branches green)
+- **Owns:** `packages/mcp-server/src/tools.ts` (primary), `packages/mcp-server/src/schemas.ts` (named modeled-output type only if needed)
 
 ### What to build
-Introduce the `callAutomiumMcpTool(server, name, args)` helper in `packages/mcp-server/src/tools.ts` and wire up the two corpus-discovery tools (`automium_list_apps`, `automium_list_fixtures`). This helper is the test-only dispatch surface the Step 2.1 contract tests depend on; Steps 2.3–2.7 will extend it with additional tool branches without changing the helper signature.
+Replace the `unsupported_v1_operation` placeholder for `automium_compile_journey` with a real branch that delegates to `compileJourneyDefinition` from `apps/control-plane/src/control-plane-domain.ts`, preserves the spec input shape, and maps validation failures to MCP-safe error codes. This keeps the dispatcher signature from Step 2.2 unchanged.
 
 ### Files to create/modify
-- `packages/mcp-server/src/tools.ts` — add the `callAutomiumMcpTool` dispatcher and implement `automium_list_apps` + `automium_list_fixtures`. Preserve the existing `automiumMcpToolDescriptors` export. Other tool branches should throw `AutomiumMcpError("unsupported_v1_operation", …)` as a placeholder to be replaced in Steps 2.3–2.7.
-- `packages/mcp-server/src/schemas.ts` — no change expected in 2.2 unless a corpus-discovery response shape needs a named type; if added, keep naming consistent with `AutomiumModeledOutputMetadata`.
-- `packages/mcp-server/src/errors.ts` — no change expected; reuse `invalid_app_id` and `fixture_app_mismatch`.
+- `packages/mcp-server/src/tools.ts` — add a new branch handler `handleCompileJourney(args)` called from the `"automium_compile_journey"` switch case. Keep existing corpus-discovery branches and the `unsupported_v1_operation` placeholders for Steps 2.4–2.7.
+- `packages/mcp-server/src/schemas.ts` — add a named `AutomiumModeledOutputMetadata` type if not already present (check before adding; Step 2.1 test uses `expectModeledMetadata` with `{ modeled, liveBrowserExecuted, providerCallsMade, filesystemMutated }`). The response shape attached to the compile output must satisfy that.
+- `packages/mcp-server/src/errors.ts` — no change expected; reuse `invalid_app_id`, `fixture_app_mismatch`, `unsupported_planner_intent`, and `unsupported_v1_operation`.
 
 ### Technical decisions
-- Dispatcher signature: `function callAutomiumMcpTool(server: AutomiumMcpServer, name: string, args: unknown): unknown`. It should not depend on `server.sdkServer`; the `server` parameter is threaded through so Step 4 stdio wiring can reuse the same helper. For now treat unknown tool names as `AutomiumMcpError("unsupported_v1_operation", …)`.
-- Response shape (must match the Step 2.1 tests exactly):
-  - `automium_list_apps` → `{ apps: readonly AuthorizedBenchmarkApp[] }`; reject any `appId` filter not in `authorizedBenchmarkApps` with `invalid_app_id`.
-  - `automium_list_fixtures` → `{ fixtures: readonly BenchmarkFixtureDefinition[] }`; if `appId` filter is present, validate against the authorized set (`invalid_app_id` on miss); if both `appId` and `fixtureId` are supplied, require the fixture to belong to that app (`fixture_app_mismatch` on miss).
-- Input parsing: accept `unknown` and narrow with explicit checks (no zod dependency). Missing optional fields are fine; unknown extra fields are ignored.
-- Do NOT import the SDK for the helper — it's a pure function over domain data.
+- Response shape (must match Step 2.1 tests exactly):
+  - `{ compiled: CompiledJourneyDefinition, modeled: true, liveBrowserExecuted: false, providerCallsMade: false, filesystemMutated: false }`.
+  - Build a reusable helper `modeledMetadata()` or a single constant inside `tools.ts` so Steps 2.4–2.7 can reuse it.
+- Input parsing: accept `unknown` and narrow defensively without zod. Parse `id`, `appId`, `fixtureId`, `goal`, `steps`, `assertions`, `recovery` from the record with explicit type checks. Coerce arrays defensively; reject malformed shapes with `unsupported_v1_operation`.
+- Pre-domain validation order (to map domain errors to distinct MCP codes before hitting `compileJourneyDefinition`):
+  1. If `id` or `goal` is missing/empty → `unsupported_v1_operation` (matches Step 2.1 "rejects empty required identifiers" test that uses the `unsupported_v1_operation` code).
+  2. If `appId` is not in `authorizedBenchmarkApps` → `invalid_app_id`.
+  3. If `fixtureId` doesn't match an authorized fixture for `appId` → `fixture_app_mismatch`.
+  4. If any step intent is outside `PLANNER_INTENT_VOCABULARY` (imported from `packages/contracts/src/planner-adapter`) → `unsupported_planner_intent`.
+  5. Any other domain validation failure from `compileJourneyDefinition` → `unsupported_v1_operation`.
+- Delegate the successful path to `compileJourneyDefinition(journey)` and wrap the result as `{ compiled, ...modeledMetadata }`.
+- Do NOT import the SDK; the helper remains a pure function. Keep no reliance on `server.sdkServer`.
 
 ### Test expectations
-- Step 2.1 tests for `automium_list_apps` (2 tests) and `automium_list_fixtures` (4 tests) must go green.
-- The remaining 19 tests for tools 2.3–2.7 will still fail with `unsupported_v1_operation` (different failure signature than the current "helper missing" error). That is expected and will be resolved in subsequent steps; do not over-implement.
+After Step 2.3, the 5 `automium_compile_journey` tests must go green:
+- "compiles a corpus-fixture journey" — result matches `compileJourneyDefinition(validJourneyInput)` + modeled metadata true/false flags.
+- "rejects unsupported planner intents" — throws `unsupported_planner_intent`.
+- "rejects fixture/app mismatch" — throws `fixture_app_mismatch`.
+- "rejects unauthorized app ids" — throws `invalid_app_id`.
+- "rejects empty required identifiers" — throws `unsupported_v1_operation` (for both empty `id` and empty `goal`).
+
+The remaining 14 tests (for `automium_create_run_submission`, `automium_get_replay_summary`, `automium_get_artifact_manifest`, `automium_compare_planners`) stay failing, but the net failing count should drop to around 10–11 since some of those tests will still pass via the residual `unsupported_v1_operation` fallback on expected-error paths.
 
 ### Acceptance criteria
-- `pnpm exec vitest run packages/mcp-server/tests/mcp-tools.contract.test.ts` — at minimum the 6 `automium_list_apps` / `automium_list_fixtures` tests pass. Document the per-test pass/fail breakdown in `tasks/history.md`.
+- `pnpm exec vitest run packages/mcp-server/tests/mcp-tools.contract.test.ts` — the 5 compile-journey tests pass; record the new pass/fail breakdown in `tasks/history.md`.
 - `pnpm exec tsc --noEmit` passes.
 - `git diff --check` clean.
-- `pnpm test:run` — no regressions in other suites (expected: 52 files, 196 tests were passing at end of Phase 1 + 25 failing MCP tool contract tests from Step 2.1; after Step 2.2 the failing count should drop by 6).
+- `pnpm test:run` — no regressions in other suites.
 
 ### Ship-one-step handoff contract
 After approval, the fresh-context implementation session must:
-1. Implement only Step 2.2 as scoped above.
-2. Validate: run the MCP tool contract tests + `pnpm exec tsc --noEmit` + `git diff --check` + `pnpm test:run`.
-3. Mark Step 2.2 done in `tasks/todo.md` and update `tasks/history.md`.
+1. Implement only Step 2.3 as scoped above.
+2. Validate: MCP tool contract tests + `pnpm exec tsc --noEmit` + `git diff --check` + `pnpm test:run`.
+3. Mark Step 2.3 done in `tasks/todo.md` and update `tasks/history.md`.
 4. Commit and push to `master` via `/commit-and-push-by-feature`.
 5. Skip deploy (no `deploy.md` or `tasks/deploy.md` contract exists).
-6. Write the Step 2.3 plan into `tasks/todo.md` (self-contained, file paths, tests to target, acceptance criteria).
+6. Write the Step 2.4 plan (`automium_create_run_submission`) into `tasks/todo.md` as a self-contained handoff.
 7. Ensure `.claude/settings.local.json` has `"showClearContextOnPlanAccept": true` and `"defaultMode": "acceptEdits"`.
-8. Call `EnterPlanMode`, write a brief pass-through plan referencing `tasks/todo.md`, call `ExitPlanMode`, and stop before implementing Step 2.3. Do not call `ExitPlanMode` from normal mode. If `EnterPlanMode` is denied, stop and ask the user to explicitly run `/plan` for Step 2.3.
+8. Call `EnterPlanMode`, write a brief pass-through plan referencing `tasks/todo.md`, call `ExitPlanMode`, and stop before implementing Step 2.4. Do not call `ExitPlanMode` from normal mode. If `EnterPlanMode` is denied, stop and ask the user to explicitly run `/plan` for Step 2.4.

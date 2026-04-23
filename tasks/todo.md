@@ -23,7 +23,7 @@ Goal: implement the seven v1 MCP tools by validating inputs at the MCP boundary 
 - [x] Step 2.3: **Automated** Implement `automium_compile_journey` over the control-plane compiler contract.
   - Files: modify `packages/mcp-server/src/tools.ts`
   - Reuse `apps/control-plane/src/control-plane-domain.ts` for `validateJourneyDefinition` and `compileJourneyDefinition`, while preserving the spec input shape and validation error response.
-- [ ] Step 2.4: **Automated** Implement `automium_create_run_submission` over the control-plane run model.
+- [x] Step 2.4: **Automated** Implement `automium_create_run_submission` over the control-plane run model.
   - Files: modify `packages/mcp-server/src/tools.ts`
   - Reuse `createRunSubmission` and add MCP boundary validation that planner metadata includes non-empty `id`, `vendor`, and `model`.
 - [ ] Step 2.5: **Automated** Implement replay and artifact tools over replay-console and artifacts contracts.
@@ -73,7 +73,73 @@ Acceptance criteria:
 - Contract suite breakdown: 14 passing / 11 failing in `packages/mcp-server/tests/mcp-tools.contract.test.ts` (5 compile-journey tests flipped green on top of Step 2.2's 10).
 - `pnpm exec tsc --noEmit` → pass. `git diff --check` → clean. `pnpm test:run` → 210 passing / 11 failing; no regressions outside the in-progress MCP suite.
 
-## Next Step Plan — Step 2.4 (automium_create_run_submission)
+## Step 2.4 Completion Summary
+
+- Implemented `handleCreateRunSubmission(args)` in `packages/mcp-server/src/tools.ts` and wired it into the `automium_create_run_submission` dispatch branch. The handler parses run inputs defensively from `unknown` and applies pre-domain validation in the order non-object-args/empty-required → `malformed_planner_metadata` → `invalid_app_id` → `fixture_app_mismatch` → `unsupported_v1_operation`. Happy path delegates to `createRunSubmission` and wraps with shared `modeledMetadata` as `{ submission, ...modeledMetadata }`.
+- Contract suite breakdown: 17 passing / 8 failing in `packages/mcp-server/tests/mcp-tools.contract.test.ts` (3 create-run-submission tests flipped green on top of Step 2.3's 14).
+- `pnpm exec tsc --noEmit` → pass. `git diff --check` → clean. `pnpm test:run` → 213 passing / 8 failing; no regressions outside the in-progress MCP suite.
+
+## Next Step Plan — Step 2.5 (automium_get_replay_summary + automium_get_artifact_manifest)
+
+### Execution Profile
+- **Mode:** implementation-safe (serial, single-package edits, no cross-package surface changes)
+- **Depends on:** Step 2.4 (dispatcher + create-run-submission branch landed, `modeledMetadata` constant in place)
+- **Owns:** `packages/mcp-server/src/tools.ts` (primary), `packages/mcp-server/src/schemas.ts` (if any new tool descriptor fields required — unlikely)
+
+### What to build
+Replace the `unsupported_v1_operation` placeholders for `automium_get_replay_summary` and `automium_get_artifact_manifest` with real handlers that delegate to `summarizeReplayRun` (from `apps/replay-console/src/replay-console-domain.ts`) and `createArtifactManifest` (from `packages/artifacts/src/artifacts-domain.ts`). Enforce MCP boundary validation: empty required fields → `unsupported_v1_operation`; unsupported artifact kinds → `invalid_artifact_kind`; absolute artifact paths → `unsupported_v1_operation`; unauthorized owning app IDs → `invalid_app_id`. Steps 2.6–2.7 placeholders untouched.
+
+### Files to create/modify
+- `packages/mcp-server/src/tools.ts` — add `handleGetReplaySummary(args)` and `handleGetArtifactManifest(args)`, wire both into the switch. Reuse existing helpers (`isPlainObject`, `readRequiredString`, `readArray`, `assertAuthorizedAppId`, `modeledMetadata`).
+
+### Technical decisions
+
+**`automium_get_replay_summary`**
+- Response shape: `{ summary: ReplaySummary, ...modeledMetadata }`.
+- Input parsing: narrow `unknown` to `{ runId, verdict, retryCount, artifactManifestRef }`. Validate `runId`, `verdict`, `artifactManifestRef` are non-empty strings; `retryCount` is a non-negative finite number (or allow delegation to the domain if already validated there — verify).
+- Empty-required-field → `unsupported_v1_operation`.
+- Delegate to `summarizeReplayRun(input)` and wrap as `{ summary, ...modeledMetadata }`. Any domain throw → `unsupported_v1_operation`.
+
+**`automium_get_artifact_manifest`**
+- Response shape: `{ manifest: ArtifactManifest, ...modeledMetadata }`.
+- Input parsing: narrow `unknown` to `{ runId, appId, root, entries }` where `entries: { kind, path }[]`.
+- Pre-domain validation order:
+  1. `args` not a plain object → `unsupported_v1_operation`.
+  2. Missing/empty required string field (`runId`, `appId`, `root`) → `unsupported_v1_operation`.
+  3. Unauthorized `appId` → `invalid_app_id`.
+  4. `entries` not an array or any entry not a plain object → `unsupported_v1_operation`.
+  5. Any entry `kind` not in `ARTIFACT_KINDS` → `invalid_artifact_kind`.
+  6. Any entry `path` absolute (starts with `/`) → `unsupported_v1_operation`.
+  7. Any other domain failure → `unsupported_v1_operation`.
+- Delegate to `createArtifactManifest({ runId, root, entries })` (appId used only for authorization check, not passed to domain). Wrap as `{ manifest, ...modeledMetadata }`.
+
+### Test expectations
+After Step 2.5, the 2 replay + 4 artifact tests must go green (6 new passes):
+- `automium_get_replay_summary`: happy path, rejects empty required fields (3 fields × 1 assertion = 3 error assertions in one test).
+- `automium_get_artifact_manifest`: happy path, rejects unsupported artifact kinds (`invalid_artifact_kind`), rejects absolute entry paths (`unsupported_v1_operation`), rejects unauthorized owning app IDs (`invalid_app_id`).
+
+After Step 2.5 the net MCP suite should be roughly 23 passing / 2 failing (the remaining 2 failing tests in `automium_compare_planners` await Step 2.6).
+
+### Acceptance criteria
+- `pnpm exec vitest run packages/mcp-server/tests/mcp-tools.contract.test.ts` — the 6 replay + artifact tests pass; record the new pass/fail breakdown in `tasks/history.md`.
+- `pnpm exec tsc --noEmit` passes.
+- `git diff --check` clean.
+- `pnpm test:run` — no regressions in other suites.
+
+### Ship-one-step handoff contract
+After approval, the fresh-context implementation session must:
+1. Implement only Step 2.5 as scoped above.
+2. Validate: MCP tool contract tests + `pnpm exec tsc --noEmit` + `git diff --check` + `pnpm test:run`.
+3. Mark Step 2.5 done in `tasks/todo.md` and update `tasks/history.md`.
+4. Commit and push to `master` via `/commit-and-push-by-feature`.
+5. Skip deploy (no `deploy.md` or `tasks/deploy.md` contract exists).
+6. Write the Step 2.6 plan (`automium_compare_planners`) into `tasks/todo.md` as a self-contained handoff.
+7. Ensure `.claude/settings.local.json` has `"showClearContextOnPlanAccept": true` and `"defaultMode": "acceptEdits"`.
+8. Call `EnterPlanMode`, write a brief pass-through plan referencing `tasks/todo.md`, call `ExitPlanMode`, and stop before implementing Step 2.6. Do not call `ExitPlanMode` from normal mode. If `EnterPlanMode` is denied, stop and ask the user to explicitly run `/plan` for Step 2.6.
+
+---
+
+## Prior Plan (archived) — Step 2.4 (automium_create_run_submission)
 
 ### Execution Profile
 - **Mode:** implementation-safe (serial, single-package edits, no cross-package surface changes)

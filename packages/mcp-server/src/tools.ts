@@ -36,13 +36,18 @@ import {
 
 import { AutomiumMcpError } from "./errors";
 import type { AutomiumMcpServer } from "./server";
-import type { AutomiumMcpToolDescriptor } from "./schemas";
+import type {
+  AutomiumMcpToolDescriptor,
+  AutomiumModeledOutputMetadata
+} from "./schemas";
 
-const modeledMetadata = {
-  modeled: true as const,
-  liveBrowserExecuted: false as const,
-  providerCallsMade: false as const,
-  filesystemMutated: false as const
+const modeledMetadata: AutomiumModeledOutputMetadata = {
+  modeled: true,
+  liveBrowserExecuted: false,
+  providerCallsMade: false,
+  filesystemMutated: false,
+  queued: false,
+  artifactsFetched: false
 };
 
 const supportedPlannerIntents = new Set<string>(PLANNER_INTENT_VOCABULARY);
@@ -272,12 +277,8 @@ function parseJourneyRecovery(raw: unknown): JourneyRecoveryDefinition {
   };
 }
 
-interface CompileJourneyResult {
+interface CompileJourneyResult extends AutomiumModeledOutputMetadata {
   readonly compiled: CompiledJourneyDefinition;
-  readonly modeled: true;
-  readonly liveBrowserExecuted: false;
-  readonly providerCallsMade: false;
-  readonly filesystemMutated: false;
 }
 
 function handleCompileJourney(args: unknown): CompileJourneyResult {
@@ -375,12 +376,8 @@ function parsePlannerMetadata(raw: unknown): PlannerBackendRef {
   };
 }
 
-interface CreateRunSubmissionResult {
+interface CreateRunSubmissionResult extends AutomiumModeledOutputMetadata {
   readonly submission: RunSubmission;
-  readonly modeled: true;
-  readonly liveBrowserExecuted: false;
-  readonly providerCallsMade: false;
-  readonly filesystemMutated: false;
 }
 
 function handleCreateRunSubmission(args: unknown): CreateRunSubmissionResult {
@@ -443,12 +440,8 @@ function handleCreateRunSubmission(args: unknown): CreateRunSubmissionResult {
 
 const artifactKindSet = new Set<string>(ARTIFACT_KINDS);
 
-interface GetReplaySummaryResult {
+interface GetReplaySummaryResult extends AutomiumModeledOutputMetadata {
   readonly summary: ReplayRunSummary;
-  readonly modeled: true;
-  readonly liveBrowserExecuted: false;
-  readonly providerCallsMade: false;
-  readonly filesystemMutated: false;
 }
 
 function handleGetReplaySummary(args: unknown): GetReplaySummaryResult {
@@ -503,12 +496,8 @@ function handleGetReplaySummary(args: unknown): GetReplaySummaryResult {
   return { summary, ...modeledMetadata };
 }
 
-interface GetArtifactManifestResult {
+interface GetArtifactManifestResult extends AutomiumModeledOutputMetadata {
   readonly manifest: ArtifactManifest;
-  readonly modeled: true;
-  readonly liveBrowserExecuted: false;
-  readonly providerCallsMade: false;
-  readonly filesystemMutated: false;
 }
 
 function parseArtifactManifestEntry(
@@ -580,12 +569,8 @@ function handleGetArtifactManifest(args: unknown): GetArtifactManifestResult {
   return { manifest, ...modeledMetadata };
 }
 
-interface ComparePlannersResult {
+interface ComparePlannersResult extends AutomiumModeledOutputMetadata {
   readonly report: BenchmarkComparisonReport;
-  readonly modeled: true;
-  readonly liveBrowserExecuted: false;
-  readonly providerCallsMade: false;
-  readonly filesystemMutated: false;
 }
 
 function handleComparePlanners(args: unknown): ComparePlannersResult {

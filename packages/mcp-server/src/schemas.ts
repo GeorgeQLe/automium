@@ -69,6 +69,8 @@ export interface AutomiumModeledOutputMetadata {
   readonly liveBrowserExecuted: false;
   readonly providerCallsMade: false;
   readonly filesystemMutated: false;
+  readonly queued: false;
+  readonly artifactsFetched: false;
 }
 
 export interface AutomiumPlannerReference {

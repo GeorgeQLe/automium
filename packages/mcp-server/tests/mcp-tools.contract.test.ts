@@ -52,7 +52,9 @@ function expectModeledMetadata(value: unknown): void {
     modeled: true,
     liveBrowserExecuted: false,
     providerCallsMade: false,
-    filesystemMutated: false
+    filesystemMutated: false,
+    queued: false,
+    artifactsFetched: false
   });
 }
 

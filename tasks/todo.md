@@ -61,6 +61,46 @@ Acceptance criteria:
 - `pnpm exec tsc --noEmit` → passes.
 - `git diff --check` → clean.
 
-## Next Action
+## Next Step Plan — Step 2.2 (Corpus Discovery Tools)
 
-- [ ] Begin Step 2.2: implement `callAutomiumMcpTool` and corpus discovery tools over `packages/benchmark/src/corpus.ts`.
+### Execution Profile
+- **Mode:** implementation-safe (serial, single-package edits, no cross-package surface changes)
+- **Depends on:** Step 2.1 red (complete on master at `a5bb126`)
+- **Owns:** `packages/mcp-server/src/tools.ts`, `packages/mcp-server/src/schemas.ts`, `packages/mcp-server/src/errors.ts`
+
+### What to build
+Introduce the `callAutomiumMcpTool(server, name, args)` helper in `packages/mcp-server/src/tools.ts` and wire up the two corpus-discovery tools (`automium_list_apps`, `automium_list_fixtures`). This helper is the test-only dispatch surface the Step 2.1 contract tests depend on; Steps 2.3–2.7 will extend it with additional tool branches without changing the helper signature.
+
+### Files to create/modify
+- `packages/mcp-server/src/tools.ts` — add the `callAutomiumMcpTool` dispatcher and implement `automium_list_apps` + `automium_list_fixtures`. Preserve the existing `automiumMcpToolDescriptors` export. Other tool branches should throw `AutomiumMcpError("unsupported_v1_operation", …)` as a placeholder to be replaced in Steps 2.3–2.7.
+- `packages/mcp-server/src/schemas.ts` — no change expected in 2.2 unless a corpus-discovery response shape needs a named type; if added, keep naming consistent with `AutomiumModeledOutputMetadata`.
+- `packages/mcp-server/src/errors.ts` — no change expected; reuse `invalid_app_id` and `fixture_app_mismatch`.
+
+### Technical decisions
+- Dispatcher signature: `function callAutomiumMcpTool(server: AutomiumMcpServer, name: string, args: unknown): unknown`. It should not depend on `server.sdkServer`; the `server` parameter is threaded through so Step 4 stdio wiring can reuse the same helper. For now treat unknown tool names as `AutomiumMcpError("unsupported_v1_operation", …)`.
+- Response shape (must match the Step 2.1 tests exactly):
+  - `automium_list_apps` → `{ apps: readonly AuthorizedBenchmarkApp[] }`; reject any `appId` filter not in `authorizedBenchmarkApps` with `invalid_app_id`.
+  - `automium_list_fixtures` → `{ fixtures: readonly BenchmarkFixtureDefinition[] }`; if `appId` filter is present, validate against the authorized set (`invalid_app_id` on miss); if both `appId` and `fixtureId` are supplied, require the fixture to belong to that app (`fixture_app_mismatch` on miss).
+- Input parsing: accept `unknown` and narrow with explicit checks (no zod dependency). Missing optional fields are fine; unknown extra fields are ignored.
+- Do NOT import the SDK for the helper — it's a pure function over domain data.
+
+### Test expectations
+- Step 2.1 tests for `automium_list_apps` (2 tests) and `automium_list_fixtures` (4 tests) must go green.
+- The remaining 19 tests for tools 2.3–2.7 will still fail with `unsupported_v1_operation` (different failure signature than the current "helper missing" error). That is expected and will be resolved in subsequent steps; do not over-implement.
+
+### Acceptance criteria
+- `pnpm exec vitest run packages/mcp-server/tests/mcp-tools.contract.test.ts` — at minimum the 6 `automium_list_apps` / `automium_list_fixtures` tests pass. Document the per-test pass/fail breakdown in `tasks/history.md`.
+- `pnpm exec tsc --noEmit` passes.
+- `git diff --check` clean.
+- `pnpm test:run` — no regressions in other suites (expected: 52 files, 196 tests were passing at end of Phase 1 + 25 failing MCP tool contract tests from Step 2.1; after Step 2.2 the failing count should drop by 6).
+
+### Ship-one-step handoff contract
+After approval, the fresh-context implementation session must:
+1. Implement only Step 2.2 as scoped above.
+2. Validate: run the MCP tool contract tests + `pnpm exec tsc --noEmit` + `git diff --check` + `pnpm test:run`.
+3. Mark Step 2.2 done in `tasks/todo.md` and update `tasks/history.md`.
+4. Commit and push to `master` via `/commit-and-push-by-feature`.
+5. Skip deploy (no `deploy.md` or `tasks/deploy.md` contract exists).
+6. Write the Step 2.3 plan into `tasks/todo.md` (self-contained, file paths, tests to target, acceptance criteria).
+7. Ensure `.claude/settings.local.json` has `"showClearContextOnPlanAccept": true` and `"defaultMode": "acceptEdits"`.
+8. Call `EnterPlanMode`, write a brief pass-through plan referencing `tasks/todo.md`, call `ExitPlanMode`, and stop before implementing Step 2.3. Do not call `ExitPlanMode` from normal mode. If `EnterPlanMode` is denied, stop and ask the user to explicitly run `/plan` for Step 2.3.

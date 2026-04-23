@@ -8,11 +8,14 @@ import {
 import { PLANNER_INTENT_VOCABULARY } from "../../contracts/src/planner-adapter";
 import {
   compileJourneyDefinition,
+  createRunSubmission,
   type CompiledJourneyDefinition,
   type JourneyAssertionDefinition,
   type JourneyDefinition,
   type JourneyRecoveryDefinition,
-  type JourneyStepDefinition
+  type JourneyStepDefinition,
+  type PlannerBackendRef,
+  type RunSubmission
 } from "../../../apps/control-plane/src/control-plane-domain";
 
 import { AutomiumMcpError } from "./errors";
@@ -333,6 +336,95 @@ function handleCompileJourney(args: unknown): CompileJourneyResult {
   return { compiled, ...modeledMetadata };
 }
 
+function parsePlannerMetadata(raw: unknown): PlannerBackendRef {
+  if (!isPlainObject(raw)) {
+    throw new AutomiumMcpError(
+      "malformed_planner_metadata",
+      "Planner metadata must be an object with non-empty id, vendor, and model."
+    );
+  }
+  for (const field of ["id", "vendor", "model"] as const) {
+    const value = raw[field];
+    if (typeof value !== "string" || value === "") {
+      throw new AutomiumMcpError(
+        "malformed_planner_metadata",
+        `Planner metadata field "${field}" must be a non-empty string.`
+      );
+    }
+  }
+  return {
+    id: raw.id as string,
+    vendor: raw.vendor as string,
+    model: raw.model as string
+  };
+}
+
+interface CreateRunSubmissionResult {
+  readonly submission: RunSubmission;
+  readonly modeled: true;
+  readonly liveBrowserExecuted: false;
+  readonly providerCallsMade: false;
+  readonly filesystemMutated: false;
+}
+
+function handleCreateRunSubmission(args: unknown): CreateRunSubmissionResult {
+  if (!isPlainObject(args)) {
+    throw new AutomiumMcpError(
+      "unsupported_v1_operation",
+      "automium_create_run_submission arguments must be an object."
+    );
+  }
+
+  const journeyId = readRequiredString(args, "journeyId");
+  const appId = readRequiredString(args, "appId");
+  const fixtureId = readRequiredString(args, "fixtureId");
+  const environmentProfileId = readRequiredString(args, "environmentProfileId");
+
+  if (
+    journeyId.trim() === "" ||
+    appId.trim() === "" ||
+    fixtureId.trim() === "" ||
+    environmentProfileId.trim() === ""
+  ) {
+    throw new AutomiumMcpError(
+      "unsupported_v1_operation",
+      "Run submission requires non-empty journeyId, appId, fixtureId, and environmentProfileId."
+    );
+  }
+
+  const planner = parsePlannerMetadata(args.planner);
+
+  assertAuthorizedAppId(appId);
+
+  const fixtureMatch = benchmarkFixtureManifest.find(
+    (fixture) => fixture.id === fixtureId && fixture.appId === appId
+  );
+  if (!fixtureMatch) {
+    throw new AutomiumMcpError(
+      "fixture_app_mismatch",
+      `Fixture "${fixtureId}" does not belong to app "${appId}".`
+    );
+  }
+
+  let submission: RunSubmission;
+  try {
+    submission = createRunSubmission({
+      journeyId,
+      appId,
+      fixtureId,
+      planner,
+      environmentProfileId
+    });
+  } catch (error) {
+    throw new AutomiumMcpError(
+      "unsupported_v1_operation",
+      error instanceof Error ? error.message : "Failed to create run submission."
+    );
+  }
+
+  return { submission, ...modeledMetadata };
+}
+
 export function callAutomiumMcpTool(
   _server: AutomiumMcpServer,
   name: string,
@@ -346,6 +438,7 @@ export function callAutomiumMcpTool(
     case "automium_compile_journey":
       return handleCompileJourney(args);
     case "automium_create_run_submission":
+      return handleCreateRunSubmission(args);
     case "automium_get_replay_summary":
     case "automium_get_artifact_manifest":
     case "automium_compare_planners":

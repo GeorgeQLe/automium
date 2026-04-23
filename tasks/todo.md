@@ -26,7 +26,7 @@ Goal: implement the seven v1 MCP tools by validating inputs at the MCP boundary 
 - [x] Step 2.4: **Automated** Implement `automium_create_run_submission` over the control-plane run model.
   - Files: modify `packages/mcp-server/src/tools.ts`
   - Reuse `createRunSubmission` and add MCP boundary validation that planner metadata includes non-empty `id`, `vendor`, and `model`.
-- [ ] Step 2.5: **Automated** Implement replay and artifact tools over replay-console and artifacts contracts.
+- [x] Step 2.5: **Automated** Implement replay and artifact tools over replay-console and artifacts contracts.
   - Files: modify `packages/mcp-server/src/tools.ts`, `packages/mcp-server/src/schemas.ts`
   - Reuse `apps/replay-console/src/replay-console-domain.ts` for `summarizeReplayRun` and `packages/artifacts/src/artifacts-domain.ts` for `ARTIFACT_KINDS` and `createArtifactManifest`.
   - Reject absolute artifact paths and unsupported artifact kinds before domain delegation.

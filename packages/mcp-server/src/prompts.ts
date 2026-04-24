@@ -35,6 +35,9 @@ export interface AutomiumMcpPromptPayload {
   readonly messages: readonly AutomiumMcpPromptMessage[];
 }
 
+const MODELED_V1_DISCLAIMER =
+  "Automium MCP v1 outputs are modeled only: no live browser execution, no provider calls, no production artifact retrieval, no credential access.";
+
 function requireNonEmptyString(
   args: Record<string, unknown>,
   key: string
@@ -102,8 +105,9 @@ function buildDraftJourneyPrompt(
       ),
       message(
         "assistant",
-        `Each step's intent must be drawn from the frozen planner intent vocabulary: ${intentVocabulary}. Every journey must include bounded recovery (maxAttempts, strategy) and assertions sourced from the fixture. Output is modeled only — do not claim live browser execution.`
-      )
+        `Describe the journey as a modeled specification for the named fixture: each step's intent must be drawn from the frozen planner intent vocabulary: ${intentVocabulary}. Every journey must include bounded recovery (maxAttempts, strategy) and assertions sourced from the fixture. Reference fixture identifiers only — do not describe opening, launching, navigating, clicking, or typing against any live target.`
+      ),
+      message("system", MODELED_V1_DISCLAIMER)
     ]
   };
 }
@@ -127,8 +131,9 @@ function buildDebugFailedRunPrompt(
       ),
       message(
         "assistant",
-        "Walk the replay event log in phase order, correlating each phase with entries in the artifact manifest. Identify the first divergence between expected and observed state. Propose bounded recovery: a concrete retry strategy with an explicit maxAttempts cap, scoped to the replay evidence — no live retries, no unbounded recovery loops."
-      )
+        "Read the checked-in replay event log in phase order, correlating each phase with entries in the checked-in artifact manifest. Identify the first divergence between expected and observed state. Propose bounded recovery: a concrete retry strategy with an explicit maxAttempts cap, scoped to the replay evidence — no live retries, no log streaming, no credential access, no unbounded recovery loops."
+      ),
+      message("system", MODELED_V1_DISCLAIMER)
     ]
   };
 }
@@ -165,8 +170,9 @@ function buildComparePlannerBackendsPrompt(
       ),
       message(
         "assistant",
-        "Frame comparePlannerBackends as a modeled aggregation over the corpus: success rate, intent-vocabulary coverage, and recovery-budget usage per planner reference. Keep planner references as identifiers only; do not claim to execute any planner against a live target."
-      )
+        "Frame comparePlannerBackends as a modeled aggregation over the corpus: success rate, intent-vocabulary coverage, and recovery-budget usage per planner reference. Treat planner entries as identifiers only — do not call, invoke, execute, or run any planner, and do not contact any provider API."
+      ),
+      message("system", MODELED_V1_DISCLAIMER)
     ]
   };
 }

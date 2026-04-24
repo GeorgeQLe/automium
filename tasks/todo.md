@@ -20,7 +20,7 @@ Goal: wire the official SDK stdio transport, add executable package entrypoints,
 - [x] Step 4.2: **Automated** Implement the stdio runtime entrypoint.
   - Files: create `packages/mcp-server/src/stdio.ts`, modify `packages/mcp-server/src/index.ts`, modify `packages/mcp-server/package.json`
   - The entrypoint should start only stdio transport and should not start HTTP/SSE listeners.
-- [ ] Step 4.3: **Automated** Document local setup and supported client configuration.
+- [x] Step 4.3: **Automated** Document local setup and supported client configuration.
   - Files: create `packages/mcp-server/README.md`, modify `tasks/todo.md`
   - Documentation should include stdio command shape, supported tools/resources/prompts, v1 safety boundaries, and deferred remote transport scope.
 
@@ -42,52 +42,38 @@ Acceptance criteria:
 - All phase tests pass.
 - No regressions.
 
-## Next Step Plan — Step 4.3 (Phase 4 README documentation for local stdio usage and v1 safety boundaries)
+## Next Step Plan — Step 4.4 (Phase 4 green verification sweep)
 
 ### Execution Profile
-- **Mode:** docs-only (no `src/` or test edits; write README and verify)
-- **Depends on:** Step 4.2 (stdio entrypoint landed; all 56 files / 241 tests green)
-- **Owns:** `packages/mcp-server/README.md` (new)
+- **Mode:** verification-only (no `src/` or test edits; re-run everything and confirm green)
+- **Depends on:** Step 4.3 (README landed; all 56 files / 241 tests green)
+- **Owns:** no files — pure verification
 
-### What to build
+### What to verify
 
-1. Create `packages/mcp-server/README.md` documenting:
-   - **Stdio command shape:** how to start the server (`npx automium-mcp-server` or `pnpm exec` invocation), expected stdin/stdout JSON-RPC framing, and that `StdioServerTransport` is used under the hood.
-   - **Supported tools:** table or list of all 7 v1 tools (`automium_list_apps`, `automium_list_fixtures`, `automium_compile_journey`, `automium_create_run_submission`, `automium_get_replay_summary`, `automium_get_artifact_manifest`, `automium_compare_planners`) with one-line descriptions sourced from the tool descriptors.
-   - **Supported resources:** table or list of all 5 v1 resources (`automium://apps`, `automium://fixtures`, `automium://contracts/planner-adapter-v1`, `automium://contracts/replay-event-v1`, `automium://contracts/semantic-snapshot-v1`) with one-line descriptions.
-   - **Supported prompts:** table or list of all 3 v1 prompts (`draft_journey`, `debug_failed_run`, `compare_planner_backends`) with required arguments and one-line descriptions.
-   - **V1 safety boundaries:** explicit statement that v1 is modeled-only — no live browser execution, no provider API calls, no credential access, no filesystem writes, no remote artifact retrieval, no HTTP/SSE/WebSocket transports. Reference the `AutomiumModeledOutputMetadata` markers on modeled tool responses.
-   - **Client configuration:** example `mcp.json` / Claude Desktop config snippet showing the stdio command and arguments.
-   - **Deferred scope:** brief note that remote transports (SSE, Streamable HTTP) and provider-backed planner execution are planned for future phases, not v1.
-
-2. Do NOT modify any `src/` or test files.
-
-### Files to create/modify
-- Create `packages/mcp-server/README.md`.
-
-### Technical decisions
-- Source tool/resource/prompt descriptions from the existing descriptors in `tools.ts`, `resources.ts`, and `prompts.ts` — do not invent new copy.
-- Keep the README concise: operator-facing documentation, not contributor internals.
-- Use fenced code blocks for command examples and configuration snippets.
+1. Re-run the MCP package test slice: `pnpm exec vitest run packages/mcp-server/tests` — expect 5 files / 49 tests green.
+2. Re-run the reused-domain matrix: `pnpm exec vitest run apps/control-plane/tests apps/replay-console/tests packages/artifacts/tests packages/benchmark-runner/tests packages/benchmark/tests packages/contracts/tests packages/journey-compiler/tests` — expect no regressions.
+3. Full monorepo: `pnpm test:run` — expect 56 files / 241 tests green.
+4. TypeScript: `pnpm exec tsc --noEmit` — expect clean.
+5. Whitespace: `git diff --check` — expect clean.
+6. If all green on first run, mark Phase 4 milestone complete, archive to `tasks/phases/mcp-phase-4.md`, and regenerate `tasks/todo.md` for the next priority.
 
 ### Test expectations
-- `pnpm exec tsc --noEmit` → pass (no source changes).
-- `pnpm test:run` → 56 files / 241 tests green (no test changes).
-- `git diff --check` → clean.
+- No source or test edits required.
+- All checks pass on the first run (no code fixes expected).
 
 ### Acceptance criteria
-- `packages/mcp-server/README.md` exists and covers stdio usage, v1 capabilities, safety boundaries, client config, and deferred scope.
-- No source or test regressions.
+- All verification commands green.
+- Phase 4 milestone marked complete in `tasks/roadmap.md`.
+- Phase 4 archived to `tasks/phases/mcp-phase-4.md`.
 
 ### Ship-one-step handoff contract
 After approval, the fresh-context implementation session must:
-1. Implement only Step 4.3 as scoped above.
-2. Validate: `pnpm exec tsc --noEmit` + `git diff --check` clean, `pnpm test:run` at 56 files / 241 tests green.
-3. Mark Step 4.3 done in `tasks/todo.md` and append the docs breakdown to `tasks/history.md`.
-4. Commit and push to `master` via `/commit-and-push-by-feature`. Skip deploy.
-5. Write the Step 4.4 plan (green verification sweep) into `tasks/todo.md` as a self-contained handoff.
-6. Ensure `.claude/settings.local.json` retains `"showClearContextOnPlanAccept": true` and `"defaultMode": "acceptEdits"`.
-7. Enter plan mode, write a brief pass-through plan referencing `tasks/todo.md`, exit plan mode, and stop before implementing Step 4.4.
+1. Execute only the Step 4.4 verification sweep as scoped above.
+2. If all green: mark Phase 4 complete in `tasks/roadmap.md`, archive to `tasks/phases/mcp-phase-4.md`, append the verification summary to `tasks/history.md`.
+3. Commit and push to `master`. Skip deploy.
+4. Write the next phase plan into `tasks/todo.md` as a self-contained handoff.
+5. Enter plan mode, write a brief pass-through plan, exit plan mode, and stop.
 
 ---
 

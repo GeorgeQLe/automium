@@ -17,7 +17,7 @@ Goal: wire the official SDK stdio transport, add executable package entrypoints,
 
 ### Implementation
 
-- [ ] Step 4.2: **Automated** Implement the stdio runtime entrypoint.
+- [x] Step 4.2: **Automated** Implement the stdio runtime entrypoint.
   - Files: create `packages/mcp-server/src/stdio.ts`, modify `packages/mcp-server/src/index.ts`, modify `packages/mcp-server/package.json`
   - The entrypoint should start only stdio transport and should not start HTTP/SSE listeners.
 - [ ] Step 4.3: **Automated** Document local setup and supported client configuration.
@@ -42,61 +42,52 @@ Acceptance criteria:
 - All phase tests pass.
 - No regressions.
 
-## Next Step Plan — Step 4.2 (Phase 4 green-phase stdio runtime entrypoint)
+## Next Step Plan — Step 4.3 (Phase 4 README documentation for local stdio usage and v1 safety boundaries)
 
 ### Execution Profile
-- **Mode:** tdd-green (turn the Step 4.1 red-phase stdio suite green; do not regress the 45 existing MCP tests; keep the safety suite's forbidden-import scan clean)
-- **Depends on:** Step 4.1 (new `mcp-stdio.contract.test.ts` + `mcp-safety.contract.test.ts` landed, 4 expected failures); Phase 3 capability registration surface in `packages/mcp-server/src/server.ts`, `resources.ts`, `prompts.ts`, `tools.ts`
-- **Owns:** `packages/mcp-server/src/stdio.ts` (new), `packages/mcp-server/src/index.ts` (re-export), `packages/mcp-server/package.json` (already points `bin` at `./src/stdio.ts` — leave as-is unless a shebang-compatible wrapper is needed)
+- **Mode:** docs-only (no `src/` or test edits; write README and verify)
+- **Depends on:** Step 4.2 (stdio entrypoint landed; all 56 files / 241 tests green)
+- **Owns:** `packages/mcp-server/README.md` (new)
 
 ### What to build
 
-1. Create `packages/mcp-server/src/stdio.ts` exporting `async function startAutomiumMcpStdioServer(): Promise<{ server: AutomiumMcpServer; transport: StdioServerTransport; close: () => Promise<void> }>`.
-   - Build the server via `createAutomiumMcpServer()`.
-   - Wire every v1 tool, resource, and prompt into the underlying `McpServer` (via `registerAutomiumMcpTools(server)`, `registerAutomiumMcpResources(server)`, `registerAutomiumMcpPrompts(server)` — add those registration helpers in the respective source files if not already exported). The registration helpers must use the existing `callAutomiumMcpTool`, `readAutomiumMcpResource`, and `getAutomiumMcpPrompt` handlers so there is no duplicated business logic.
-   - Connect the stdio transport (`StdioServerTransport` from `@modelcontextprotocol/sdk/server/stdio.js`) to the SDK server via `sdkServer.connect(transport)` — only import from the SDK, no raw `process.stdin`/`process.stdout` wiring.
-   - Track the transport on the returned handle and expose a `close()` that awaits `sdkServer.close()` (or `transport.close()`) and resolves without leaving handles open — the contract test's 1s timeout must pass.
-   - Do NOT import `http`, `https`, `net`, `express`, `fastify`, `ws`, `SSEServerTransport`, or `StreamableHTTPServerTransport`. Do NOT read env vars. Do NOT write files.
+1. Create `packages/mcp-server/README.md` documenting:
+   - **Stdio command shape:** how to start the server (`npx automium-mcp-server` or `pnpm exec` invocation), expected stdin/stdout JSON-RPC framing, and that `StdioServerTransport` is used under the hood.
+   - **Supported tools:** table or list of all 7 v1 tools (`automium_list_apps`, `automium_list_fixtures`, `automium_compile_journey`, `automium_create_run_submission`, `automium_get_replay_summary`, `automium_get_artifact_manifest`, `automium_compare_planners`) with one-line descriptions sourced from the tool descriptors.
+   - **Supported resources:** table or list of all 5 v1 resources (`automium://apps`, `automium://fixtures`, `automium://contracts/planner-adapter-v1`, `automium://contracts/replay-event-v1`, `automium://contracts/semantic-snapshot-v1`) with one-line descriptions.
+   - **Supported prompts:** table or list of all 3 v1 prompts (`draft_journey`, `debug_failed_run`, `compare_planner_backends`) with required arguments and one-line descriptions.
+   - **V1 safety boundaries:** explicit statement that v1 is modeled-only — no live browser execution, no provider API calls, no credential access, no filesystem writes, no remote artifact retrieval, no HTTP/SSE/WebSocket transports. Reference the `AutomiumModeledOutputMetadata` markers on modeled tool responses.
+   - **Client configuration:** example `mcp.json` / Claude Desktop config snippet showing the stdio command and arguments.
+   - **Deferred scope:** brief note that remote transports (SSE, Streamable HTTP) and provider-backed planner execution are planned for future phases, not v1.
 
-2. Re-export the stdio surface from `packages/mcp-server/src/index.ts` (`export * from "./stdio";`) so the dynamic-import fallback in the contract test still resolves.
-
-3. If the stdio source file needs a shebang for the `bin` target (`#!/usr/bin/env node`), add it on line 1. If not, leave `package.json` `bin` unchanged. Do not restructure the bin shape.
+2. Do NOT modify any `src/` or test files.
 
 ### Files to create/modify
-- Create `packages/mcp-server/src/stdio.ts`.
-- Modify `packages/mcp-server/src/index.ts` (add the `export * from "./stdio";` line).
-- Modify `packages/mcp-server/src/tools.ts`, `resources.ts`, and `prompts.ts` ONLY to add `registerAutomiumMcp*` helpers that wire the existing pure handlers into the SDK server — do not touch business logic or error handling.
-- Leave `package.json` alone unless the stdio file needs a shebang-compatible runner.
+- Create `packages/mcp-server/README.md`.
 
 ### Technical decisions
-- **Reuse the pure handlers.** Registration helpers are thin adapters that call the existing pure functions and translate errors into SDK responses. This keeps the Phase 3 contract tests for handlers green and avoids a second source of truth.
-- **No child process spawn in tests.** The stdio contract test constructs the transport + server in-process. Make sure `close()` is synchronous-ish (resolves within the 1s test budget) and does not leave the Vitest process hanging.
-- **Keep the forbidden-import surface clean.** The only new import permitted by the safety scan is `@modelcontextprotocol/sdk/server/stdio.js`. Double-check the scan regexes won't match it.
-- **Handle `StdioServerTransport` construction carefully.** If the SDK's default constructor reads from `process.stdin`, the test must still be able to close cleanly — verify with a local run; if not, accept an optional injected `input`/`output` stream pair.
+- Source tool/resource/prompt descriptions from the existing descriptors in `tools.ts`, `resources.ts`, and `prompts.ts` — do not invent new copy.
+- Keep the README concise: operator-facing documentation, not contributor internals.
+- Use fenced code blocks for command examples and configuration snippets.
 
 ### Test expectations
-- `pnpm exec vitest run packages/mcp-server/tests/mcp-stdio.contract.test.ts` → all 4 tests green.
-- `pnpm exec vitest run packages/mcp-server/tests/mcp-safety.contract.test.ts` → all 5 tests green (`stdio.ts` now exists; no new forbidden imports added).
-- `pnpm exec vitest run packages/mcp-server/tests` → 5 files / 49 tests green.
-- `pnpm exec tsc --noEmit` → pass.
-- `pnpm test:run` → 56 files / 241 tests green.
+- `pnpm exec tsc --noEmit` → pass (no source changes).
+- `pnpm test:run` → 56 files / 241 tests green (no test changes).
 - `git diff --check` → clean.
 
 ### Acceptance criteria
-- Stdio entrypoint lands; contract suite is green.
-- Safety scan still passes with the new file in place.
-- All existing MCP tests (40) remain green.
-- No regressions in the 54 previously-passing monorepo test files.
+- `packages/mcp-server/README.md` exists and covers stdio usage, v1 capabilities, safety boundaries, client config, and deferred scope.
+- No source or test regressions.
 
 ### Ship-one-step handoff contract
 After approval, the fresh-context implementation session must:
-1. Implement only Step 4.2 as scoped above.
-2. Validate: both new suites fully green, existing MCP + monorepo tests still green, `pnpm exec tsc --noEmit` + `git diff --check` clean, `pnpm test:run` at 56 files / 241 tests green.
-3. Mark Step 4.2 done in `tasks/todo.md` and append the green-phase breakdown to `tasks/history.md`.
+1. Implement only Step 4.3 as scoped above.
+2. Validate: `pnpm exec tsc --noEmit` + `git diff --check` clean, `pnpm test:run` at 56 files / 241 tests green.
+3. Mark Step 4.3 done in `tasks/todo.md` and append the docs breakdown to `tasks/history.md`.
 4. Commit and push to `master` via `/commit-and-push-by-feature`. Skip deploy.
-5. Write the Step 4.3 plan (README docs for local stdio usage and v1 safety boundaries) into `tasks/todo.md` as a self-contained handoff.
+5. Write the Step 4.4 plan (green verification sweep) into `tasks/todo.md` as a self-contained handoff.
 6. Ensure `.claude/settings.local.json` retains `"showClearContextOnPlanAccept": true` and `"defaultMode": "acceptEdits"`.
-7. Enter plan mode, write a brief pass-through plan referencing `tasks/todo.md`, exit plan mode, and stop before implementing Step 4.3.
+7. Enter plan mode, write a brief pass-through plan referencing `tasks/todo.md`, exit plan mode, and stop before implementing Step 4.4.
 
 ---
 

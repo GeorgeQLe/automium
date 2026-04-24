@@ -46,57 +46,64 @@ Acceptance criteria:
 - All phase tests pass.
 - No regressions.
 
-## Next Step Plan — Step 3.3 (Phase 3 green-phase prompt handler implementation)
+## Next Step Plan — Step 3.4 (Phase 3 prompt-copy maturity-boundary audit)
 
 ### Execution Profile
-- **Mode:** implementation-safe (test-green; additive changes confined to `packages/mcp-server/src/prompts.ts`; pure functions; no filesystem reads; no SDK-registration changes)
-- **Depends on:** Step 3.2 resource-handler green lane landed (`readAutomiumMcpResource` in `packages/mcp-server/src/resources.ts`; 6/11 tests in the Phase 3 contract suite now green)
-- **Owns:** `packages/mcp-server/src/prompts.ts` (primary); may touch `packages/mcp-server/src/errors.ts` only if a new error code is strictly required (none expected — `unsupported_v1_operation` already covers missing identifiers and unknown prompt names)
+- **Mode:** implementation-safe (copy-only audit; additive/refining changes confined to `packages/mcp-server/src/prompts.ts`; all 11 Phase 3 contract tests must remain green; no new behavior, no new exports, no SDK registration changes)
+- **Depends on:** Step 3.3 prompt-handler green lane landed (`getAutomiumMcpPrompt` in `packages/mcp-server/src/prompts.ts`; 11/11 tests in the Phase 3 contract suite now green)
+- **Owns:** `packages/mcp-server/src/prompts.ts` (primary — only the message copy strings inside `buildDraftJourneyPrompt`, `buildDebugFailedRunPrompt`, `buildComparePlannerBackendsPrompt`); may touch `packages/mcp-server/tests/mcp-resources-prompts.contract.test.ts` only to add maturity-boundary assertions (optional — the core audit is copy edits).
 
 ### What to build
-Flip the 5 remaining red tests (3 prompt happy-path + 2 prompt failure-coverage) in `packages/mcp-server/tests/mcp-resources-prompts.contract.test.ts` by exporting a `getAutomiumMcpPrompt(server, name, args)` helper from `packages/mcp-server/src/prompts.ts`. Prompt outputs must preserve v1 maturity boundaries — no claims of live browser evidence, production artifact retrieval, credential access, or provider-backed planner execution. This step wires up the three fixed prompt names; Step 3.4 will audit the copy for maturity-boundary language.
+Audit and tighten the prompt copy in the three `build*Prompt` helpers so that no message string can be read as claiming live browser evidence, production artifact retrieval, credential access, or provider-backed planner execution. Step 3.3 already embedded disclaimer fragments ("modeled only", "no live browser execution", "no provider calls, no live browser execution, no queued runs", "no live retries") — Step 3.4 normalizes that language across all three prompts, removes any accidental imperative that could read as a live instruction, and makes the v1 maturity boundary a uniform, grep-able clause in every prompt.
 
 ### Files to create/modify
-- `packages/mcp-server/src/prompts.ts` — add `export function getAutomiumMcpPrompt(server: AutomiumMcpServer, name: string, args: unknown): AutomiumMcpPromptPayload`. Shape per prompt:
-  - `draft_journey` args: `{ appId: string; fixtureId: string; intent: string; goal: string }` — non-empty strings required. Output `messages` must include literal strings `appId` value (e.g. `"foundry"`), `fixtureId` value, and the token `"intent"` (lowercase, per test `.toLowerCase()` check). Reference the owned corpus and the frozen `PLANNER_INTENT_VOCABULARY`.
-  - `debug_failed_run` args: `{ runId: string; artifactManifestRef: string; verdict: string }` — non-empty `runId` required (tests explicitly pass empty `runId` to trigger rejection). Output combined text (lowercased by test) must contain `"replay"`, `"artifact"`, and `"recovery"` — reference bounded recovery, artifact/replay interpretation, and explicitly decline live retrieval.
-  - `compare_planner_backends` args: `{ appIds: string[]; planners: Array<{ id, vendor, model }>; corpusVersion: string }` — non-empty `appIds` AND non-empty `planners` required. Output must contain the literal token `"comparePlannerBackends"` (exact casing — it's checked without `toLowerCase`) AND the lowercase substring `"modeled"`. Reference modeled-only semantics.
-  - Any other `name` value → `throw new AutomiumMcpError("unsupported_v1_operation", …)`.
-  - Any missing/empty required identifier → `throw new AutomiumMcpError("unsupported_v1_operation", …)`.
-- `packages/mcp-server/src/errors.ts` — no change expected.
-- Do **not** touch `resources.ts` — resource lane stays green from Step 3.2.
+- `packages/mcp-server/src/prompts.ts` — copy-only edits to each `build*Prompt` helper:
+  - `buildDraftJourneyPrompt`: keep the appId/fixtureId/`"intent"` tokens intact. Reframe any imperative that sounds like "open the app" / "click X" so the assistant message makes it explicit that the journey is a **modeled specification** — the planner and browser runtime are outside the v1 MCP surface. Add a single uniform disclaimer sentence (see "Uniform disclaimer" below).
+  - `buildDebugFailedRunPrompt`: keep `"replay"`, `"artifact"`, `"recovery"` tokens intact. Ensure every reference to artifacts and replay is framed as **reading checked-in manifests and replay events**, not fetching from production storage. Forbid wording that implies credential access, log streaming, or live re-execution. Add the same uniform disclaimer.
+  - `buildComparePlannerBackendsPrompt`: keep the literal `"comparePlannerBackends"` token (exact casing) and `"modeled"` intact. Ensure the planner-id list is framed as **identifier-only**, never as "run", "invoke", "call", or "execute" the planner. Keep the existing "no provider calls, no live browser execution, no queued runs" clause but promote it to the same uniform disclaimer shape.
+- `packages/mcp-server/tests/mcp-resources-prompts.contract.test.ts` — optional additive assertions:
+  - Add one assertion per prompt that the combined message text contains a normalized maturity-boundary marker (e.g. the literal token `"modeled_v1"` or a shared phrase like `"no live execution"`). Keep existing assertions unchanged. If adding these pushes test count beyond 11, update `pnpm test:run` expectations in the "Test expectations" subsection of this plan before committing.
+- Do **not** touch `resources.ts`, `tools.ts`, `errors.ts`, `schemas.ts`, or `server.ts`.
 
 ### Technical decisions
-- **Message shape:** return `{ messages: Array<{ role: "user" | "assistant" | "system"; content: { type: "text"; text: string } }> }`. Tests accept either `string` content or `{ text }` — the `{ type: "text", text }` form is MCP-conformant and passes the `content.text ?? ""` branch.
-- **Server arg unused but required** for symmetry with `callAutomiumMcpTool` / `readAutomiumMcpResource`. Accept + ignore.
-- **Validation shape:** narrow `args` via a single guard per prompt — reject on any `typeof !== "string"`, empty-string, or empty-array. Use `AutomiumMcpError("unsupported_v1_operation", …)` for both malformed inputs and unknown names so the failure-coverage test (which only checks the code) passes uniformly.
-- **No dynamic copy generation.** Template strings inline the dynamic identifiers (`appId`, `fixtureId`, `runId`, `artifactManifestRef`, `corpusVersion`, etc.) but everything else is a static string. Do not read files, do not call into SDK.
-- **Keep prompt copy terse** (2–4 messages per prompt is enough). Step 3.4 will audit the wording; Step 3.3 just needs the assertions to pass and the v1 boundaries to hold.
-- **Reuse existing constants** (`PLANNER_INTENT_VOCABULARY`, `BENCHMARK_CORPUS_VERSION`) where referenced; do not duplicate vocabulary strings.
+- **Uniform disclaimer clause:** pick one short phrase — recommended `"Automium MCP v1 outputs are modeled only: no live browser execution, no provider calls, no production artifact retrieval, no credential access."` — and append it once (system message or trailing assistant message) to each of the three prompts. Treat the phrase as a single source string (inline constant at the top of `prompts.ts`, not exported) so future copy drift stays detectable.
+- **Word-level sweep — reject these imperatives in prompt copy:**
+  - "open the browser", "launch", "navigate to the live", "click", "type into", "execute against", "run against production", "fetch from storage", "retrieve credentials", "call the planner API", "invoke the planner model".
+  - Rewrite each as a modeled equivalent: "describe the journey steps", "reference the fixture", "read the manifest", "reason over the replay events", "compare planner references".
+- **Do not alter behavior or shape:** the function signatures, return shape (`{ messages: Array<{ role, content: { type: "text", text } }> }`), error codes, and validation flow must stay identical. No new exports, no new error codes, no new dependencies.
+- **Do not add runtime conditionals** — this is a static copy audit, not a policy engine. No `if (env === "prod")` logic in prompt copy.
+- **Keep the `PLANNER_INTENT_VOCABULARY` and `BENCHMARK_CORPUS_VERSION` references** exactly where they already live.
 
 ### Test expectations
-- `pnpm exec vitest run packages/mcp-server/tests/mcp-resources-prompts.contract.test.ts` → 11/11 passing.
-- `pnpm exec vitest run packages/mcp-server/tests/mcp-tools.contract.test.ts` → 25/25 passing.
+- `pnpm exec vitest run packages/mcp-server/tests/mcp-resources-prompts.contract.test.ts` → 11/11 passing (or 11+N/11+N if optional maturity-boundary assertions are added).
+- `pnpm exec vitest run packages/mcp-server/tests/mcp-tools.contract.test.ts` → still 25/25 passing.
 - `pnpm exec tsc --noEmit` → pass.
-- `pnpm test:run` → 54 passing files, 0 expected-failing, 232 passing / 0 failing.
+- `pnpm test:run` → 54 passing files, 0 expected-failing, 232 passing / 0 failing (update this count in the plan if optional assertions are added).
 - `git diff --check` → clean.
 
 ### Acceptance criteria
-- `getAutomiumMcpPrompt` exported from `packages/mcp-server/src/prompts.ts`.
-- All three prompts produce messages containing the literal test-required tokens.
-- Missing/empty required identifiers and unknown prompt names throw `AutomiumMcpError("unsupported_v1_operation", …)`.
-- No SDK / filesystem access; no new error codes; `resources.ts` untouched.
+- Every message string in `buildDraftJourneyPrompt`, `buildDebugFailedRunPrompt`, and `buildComparePlannerBackendsPrompt` is free of the forbidden-imperative list above.
+- The same uniform modeled-only disclaimer clause appears in all three prompts.
+- All existing prompt tokens remain present (`draft_journey`: appId + fixtureId + `"intent"`; `debug_failed_run`: `"replay"` + `"artifact"` + `"recovery"`; `compare_planner_backends`: exact-case `"comparePlannerBackends"` + lowercase `"modeled"`).
+- No behavior changes, no new exports, no new error codes, no SDK registration changes.
+- 11/11 (or 11+N) resource+prompt tests green, 25/25 tool tests green, full suite green, `tsc --noEmit` clean, `git diff --check` clean.
 
 ### Ship-one-step handoff contract
 After approval, the fresh-context implementation session must:
-1. Implement only Step 3.3 as scoped above.
-2. Validate: 11/11 resource+prompt tests green, 25/25 tool tests green, `pnpm exec tsc --noEmit` clean, `git diff --check` clean, `pnpm test:run` at 232/232 passing.
-3. Mark Step 3.3 done in `tasks/todo.md` and append a green-phase breakdown to `tasks/history.md`.
+1. Implement only Step 3.4 as scoped above.
+2. Validate: resource+prompt suite green, 25/25 tool tests green, `pnpm exec tsc --noEmit` clean, `git diff --check` clean, full `pnpm test:run` green with no regressions.
+3. Mark Step 3.4 done in `tasks/todo.md` and append a copy-audit breakdown to `tasks/history.md`.
 4. Commit and push to `master` via `/commit-and-push-by-feature`.
 5. Skip deploy (no `deploy.md` or `tasks/deploy.md` contract exists).
-6. Write the Step 3.4 plan (prompt copy maturity-boundary audit) into `tasks/todo.md` as a self-contained handoff.
-7. Ensure `.claude/settings.local.json` has `"showClearContextOnPlanAccept": true` and `"defaultMode": "acceptEdits"`.
-8. Call `EnterPlanMode`, write a brief pass-through plan referencing `tasks/todo.md`, call `ExitPlanMode`, and stop before implementing Step 3.4.
+6. Write the Step 3.5 plan (Phase 3 green milestone verification sweep) into `tasks/todo.md` as a self-contained handoff.
+7. Ensure `.claude/settings.local.json` retains `"showClearContextOnPlanAccept": true` and `"defaultMode": "acceptEdits"`.
+8. Call `EnterPlanMode`, write a brief pass-through plan referencing `tasks/todo.md`, call `ExitPlanMode`, and stop before implementing Step 3.5.
+
+---
+
+## Previous Step Plan (shipped) — Step 3.3 (Phase 3 green-phase prompt handler implementation)
+
+Shipped in `21e1ed7 feat(mcp-server): implement v1 prompt handlers from package exports` and `a7d0dbf docs(tasks): close MCP Step 3.3 and record green-phase breakdown`. Added `getAutomiumMcpPrompt(server, name, args)` in `packages/mcp-server/src/prompts.ts` dispatching the three fixed v1 prompt names, validating required identifiers with `AutomiumMcpError("unsupported_v1_operation", …)`, and embedding the test-required tokens. Phase 3 contract suite at 11/11; full suite at 54 files / 232 tests.
 
 ---
 

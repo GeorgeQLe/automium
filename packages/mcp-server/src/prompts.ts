@@ -177,6 +177,20 @@ function buildComparePlannerBackendsPrompt(
   };
 }
 
+export function registerAutomiumMcpPrompts(server: AutomiumMcpServer): void {
+  for (const descriptor of automiumMcpPromptDescriptors) {
+    server.sdkServer.prompt(descriptor.name, descriptor.description, async (_extra) => {
+      const payload = getAutomiumMcpPrompt(server, descriptor.name, {});
+      return {
+        messages: payload.messages.map((msg) => ({
+          role: (msg.role === "system" ? "user" : msg.role) as "user" | "assistant",
+          content: msg.content
+        }))
+      };
+    });
+  }
+}
+
 export function getAutomiumMcpPrompt(
   _server: AutomiumMcpServer,
   name: string,

@@ -650,6 +650,22 @@ function handleComparePlanners(args: unknown): ComparePlannersResult {
   return { report, ...modeledMetadata };
 }
 
+export function registerAutomiumMcpTools(server: AutomiumMcpServer): void {
+  for (const descriptor of automiumMcpToolDescriptors) {
+    server.sdkServer.tool(descriptor.name, descriptor.description, async (args: Record<string, unknown>) => {
+      try {
+        const result = callAutomiumMcpTool(server, descriptor.name, args);
+        return { content: [{ type: "text" as const, text: JSON.stringify(result) }] };
+      } catch (error) {
+        const mcpError = error instanceof AutomiumMcpError
+          ? error
+          : new AutomiumMcpError("unsupported_v1_operation", error instanceof Error ? error.message : "Unknown error");
+        return { content: [{ type: "text" as const, text: mcpError.message }], isError: true };
+      }
+    });
+  }
+}
+
 export function callAutomiumMcpTool(
   _server: AutomiumMcpServer,
   name: string,

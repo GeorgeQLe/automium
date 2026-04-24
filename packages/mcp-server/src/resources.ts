@@ -167,6 +167,23 @@ function buildSemanticSnapshotPayload(): AutomiumMcpSemanticSnapshotResourcePayl
   };
 }
 
+export function registerAutomiumMcpResources(server: AutomiumMcpServer): void {
+  for (const descriptor of automiumMcpResourceDescriptors) {
+    server.sdkServer.resource(
+      descriptor.title,
+      descriptor.uri,
+      { description: descriptor.description, mimeType: descriptor.mimeType },
+      async (uri: URL) => ({
+        contents: [{
+          uri: uri.href,
+          mimeType: descriptor.mimeType,
+          text: JSON.stringify(readAutomiumMcpResource(server, descriptor.uri))
+        }]
+      })
+    );
+  }
+}
+
 export function readAutomiumMcpResource(
   _server: AutomiumMcpServer,
   uri: string

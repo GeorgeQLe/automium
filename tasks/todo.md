@@ -10,7 +10,7 @@ Goal: register the fixed v1 MCP resources and prompt templates without exposing 
 
 ### Tests First
 
-- [ ] Step 3.1: **Automated** Write failing resource and prompt contract tests.
+- [x] Step 3.1: **Automated** Write failing resource and prompt contract tests.
   - Files: create `packages/mcp-server/tests/mcp-resources-prompts.contract.test.ts`
   - Tests cover: `automium://apps`, `automium://fixtures`, `automium://contracts/planner-adapter-v1`, `automium://contracts/replay-event-v1`, `automium://contracts/semantic-snapshot-v1`, `draft_journey`, `debug_failed_run`, and `compare_planner_backends`.
   - Failure coverage includes unsupported resource URIs and prompt inputs that omit required identifiers.
@@ -46,63 +46,54 @@ Acceptance criteria:
 - All phase tests pass.
 - No regressions.
 
-## Next Step Plan — Step 3.1 (Phase 3 red-phase resource + prompt contract tests)
+## Next Step Plan — Step 3.2 (Phase 3 green-phase resource handler implementation)
 
 ### Execution Profile
-- **Mode:** implementation-safe (test-only edits, no behavior changes under `packages/mcp-server/src/`)
-- **Depends on:** Phase 2 complete — seven v1 tools green, modeled metadata wired through every modeled tool response
-- **Owns:** `packages/mcp-server/tests/mcp-resources-prompts.contract.test.ts` (new)
+- **Mode:** implementation-safe (test-green; additive changes under `packages/mcp-server/src/`; reuse existing package exports — no filesystem reads)
+- **Depends on:** Step 3.1 red-phase suite landed at `packages/mcp-server/tests/mcp-resources-prompts.contract.test.ts`
+- **Owns:** `packages/mcp-server/src/resources.ts`, `packages/mcp-server/src/schemas.ts` (optional type additions only), `packages/mcp-server/src/errors.ts` (already has `unsupported_resource_uri`)
 
 ### What to build
-Step 3.1 is the red phase for Phase 3. Write a single new vitest contract suite that exercises the five fixed v1 resources and three prompt templates. The suite MUST fail at first run because the resource and prompt handlers do not yet exist — in Phase 1 only descriptors were registered in `packages/mcp-server/src/resources.ts` and `packages/mcp-server/src/prompts.ts`; call-time handlers (the equivalent of `callAutomiumMcpTool`) do not exist yet. The suite lands the shape that Step 3.2/3.3 will fill in.
+Flip the 5 resource happy-path tests + the 1 resource-failure test from red to green by implementing a `readAutomiumMcpResource(server, uri)` helper in `packages/mcp-server/src/resources.ts`. The function must dispatch on the URI string and return compact summaries sourced from existing package exports — **no filesystem reads**, no dynamic file path resolution, no arbitrary repository access. Prompts (3 happy-path + 2 failure tests) remain red and will be handled in Steps 3.3–3.4.
 
 ### Files to create/modify
-- `packages/mcp-server/tests/mcp-resources-prompts.contract.test.ts` — new file. Mirror the shape of `packages/mcp-server/tests/mcp-tools.contract.test.ts` (`describe` per resource/prompt, use a shared `createAutomiumMcpServer()` helper plus the not-yet-exported `readAutomiumMcpResource(server, uri)` / `getAutomiumMcpPrompt(server, name, args)` helpers — Step 3.2/3.3 will add those exports to `resources.ts` and `prompts.ts`).
-- No `src/` edits in Step 3.1. If the not-yet-exported test helpers cause TypeScript module-resolution errors that block vitest from even loading the file, introduce minimal skeleton exports in `resources.ts` / `prompts.ts` that throw `AutomiumMcpError("unsupported_v1_operation", …)` — mirror the Step 2.2 skeleton pattern.
+- `packages/mcp-server/src/resources.ts` — add `export function readAutomiumMcpResource(server: AutomiumMcpServer, uri: string): AutomiumMcpResourcePayload`. Dispatch switch over `uri`:
+  - `"automium://apps"` → `{ authorizedBenchmarkApps }` from `packages/benchmark/src/corpus.ts`, shaped with `{ id, name, kind, environmentProfileId }` per entry.
+  - `"automium://fixtures"` → `{ benchmarkFixtureManifest }` from the same corpus, shaped with `{ id, appId, description }` per entry (include any additional fields present in the source so tests that look at shape still pass).
+  - `"automium://contracts/planner-adapter-v1"` → `{ intentVocabulary: [...PLANNER_INTENT_VOCABULARY], intentSchemaVersion, requiredMethods, metadataFields }` (reuse `PLANNER_INTENT_VOCABULARY`, `plannerAdapterRequiredMethods`, `plannerAdapterMetadataFields`, and the `PLANNER_ADAPTER_INTENT_SCHEMA_VERSION`-equivalent export from `packages/contracts/src/planner-adapter.ts`; grep the file before picking the exact constant name).
+  - `"automium://contracts/replay-event-v1"` → `{ schemaVersion: REPLAY_EVENT_SCHEMA_VERSION, requiredFields: [...replayEventRequiredFields], phases: [...replayEventPhaseOrder] }`.
+  - `"automium://contracts/semantic-snapshot-v1"` → `{ schemaVersion: SEMANTIC_SNAPSHOT_SCHEMA_VERSION, requiredFields: [...semanticSnapshotRequiredFields], interactiveElementRequiredFields: [...interactiveElementRequiredFields] }`.
+  - Anything else → `throw new AutomiumMcpError("unsupported_resource_uri", …)`.
+- `packages/mcp-server/src/schemas.ts` — optional: add a `AutomiumMcpResourcePayload` union type if it helps typing. Keep minimal.
+- `packages/mcp-server/src/errors.ts` — no change (`unsupported_resource_uri` already exists).
+- Do **not** touch `prompts.ts` — prompts stay red through Step 3.3.
 
 ### Technical decisions
-
-**Resources covered (5 tests, one per resource URI)**
-- `automium://apps` — happy path: resource payload contains `authorizedBenchmarkApps` entries with `id`, `name`, `kind`, `environmentProfileId`.
-- `automium://fixtures` — happy path: payload contains `benchmarkFixtureManifest` entries with `id`, `appId`, `description`.
-- `automium://contracts/planner-adapter-v1` — happy path: payload surfaces a compact summary of `packages/contracts/src/planner-adapter.ts` exports (intents, envelope schema version) without filesystem reads.
-- `automium://contracts/replay-event-v1` — happy path: payload surfaces the replay event contract version and kinds.
-- `automium://contracts/semantic-snapshot-v1` — happy path: payload surfaces the semantic snapshot contract version and shape.
-
-**Resources failure coverage (1 test)**
-- Any URI outside the fixed v1 set (e.g. `automium://unknown`, `automium://apps/../etc/passwd`, `file:///etc/passwd`) throws `AutomiumMcpError("unsupported_resource_uri", …)`.
-
-**Prompts covered (3 happy-path tests)**
-- `draft_journey` — accepts `{ appId, fixtureId, intent, goal }`, returns a messages array that references the owned corpus plus the frozen planner intent vocabulary. Modeled; must NOT imply live browser execution.
-- `debug_failed_run` — accepts `{ runId, artifactManifestRef, verdict }`, returns guidance referencing artifact/replay interpretation and bounded recovery.
-- `compare_planner_backends` — accepts `{ appIds, planners, corpusVersion }`, returns guidance referencing `comparePlannerBackends` semantics plus modeled-output disclaimers.
-
-**Prompts failure coverage (2 tests)**
-- Required-identifier omission — each prompt rejects empty-string / missing required fields with `AutomiumMcpError("unsupported_v1_operation", …)` or a dedicated prompt-input error class if Step 3.3 adds one. Use `unsupported_v1_operation` for Step 3.1 assertions and upgrade if Step 3.3 introduces a better error code.
-- Unknown prompt name — requesting a prompt not in the v1 set throws `AutomiumMcpError("unsupported_v1_operation", …)`.
-
-**Total: 11 failing tests at Step 3.1 red** (5 resource happy + 1 resource failure + 3 prompt happy + 2 prompt failure).
+- **Server arg is unused but required** for symmetry with `callAutomiumMcpTool(server, name, args)`. Accept it and ignore it (or put the resource registry behind the server later). Do not add SDK dependencies.
+- **No dynamic file reads.** All payload data comes from TypeScript `import`s of existing constants/types.
+- **Shape > exact fields.** The Step 3.1 tests only check that required fields are present and have the right type; additional descriptive fields are fine. Match each source export exactly and `as const` / spread into mutable arrays where needed so the payload is JSON-serializable.
+- **Error path:** URI validation is a simple `switch`/equality check against the 5 frozen strings. Do not try to parse traversal-style URIs — just reject anything not in the set.
 
 ### Test expectations
-- `pnpm exec vitest run packages/mcp-server/tests/mcp-resources-prompts.contract.test.ts` → 1 file / 11 tests failing cleanly with missing-export or unsupported-operation errors (NOT import/syntax errors).
+- `pnpm exec vitest run packages/mcp-server/tests/mcp-resources-prompts.contract.test.ts` → 6 passing (5 resource happy + 1 resource failure) / 5 failing (3 prompt happy + 2 prompt failure, awaiting Step 3.3).
 - `pnpm exec vitest run packages/mcp-server/tests/mcp-tools.contract.test.ts` → still 25/25 passing.
-- `pnpm exec tsc --noEmit` → pass (may require the minimal skeleton exports noted above).
-- `pnpm test:run` → 53 passing files + 1 expected-failing new file, 221 passing / 11 failing tests total; no regressions elsewhere.
+- `pnpm exec tsc --noEmit` → pass.
+- `pnpm test:run` → 53 passing files + 1 still-expected-failing new MCP resources/prompts file, 227 passing / 5 failing total; no regressions elsewhere.
 - `git diff --check` → clean.
 
 ### Acceptance criteria
-- New test file exists, imports compile, vitest loads the file.
-- All 11 tests fail with a clean "handler missing" or `unsupported_v1_operation` signal.
-- No `src/` behavior changes beyond optional skeleton exports.
-- `pnpm test:run` shows no regressions in the 25 MCP tool tests or any other suite.
+- `readAutomiumMcpResource` exported from `packages/mcp-server/src/resources.ts`.
+- All 5 resource URIs return payloads sourced from existing package exports, no filesystem access.
+- Unsupported URIs throw `AutomiumMcpError("unsupported_resource_uri", …)`.
+- Prompt tests remain failing as intended for Step 3.3.
 
 ### Ship-one-step handoff contract
 After approval, the fresh-context implementation session must:
-1. Implement only Step 3.1 as scoped above.
-2. Validate: new resource/prompt suite fails as expected + MCP tool suite still green + `pnpm exec tsc --noEmit` + `git diff --check` + `pnpm test:run`.
-3. Mark Step 3.1 done in `tasks/todo.md` and update `tasks/history.md` with the red-phase breakdown.
+1. Implement only Step 3.2 as scoped above.
+2. Validate: resource tests green + 25 MCP tool tests still green + `pnpm exec tsc --noEmit` + `git diff --check` + `pnpm test:run` shape matches expectation.
+3. Mark Step 3.2 done in `tasks/todo.md` and append the green-phase breakdown to `tasks/history.md`.
 4. Commit and push to `master` via `/commit-and-push-by-feature`.
 5. Skip deploy (no `deploy.md` or `tasks/deploy.md` contract exists).
-6. Write the Step 3.2 plan (resource handler implementation) into `tasks/todo.md` as a self-contained handoff.
+6. Write the Step 3.3 plan (prompt handler implementation) into `tasks/todo.md` as a self-contained handoff.
 7. Ensure `.claude/settings.local.json` has `"showClearContextOnPlanAccept": true` and `"defaultMode": "acceptEdits"`.
-8. Call `EnterPlanMode`, write a brief pass-through plan referencing `tasks/todo.md`, call `ExitPlanMode`, and stop before implementing Step 3.2. Do not call `ExitPlanMode` from normal mode. If `EnterPlanMode` is denied, stop and ask the user to explicitly run `/plan` for Step 3.2.
+8. Call `EnterPlanMode`, write a brief pass-through plan referencing `tasks/todo.md`, call `ExitPlanMode`, and stop before implementing Step 3.3.

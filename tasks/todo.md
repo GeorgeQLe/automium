@@ -1,160 +1,114 @@
-# Current Phase: MCP Server Resources and Prompts
+# Current Phase: MCP Server Stdio Entrypoint And Hardening
 
-This file tracks Phase 3 from [tasks/roadmap.md](/home/georgeqle/projects/tools/dev/automium/tasks/roadmap.md). Phase 2 has been archived in [tasks/phases/mcp-phase-2.md](/home/georgeqle/projects/tools/dev/automium/tasks/phases/mcp-phase-2.md); the full phased plan remains in `tasks/roadmap.md`.
+This file tracks Phase 4 from [tasks/roadmap.md](/home/georgeqle/projects/tools/dev/automium/tasks/roadmap.md). Phase 3 has been archived in [tasks/phases/mcp-phase-3.md](/home/georgeqle/projects/tools/dev/automium/tasks/phases/mcp-phase-3.md); the full phased plan remains in `tasks/roadmap.md`.
 
-## Phase 3: Resources And Prompts
+## Phase 4: Stdio Entrypoint And Hardening
 
-Goal: register the fixed v1 MCP resources and prompt templates without exposing arbitrary repository reads or speculative live-runtime guidance.
+Goal: wire the official SDK stdio transport, add executable package entrypoints, verify local coding-agent startup, and document the safe v1 operating boundary.
 
 > Test strategy: tdd
 
 ### Tests First
 
-- [x] Step 3.1: **Automated** Write failing resource and prompt contract tests.
-  - Files: create `packages/mcp-server/tests/mcp-resources-prompts.contract.test.ts`
-  - Tests cover: `automium://apps`, `automium://fixtures`, `automium://contracts/planner-adapter-v1`, `automium://contracts/replay-event-v1`, `automium://contracts/semantic-snapshot-v1`, `draft_journey`, `debug_failed_run`, and `compare_planner_backends`.
-  - Failure coverage includes unsupported resource URIs and prompt inputs that omit required identifiers.
+- [ ] Step 4.1: **Automated** Write failing stdio startup and safety regression tests.
+  - Files: create `packages/mcp-server/tests/mcp-stdio.contract.test.ts`, `packages/mcp-server/tests/mcp-safety.contract.test.ts`
+  - Startup tests cover server metadata, stdio wiring, registered capabilities, and clean failure behavior without hanging test processes.
+  - Safety tests cover no browser driver imports, no provider SDK imports, no credential access helpers, no network transport registration, no filesystem writes, no arbitrary resource URI support, and modeled-output disclaimers on modeled tools.
 
 ### Implementation
 
-- [x] Step 3.2: **Automated** Implement fixed resource handlers from package exports and compact contract summaries.
-  - Files: modify `packages/mcp-server/src/resources.ts`, `packages/mcp-server/src/schemas.ts`, `packages/mcp-server/src/errors.ts`
-  - Reuse `packages/benchmark/src/corpus.ts`, `packages/contracts/src/planner-adapter.ts`, `packages/contracts/src/replay-event.ts`, and `packages/contracts/src/semantic-snapshot.ts`.
-  - Do not read arbitrary files or expose filesystem paths beyond checked-in contract references already represented by package exports.
-- [x] Step 3.3: **Automated** Implement prompt handlers for journey drafting, failed-run debugging, and planner comparison.
-  - Files: modify `packages/mcp-server/src/prompts.ts`
-  - Prompts should guide coding agents toward the owned corpus, frozen planner intent vocabulary, bounded recovery, artifact/replay interpretation, and modeled planner comparison.
-- [x] Step 3.4: **Automated** Ensure prompt copy preserves v1 maturity boundaries.
-  - Files: modify `packages/mcp-server/src/prompts.ts`
-  - Prompt guidance must avoid claiming live browser evidence, production artifact retrieval, credential access, or provider-backed planner execution.
+- [ ] Step 4.2: **Automated** Implement the stdio runtime entrypoint.
+  - Files: create `packages/mcp-server/src/stdio.ts`, modify `packages/mcp-server/src/index.ts`, modify `packages/mcp-server/package.json`
+  - The entrypoint should start only stdio transport and should not start HTTP/SSE listeners.
+- [ ] Step 4.3: **Automated** Document local setup and supported client configuration.
+  - Files: create `packages/mcp-server/README.md`, modify `tasks/todo.md`
+  - Documentation should include stdio command shape, supported tools/resources/prompts, v1 safety boundaries, and deferred remote transport scope.
 
 ### Green
 
-- [ ] Step 3.5: **Automated** Make the resource and prompt suites pass and run the full MCP package test slice.
-  - Commands: `pnpm exec vitest run packages/mcp-server/tests`, `pnpm exec tsc --noEmit`
+- [ ] Step 4.4: **Automated** Make the stdio and safety suites pass, then run MCP package tests, targeted dependent suites, TypeScript, formatting checks, and diff checks.
+  - Commands: `pnpm exec vitest run packages/mcp-server/tests apps/control-plane/tests apps/replay-console/tests packages/artifacts/tests packages/benchmark-runner/tests packages/benchmark/tests packages/contracts/tests packages/journey-compiler/tests`, `pnpm exec tsc --noEmit`, `git diff --check`
 
 ### Milestone
 
-- [ ] Resources and prompts complete.
+- [ ] Stdio entrypoint and hardening complete.
 
 Acceptance criteria:
 
-- All five v1 resources are registered and limited to the fixed URI set.
-- All three v1 prompts are registered and validate required inputs.
-- Resources do not expose arbitrary filesystem reads.
-- Prompt guidance separates modeled contract outputs from live execution.
+- The MCP server starts over stdio.
+- The server registers the v1 tools, resources, and prompts listed in the spec.
+- The implementation has no provider API calls, browser driver calls, filesystem writes, remote artifact reads, or credential reads.
+- README instructions describe local stdio usage and v1 limitations.
 - All phase tests pass.
 - No regressions.
 
-## Next Step Plan — Step 3.5 (Phase 3 green milestone verification sweep)
+## Next Step Plan — Step 4.1 (Phase 4 red-phase stdio + safety contract tests)
 
 ### Execution Profile
-- **Mode:** verification-only (no `src/` edits; no new tests; no behavior changes)
-- **Depends on:** Steps 3.1–3.4 landed; `packages/mcp-server/src/resources.ts` and `packages/mcp-server/src/prompts.ts` exporting the v1 handlers with maturity-boundary copy
-- **Owns:** nothing — this step runs commands and updates docs/roadmap; only `tasks/todo.md`, `tasks/roadmap.md`, `tasks/history.md`, and potentially a new `tasks/phases/mcp-phase-3.md` archive may be touched
+- **Mode:** tdd-red (additive tests only; no `src/` edits expected beyond what's needed to make the test files type-check; expected to fail at assertion time, not at import/syntax)
+- **Depends on:** Phase 3 complete (resources + prompts landed); `packages/mcp-server/src/server.ts`, `resources.ts`, `prompts.ts`, `tools.ts`, `schemas.ts`, `errors.ts` exporting the current v1 surface
+- **Owns:** two new test files under `packages/mcp-server/tests/`
 
 ### What to build
-Run the Phase 3 green milestone verification sweep and close out the phase. No implementation changes are expected. The goal is to prove that the full resource + prompt suite, the MCP tool suite, typecheck, and the full monorepo test run are all green, then mark the Phase 3 milestone complete in `tasks/roadmap.md`, archive Phase 3 under `tasks/phases/mcp-phase-3.md`, and regenerate `tasks/todo.md` around the next roadmap phase.
+Add two failing Vitest contract suites that pin down the Phase 4 expectations before any stdio wiring or safety-audit logic lands:
+
+1. `packages/mcp-server/tests/mcp-stdio.contract.test.ts` — startup/wiring contract.
+   - Asserts that `packages/mcp-server/src/index.ts` (or `packages/mcp-server/src/stdio.ts`, whichever becomes the runtime entrypoint) exports a not-yet-implemented `startAutomiumMcpStdioServer()` helper with a documented return shape (e.g. `{ server, transport, close }`).
+   - Asserts the helper registers every v1 tool, resource, and prompt name from the spec through the existing registration surface (reuse inspection helpers from `mcp-server-registration.contract.test.ts`).
+   - Asserts that `package.json` exposes a `bin` entry pointing at a compiled stdio entrypoint.
+   - Asserts clean shutdown: calling `close()` does not hang the test process and does not leave open handles.
+   - Use dynamic-import loader pattern (like Step 3.1) so missing exports surface as clean "handler missing" errors instead of module-resolution failures.
+
+2. `packages/mcp-server/tests/mcp-safety.contract.test.ts` — safety regression contract.
+   - Static source scan over `packages/mcp-server/src/**/*.ts` asserting none of the following appear: browser driver imports (`playwright`, `puppeteer`, `webdriverio`, `selenium-webdriver`), provider SDK imports (`@anthropic-ai/*`, `openai`, `@google/generative-ai`, etc.), credential access helpers (`process.env.*_API_KEY`, `dotenv`, keytar), network transport registration (`http`, `https`, `net`, `ws`, `express`, `fastify`, SSE wiring), filesystem writes (`fs.write*`, `fs.promises.write*`, `writeFileSync`, `createWriteStream`).
+   - Assert the resource registry only accepts the five frozen `automium://…` URIs — reuse `readAutomiumMcpResource` with a set of adversarial inputs.
+   - Assert every modeled tool response carries the full six-marker modeled-output metadata set.
+   - Keep the scan deterministic: read the file list via `fs.readdir` inside the test and snapshot the forbidden-import list as an exported constant.
 
 ### Files to create/modify
-- No `packages/mcp-server/src/` edits expected.
-- `tasks/todo.md` — mark Step 3.5 done after verification; if Phase 3 is the final phase in the MCP roadmap, collapse and archive per the existing archival pattern (see `tasks/phases/mcp-phase-2.md`).
-- `tasks/roadmap.md` — mark Phase 3 milestone complete.
-- `tasks/phases/mcp-phase-3.md` — new archive of the completed Phase 3 plan, mirroring the structure of `tasks/phases/mcp-phase-2.md`.
-- `tasks/history.md` — append the verification-sweep breakdown.
+- Create `packages/mcp-server/tests/mcp-stdio.contract.test.ts`.
+- Create `packages/mcp-server/tests/mcp-safety.contract.test.ts`.
+- Do **not** modify `packages/mcp-server/src/` — Steps 4.2–4.3 own those changes.
 
 ### Technical decisions
-- **Pure verification.** If any of the commands below fail or reveal a regression, do NOT patch silently — STOP and re-plan. The Step 3.5 ship contract assumes all checks pass on the first run because Steps 3.1–3.4 already verified the same commands.
-- **No new tests.** The optional maturity-boundary assertions were skipped in Step 3.4; if you want to add them, open a new red-phase step, do not smuggle them into the verification sweep.
-- **Archival pattern.** Use `tasks/phases/mcp-phase-2.md` as the exact shape template for `tasks/phases/mcp-phase-3.md`. Keep the existing `tasks/phases/phase-*.md` files (from the owned-products roadmap) untouched.
+- **Dynamic-import loader.** Mirror the `loadResourceReader()` / `loadPromptGetter()` pattern from Step 3.1 so missing `startAutomiumMcpStdioServer` surfaces as a clean red-phase signal.
+- **Safety scan reads source, not built output.** The assertion runs against `.ts` files in `packages/mcp-server/src/` to catch regressions before transpile.
+- **Do not actually spawn stdio.** The startup test should construct the transport wrapper and assert on registered capabilities, not fork a child process.
+- **Modeled-output scan reuses Step 2.7 markers.** Import the shared `AutomiumModeledOutputMetadata` shape from `packages/mcp-server/src/schemas.ts` so the safety test stays in sync with the source of truth.
 
 ### Test expectations
-- `pnpm exec vitest run packages/mcp-server/tests/mcp-resources-prompts.contract.test.ts` → 11/11 passing.
-- `pnpm exec vitest run packages/mcp-server/tests/mcp-tools.contract.test.ts` → 25/25 passing.
-- `pnpm exec vitest run packages/mcp-server/tests` → both suites green, total 36/36 passing.
+- `pnpm exec vitest run packages/mcp-server/tests/mcp-stdio.contract.test.ts` → all new tests failing on missing `startAutomiumMcpStdioServer` export (handler-missing signal).
+- `pnpm exec vitest run packages/mcp-server/tests/mcp-safety.contract.test.ts` → the forbidden-import scan passes already (current `src/` is clean); the resource-URI adversarial test and modeled-output marker assertions pass against current behavior; tests that pin Phase 4 additions (e.g. stdio entrypoint source existing) fail as expected.
+- `pnpm exec vitest run packages/mcp-server/tests` → existing 40 tests still green, plus the new files report red-phase failures.
 - `pnpm exec tsc --noEmit` → pass.
-- `pnpm test:run` → 54 passing files, 232/232 passing, 0 failing.
+- `pnpm test:run` → 54 files + 2 new expected-failing files; count failures match the new assertions only.
 - `git diff --check` → clean.
 
 ### Acceptance criteria
-- All verification commands green on the first run.
-- Phase 3 milestone marked complete in `tasks/roadmap.md`.
-- Phase 3 archived under `tasks/phases/mcp-phase-3.md`.
-- `tasks/todo.md` regenerated around the next roadmap phase (or closed out if Phase 3 was the final MCP phase).
-- `tasks/history.md` appended with the Step 3.5 breakdown.
+- Two new failing Vitest suites landed under `packages/mcp-server/tests/`.
+- Failures are assertion-time, not import/syntax errors.
+- Existing 40 MCP tests and the rest of the monorepo remain green.
+- No `packages/mcp-server/src/` edits.
 
 ### Ship-one-step handoff contract
 After approval, the fresh-context implementation session must:
-1. Run the verification commands above; if any fail, STOP and re-plan.
-2. Mark Step 3.5 done in `tasks/todo.md`, mark the Phase 3 milestone done in `tasks/roadmap.md`, archive Phase 3 under `tasks/phases/mcp-phase-3.md`, and append the verification breakdown to `tasks/history.md`.
-3. Commit and push to `master` via `/commit-and-push-by-feature`.
-4. Skip deploy.
-5. Regenerate `tasks/todo.md` around the next roadmap phase (or close out Phase 3 as the final MCP phase) as a self-contained handoff.
-6. Ensure `.claude/settings.local.json` retains `"showClearContextOnPlanAccept": true` and `"defaultMode": "acceptEdits"`.
-7. Enter plan mode, write a brief pass-through plan, exit plan mode, and stop before implementing the next step.
+1. Implement only Step 4.1 as scoped above.
+2. Validate: new suites fail as designed, existing 40 MCP tests still green, `pnpm exec tsc --noEmit` + `git diff --check` clean, `pnpm test:run` shape matches expectation.
+3. Mark Step 4.1 done in `tasks/todo.md` and append the red-phase breakdown to `tasks/history.md`.
+4. Commit and push to `master` via `/commit-and-push-by-feature`.
+5. Skip deploy.
+6. Write the Step 4.2 plan (stdio runtime entrypoint implementation) into `tasks/todo.md` as a self-contained handoff.
+7. Ensure `.claude/settings.local.json` retains `"showClearContextOnPlanAccept": true` and `"defaultMode": "acceptEdits"`.
+8. Enter plan mode, write a brief pass-through plan referencing `tasks/todo.md`, exit plan mode, and stop before implementing Step 4.2.
+
+---
+
+## Previous Step Plan (shipped) — Step 3.5 (Phase 3 green milestone verification sweep)
+
+Shipped in this session. Pure verification-only step; no `src/` edits. Re-ran the resources+prompts contract suite (11/11), MCP tools contract suite (25/25), full MCP package test slice (3 files / 40 tests), `pnpm exec tsc --noEmit` (clean), full monorepo `pnpm test:run` (54 files / 232 tests), and `git diff --check` (clean) — all green on the first run. Marked the Phase 3 milestone complete in `tasks/roadmap.md`, archived Phase 3 under `tasks/phases/mcp-phase-3.md` (mirroring `tasks/phases/mcp-phase-2.md`), appended the verification breakdown to `tasks/history.md`, and regenerated this file around Phase 4.
 
 ---
 
 ## Previous Step Plan (shipped) — Step 3.4 (Phase 3 prompt-copy maturity-boundary audit)
 
-Shipped in this session. Added a module-level `MODELED_V1_DISCLAIMER` constant in `packages/mcp-server/src/prompts.ts` and appended it as a trailing system message to all three prompts. Normalized copy in each `build*Prompt` helper to reject forbidden live-execution imperatives ("open", "launch", "navigate", "click", "type", "call/invoke/execute/run the planner", "fetch from storage", "retrieve credentials", "log streaming") and reframed references as modeled / checked-in / identifier-only. Preserved all test-required tokens, function signatures, return shape, error codes, and validation flow. No touches to `resources.ts`, `tools.ts`, `errors.ts`, `schemas.ts`, or `server.ts`. 11/11 resource+prompt suite green, 25/25 tool suite green, `tsc --noEmit` clean, full `pnpm test:run` at 54 files / 232 tests green.
-
----
-
-## Previous Step Plan (shipped) — Step 3.3 (Phase 3 green-phase prompt handler implementation)
-
-Shipped in `21e1ed7 feat(mcp-server): implement v1 prompt handlers from package exports` and `a7d0dbf docs(tasks): close MCP Step 3.3 and record green-phase breakdown`. Added `getAutomiumMcpPrompt(server, name, args)` in `packages/mcp-server/src/prompts.ts` dispatching the three fixed v1 prompt names, validating required identifiers with `AutomiumMcpError("unsupported_v1_operation", …)`, and embedding the test-required tokens. Phase 3 contract suite at 11/11; full suite at 54 files / 232 tests.
-
----
-
-## Previous Step Plan (shipped) — Step 3.2 (Phase 3 green-phase resource handler implementation)
-
-### Execution Profile
-- **Mode:** implementation-safe (test-green; additive changes under `packages/mcp-server/src/`; reuse existing package exports — no filesystem reads)
-- **Depends on:** Step 3.1 red-phase suite landed at `packages/mcp-server/tests/mcp-resources-prompts.contract.test.ts`
-- **Owns:** `packages/mcp-server/src/resources.ts`, `packages/mcp-server/src/schemas.ts` (optional type additions only), `packages/mcp-server/src/errors.ts` (already has `unsupported_resource_uri`)
-
-### What to build
-Flip the 5 resource happy-path tests + the 1 resource-failure test from red to green by implementing a `readAutomiumMcpResource(server, uri)` helper in `packages/mcp-server/src/resources.ts`. The function must dispatch on the URI string and return compact summaries sourced from existing package exports — **no filesystem reads**, no dynamic file path resolution, no arbitrary repository access. Prompts (3 happy-path + 2 failure tests) remain red and will be handled in Steps 3.3–3.4.
-
-### Files to create/modify
-- `packages/mcp-server/src/resources.ts` — add `export function readAutomiumMcpResource(server: AutomiumMcpServer, uri: string): AutomiumMcpResourcePayload`. Dispatch switch over `uri`:
-  - `"automium://apps"` → `{ authorizedBenchmarkApps }` from `packages/benchmark/src/corpus.ts`, shaped with `{ id, name, kind, environmentProfileId }` per entry.
-  - `"automium://fixtures"` → `{ benchmarkFixtureManifest }` from the same corpus, shaped with `{ id, appId, description }` per entry (include any additional fields present in the source so tests that look at shape still pass).
-  - `"automium://contracts/planner-adapter-v1"` → `{ intentVocabulary: [...PLANNER_INTENT_VOCABULARY], intentSchemaVersion, requiredMethods, metadataFields }` (reuse `PLANNER_INTENT_VOCABULARY`, `plannerAdapterRequiredMethods`, `plannerAdapterMetadataFields`, and the `PLANNER_ADAPTER_INTENT_SCHEMA_VERSION`-equivalent export from `packages/contracts/src/planner-adapter.ts`; grep the file before picking the exact constant name).
-  - `"automium://contracts/replay-event-v1"` → `{ schemaVersion: REPLAY_EVENT_SCHEMA_VERSION, requiredFields: [...replayEventRequiredFields], phases: [...replayEventPhaseOrder] }`.
-  - `"automium://contracts/semantic-snapshot-v1"` → `{ schemaVersion: SEMANTIC_SNAPSHOT_SCHEMA_VERSION, requiredFields: [...semanticSnapshotRequiredFields], interactiveElementRequiredFields: [...interactiveElementRequiredFields] }`.
-  - Anything else → `throw new AutomiumMcpError("unsupported_resource_uri", …)`.
-- `packages/mcp-server/src/schemas.ts` — optional: add a `AutomiumMcpResourcePayload` union type if it helps typing. Keep minimal.
-- `packages/mcp-server/src/errors.ts` — no change (`unsupported_resource_uri` already exists).
-- Do **not** touch `prompts.ts` — prompts stay red through Step 3.3.
-
-### Technical decisions
-- **Server arg is unused but required** for symmetry with `callAutomiumMcpTool(server, name, args)`. Accept it and ignore it (or put the resource registry behind the server later). Do not add SDK dependencies.
-- **No dynamic file reads.** All payload data comes from TypeScript `import`s of existing constants/types.
-- **Shape > exact fields.** The Step 3.1 tests only check that required fields are present and have the right type; additional descriptive fields are fine. Match each source export exactly and `as const` / spread into mutable arrays where needed so the payload is JSON-serializable.
-- **Error path:** URI validation is a simple `switch`/equality check against the 5 frozen strings. Do not try to parse traversal-style URIs — just reject anything not in the set.
-
-### Test expectations
-- `pnpm exec vitest run packages/mcp-server/tests/mcp-resources-prompts.contract.test.ts` → 6 passing (5 resource happy + 1 resource failure) / 5 failing (3 prompt happy + 2 prompt failure, awaiting Step 3.3).
-- `pnpm exec vitest run packages/mcp-server/tests/mcp-tools.contract.test.ts` → still 25/25 passing.
-- `pnpm exec tsc --noEmit` → pass.
-- `pnpm test:run` → 53 passing files + 1 still-expected-failing new MCP resources/prompts file, 227 passing / 5 failing total; no regressions elsewhere.
-- `git diff --check` → clean.
-
-### Acceptance criteria
-- `readAutomiumMcpResource` exported from `packages/mcp-server/src/resources.ts`.
-- All 5 resource URIs return payloads sourced from existing package exports, no filesystem access.
-- Unsupported URIs throw `AutomiumMcpError("unsupported_resource_uri", …)`.
-- Prompt tests remain failing as intended for Step 3.3.
-
-### Ship-one-step handoff contract
-After approval, the fresh-context implementation session must:
-1. Implement only Step 3.2 as scoped above.
-2. Validate: resource tests green + 25 MCP tool tests still green + `pnpm exec tsc --noEmit` + `git diff --check` + `pnpm test:run` shape matches expectation.
-3. Mark Step 3.2 done in `tasks/todo.md` and append the green-phase breakdown to `tasks/history.md`.
-4. Commit and push to `master` via `/commit-and-push-by-feature`.
-5. Skip deploy (no `deploy.md` or `tasks/deploy.md` contract exists).
-6. Write the Step 3.3 plan (prompt handler implementation) into `tasks/todo.md` as a self-contained handoff.
-7. Ensure `.claude/settings.local.json` has `"showClearContextOnPlanAccept": true` and `"defaultMode": "acceptEdits"`.
-8. Call `EnterPlanMode`, write a brief pass-through plan referencing `tasks/todo.md`, call `ExitPlanMode`, and stop before implementing Step 3.3.
+Shipped prior to this session. Added a module-level `MODELED_V1_DISCLAIMER` constant in `packages/mcp-server/src/prompts.ts` and appended it as a trailing system message to all three prompts. Normalized copy in each `build*Prompt` helper to reject forbidden live-execution imperatives and reframed references as modeled / checked-in / identifier-only.

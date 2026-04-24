@@ -151,7 +151,7 @@ Goal: register the fixed v1 MCP resources and prompt templates without exposing 
 
 ### Milestone
 
-- [ ] Resources and prompts complete.
+- [x] Phase 3 milestone completed on 2026-04-24.
 
 Acceptance criteria:
 

@@ -191,7 +191,7 @@ Goal: wire the official SDK stdio transport, add executable package entrypoints,
 
 ### Milestone
 
-- [ ] Stdio entrypoint and hardening complete.
+- [x] Phase 4 milestone completed on 2026-04-24.
 
 Acceptance criteria:
 

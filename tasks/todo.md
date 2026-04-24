@@ -21,7 +21,7 @@ Goal: register the fixed v1 MCP resources and prompt templates without exposing 
   - Files: modify `packages/mcp-server/src/resources.ts`, `packages/mcp-server/src/schemas.ts`, `packages/mcp-server/src/errors.ts`
   - Reuse `packages/benchmark/src/corpus.ts`, `packages/contracts/src/planner-adapter.ts`, `packages/contracts/src/replay-event.ts`, and `packages/contracts/src/semantic-snapshot.ts`.
   - Do not read arbitrary files or expose filesystem paths beyond checked-in contract references already represented by package exports.
-- [ ] Step 3.3: **Automated** Implement prompt handlers for journey drafting, failed-run debugging, and planner comparison.
+- [x] Step 3.3: **Automated** Implement prompt handlers for journey drafting, failed-run debugging, and planner comparison.
   - Files: modify `packages/mcp-server/src/prompts.ts`
   - Prompts should guide coding agents toward the owned corpus, frozen planner intent vocabulary, bounded recovery, artifact/replay interpretation, and modeled planner comparison.
 - [ ] Step 3.4: **Automated** Ensure prompt copy preserves v1 maturity boundaries.

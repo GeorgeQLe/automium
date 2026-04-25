@@ -7,9 +7,9 @@ Before planning roadmap phases for the remaining production blockers, validate a
 - [x] `$spec-interview` — Browser engine / Playwright integration
   - Output: `specs/browser-playwright-integration.md`, `browser-playwright-integration-interview.md`
   - Key decision: Playwright as v1 substrate (not custom engine). Firecracker microVMs. Chromium only. Enriched a11y tree.
-- [ ] `$spec-interview` — Provider-backed planner execution
-  - Existing coverage: `specs/agent-native-browser-qa-platform.md` (planner layer), `packages/contracts/src/planner-adapter.ts` (frozen contract)
-  - Goal: validate Claude/OpenAI API integration, tool-call strategy, vision support, cost controls, and model-agnostic adapter boundary
+- [x] `$spec-interview` — Provider-backed planner execution
+  - Output: `specs/provider-backed-planner-execution.md`, `provider-backed-planner-execution-interview.md`
+  - Key decision: v2 contract with native tool calling. Claude first, GPT fast-follow. Separate packages per provider. Multi-layer cost controls.
 - [ ] `$spec-interview` — Production persistence and infrastructure
   - Existing coverage: scattered references in `specs/agent-native-browser-qa-platform.md` and `specs/owned-parity-benchmark-products.md`
   - Goal: dedicated spec covering storage (runs, replays, artifacts), queuing, realtime transport, and deployment topology

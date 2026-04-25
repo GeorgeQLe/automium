@@ -24,7 +24,7 @@
 ## Completed Prior Work
 
 - [x] MCP Server Transport (4 phases) — archived in `tasks/phases/mcp-phase-{1-4}.md`
-- Monorepo health: 56 test files / 241 tests green, TypeScript clean
+- Monorepo health: 61 test files / 274 tests (241 green, 33 red TDD stubs), TypeScript clean
 
 ---
 
@@ -52,7 +52,7 @@
 **Subagent lanes:** none
 
 ### Tests First
-- [ ] Step 1.1: **Automated** Write failing contract tests for the persistence layer and adapter implementations.
+- [x] Step 1.1: **Automated** Write failing contract tests for the persistence layer and adapter implementations.
   - Files: create `packages/persistence/tests/schema.contract.test.ts`, `packages/adapters-postgres/tests/audit-sink.contract.test.ts`, `packages/adapters-postgres/tests/search-backend.contract.test.ts`, `packages/persistence/tests/credential-vault.contract.test.ts`, `packages/adapters-workos/tests/identity-provider.contract.test.ts`
   - Tests cover: Drizzle schema exports all table definitions, migration files are generated, AuditSinkAdapter.emit() persists and .query() retrieves events, SearchBackendAdapter.index() inserts and .search() returns tsvector matches, credential vault encrypts on store and decrypts on retrieve with correct scoping, WorkOS adapter returns identity on authenticate and validates tokens, RLS blocks cross-tenant access when session variables differ.
 

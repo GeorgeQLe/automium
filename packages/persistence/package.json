@@ -1,0 +1,12 @@
+{
+  "name": "@automium/persistence",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./schema": "./src/schema/index.ts",
+    "./connection": "./src/connection.ts",
+    "./migrate": "./src/migrate.ts",
+    "./credential-vault": "./src/credential-vault.ts"
+  }
+}

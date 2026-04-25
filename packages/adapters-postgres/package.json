@@ -1,0 +1,10 @@
+{
+  "name": "@automium/adapters-postgres",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./audit-sink": "./src/audit-sink.ts",
+    "./search-backend": "./src/search-backend.ts"
+  }
+}

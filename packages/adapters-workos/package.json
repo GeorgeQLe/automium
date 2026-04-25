@@ -1,0 +1,9 @@
+{
+  "name": "@automium/adapters-workos",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./identity-provider": "./src/identity-provider.ts"
+  }
+}

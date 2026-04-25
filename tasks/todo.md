@@ -10,9 +10,9 @@ Before planning roadmap phases for the remaining production blockers, validate a
 - [x] `$spec-interview` — Provider-backed planner execution
   - Output: `specs/provider-backed-planner-execution.md`, `provider-backed-planner-execution-interview.md`
   - Key decision: v2 contract with native tool calling. Claude first, GPT fast-follow. Separate packages per provider. Multi-layer cost controls.
-- [ ] `$spec-interview` — Production persistence and infrastructure
-  - Existing coverage: scattered references in `specs/agent-native-browser-qa-platform.md` and `specs/owned-parity-benchmark-products.md`
-  - Goal: dedicated spec covering storage (runs, replays, artifacts), queuing, realtime transport, and deployment topology
+- [x] `$spec-interview` — Production persistence and infrastructure
+  - Output: `specs/production-persistence-infrastructure.md`, `production-persistence-infrastructure-interview.md`
+  - Key decision: Neon Postgres + BullMQ/Redis + Cloudflare R2 + WorkOS + Hono. Fly.io control plane, bare metal workers. Drizzle ORM. Shared schema + RLS.
 - [ ] `$spec-interview` — CI/CD integration
   - Existing coverage: none
   - Goal: CLI runner, exit codes, reporter formats, CI provider examples, and headless browser constraints

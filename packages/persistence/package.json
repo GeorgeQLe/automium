@@ -8,5 +8,12 @@
     "./connection": "./src/connection.ts",
     "./migrate": "./src/migrate.ts",
     "./credential-vault": "./src/credential-vault.ts"
+  },
+  "dependencies": {
+    "drizzle-orm": "^0.44.0",
+    "@neondatabase/serverless": "^1.0.0"
+  },
+  "devDependencies": {
+    "drizzle-kit": "^0.31.0"
   }
 }

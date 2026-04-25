@@ -57,84 +57,16 @@
   - Tests cover: Drizzle schema exports all table definitions, migration files are generated, AuditSinkAdapter.emit() persists and .query() retrieves events, SearchBackendAdapter.index() inserts and .search() returns tsvector matches, credential vault encrypts on store and decrypts on retrieve with correct scoping, WorkOS adapter returns identity on authenticate and validates tokens, RLS blocks cross-tenant access when session variables differ.
 
 ### Implementation
-- [ ] Step 1.2: **Automated** Scaffold `packages/persistence/` with Drizzle ORM and Neon connection.
+- [x] Step 1.2: **Automated** Scaffold `packages/persistence/` with Drizzle ORM and Neon connection.
   - Files: create `packages/persistence/package.json`, `packages/persistence/tsconfig.json`, `packages/persistence/src/index.ts`, `packages/persistence/src/connection.ts`
   - Add dependencies: `drizzle-orm`, `@neondatabase/serverless`, `drizzle-kit`
   - Connection module reads `DATABASE_URL` from env, creates Neon pool with `drizzle()` wrapper.
 
 ---
 
-## Next Step Plan: Step 1.2 — Scaffold Persistence Package with Drizzle ORM and Neon Connection
+## Next Step Plan: Step 1.3 — Define Drizzle Schema for Tenancy Tables
 
-### Context
-Step 1.1 created `packages/persistence/package.json` with exports for `.`, `./schema`, `./connection`, `./migrate`, and `./credential-vault`. The schema contract test (`packages/persistence/tests/schema.contract.test.ts`) expects:
-- `../src/schema/index` to export all 16 table definitions
-- `../src/connection` to export `createDb()` function
-- `../src/migrate` to export `migrate()` function
-
-Step 1.2 scaffolds the package foundation: `tsconfig.json`, `src/index.ts` barrel, and `src/connection.ts` with the Neon/Drizzle connection factory. The schema barrel (`src/schema/index.ts`) and migration runner (`src/migrate.ts`) are also stubbed so later steps can fill them incrementally.
-
-### What to Build
-
-1. **`packages/persistence/tsconfig.json`** — Local TypeScript config extending root or standalone, targeting ES2022/ESNext with strict mode and bundler resolution (matching monorepo convention).
-
-2. **Update `packages/persistence/package.json`** — Add dependencies:
-   - `drizzle-orm` (ORM)
-   - `@neondatabase/serverless` (Neon Postgres driver)
-   - `drizzle-kit` as devDependency (migration tooling)
-   - Run `pnpm install` from root after adding deps.
-
-3. **`packages/persistence/src/connection.ts`** — Export `createDb(databaseUrl?: string)`:
-   - Reads `databaseUrl` param or falls back to `process.env.DATABASE_URL`
-   - Creates a Neon pool via `neon()` from `@neondatabase/serverless`
-   - Wraps with `drizzle()` from `drizzle-orm/neon-http` (or `drizzle-orm/neon-serverless`)
-   - Returns the typed Drizzle db instance
-   - Throws if no database URL is provided
-
-4. **`packages/persistence/src/schema/index.ts`** — Stub barrel that re-exports from schema submodules. Initially exports placeholder objects for all 16 tables so the schema contract test can import them (they'll be replaced with real Drizzle table definitions in Steps 1.3–1.6):
-   - `organizations`, `workspaces`, `memberships` (tenancy)
-   - `sessions`, `invites` (auth)
-   - `journeys`, `journeyVersions`, `runs`, `steps`, `assertions`, `recoveryRules` (journey/run)
-   - `artifactManifests`, `auditEvents`, `credentials`, `files`, `jobs` (supporting)
-
-5. **`packages/persistence/src/migrate.ts`** — Stub export `migrate()` function that will be implemented fully in Step 1.7. For now, export a function signature that accepts a db instance and returns a Promise.
-
-6. **`packages/persistence/src/index.ts`** — Barrel re-exporting from `./connection`, `./schema/index`, and `./migrate`.
-
-### Key Technical Decisions
-- Use `@neondatabase/serverless` HTTP driver (not WebSocket) for serverless compatibility.
-- `createDb()` is a factory (not singleton) — callers control connection lifecycle.
-- Schema placeholders in Step 1.2 are intentionally minimal stubs. Real Drizzle `pgTable()` definitions come in Steps 1.3–1.6.
-- The `migrate()` stub should have the right signature but can throw "not implemented" — Step 1.7 fills it in.
-
-### Patterns to Follow
-- Package structure: `package.json` + `tsconfig.json` + `src/index.ts` barrel (see `packages/audit/` for reference)
-- All packages use `"type": "module"` and `"private": true`
-- Monorepo uses pnpm workspaces — deps go in the package-level `package.json`
-
-### Test Strategy (TDD)
-This is the implementation phase — no new tests. The 8 schema contract tests and 2 connection/migrate tests from Step 1.1 should start passing (or at least stop failing at import). Goal: the `loadSchemaModule()`, `loadConnectionModule()`, and `loadMigrateModule()` imports in `schema.contract.test.ts` should succeed, and `createDb` / `migrate` should be recognized as functions.
-
-### Acceptance Criteria
-- `packages/persistence/src/connection.ts` exports `createDb` (typeof function)
-- `packages/persistence/src/schema/index.ts` exports all 16 table names
-- `packages/persistence/src/migrate.ts` exports `migrate` (typeof function)
-- `packages/persistence/src/index.ts` re-exports from all submodules
-- `pnpm install` succeeds with new dependencies
-- `pnpm exec tsc --noEmit` passes
-- Schema contract test import failures resolve (tests may still fail on shape assertions until Steps 1.3–1.6 replace placeholders with real Drizzle tables)
-- Connection/migrate export tests in `schema.contract.test.ts` pass
-- Existing 241 tests still pass (no regressions)
-- Commit and push on master
-
-### Execution Profile
-**Parallel mode:** serial
-**Integration owner:** main agent
-**Conflict risk:** low
-**Review gates:** correctness, tests
-
-### Ship-One-Step Handoff Contract
-After approval: implement only Step 1.2, validate it, mark Step 1.2 done in `tasks/todo.md`, update `tasks/history.md`, commit and push the completed work, write the Step 1.3 plan, ensure `.claude/settings.local.json` has `"showClearContextOnPlanAccept": true` and `"defaultMode": "acceptEdits"`, start the Step 1.3 approval UI by calling `EnterPlanMode`, write a brief pass-through plan, call `ExitPlanMode`, and stop before implementing Step 1.3.
+*Plan to be written after Step 1.2 commit. Awaiting domain interface research.*
 
 - [ ] Step 1.3: **Automated** Define Drizzle schema for tenancy tables (organizations, workspaces, memberships).
   - Files: create `packages/persistence/src/schema/tenancy.ts`

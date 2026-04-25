@@ -13,9 +13,9 @@ Before planning roadmap phases for the remaining production blockers, validate a
 - [x] `$spec-interview` — Production persistence and infrastructure
   - Output: `specs/production-persistence-infrastructure.md`, `production-persistence-infrastructure-interview.md`
   - Key decision: Neon Postgres + BullMQ/Redis + Cloudflare R2 + WorkOS + Hono. Fly.io control plane, bare metal workers. Drizzle ORM. Shared schema + RLS.
-- [ ] `$spec-interview` — CI/CD integration
-  - Existing coverage: none
-  - Goal: CLI runner, exit codes, reporter formats, CI provider examples, and headless browser constraints
+- [x] `$spec-interview` — CI/CD integration
+  - Output: `specs/ci-cd-integration.md`, `ci-cd-integration-interview.md`
+  - Key decision: Standalone `@automium/cli` as thin remote client. Submit+poll+collect. JUnit XML + JSON + terminal. Three-level exit codes. GitHub Actions + GitLab CI examples.
 
 ## After Interviews
 

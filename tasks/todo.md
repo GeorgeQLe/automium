@@ -66,7 +66,49 @@
 
 ## Next Step Plan: Step 1.3 — Define Drizzle Schema for Tenancy Tables
 
-*Plan to be written after Step 1.2 commit. Awaiting domain interface research.*
+### Context
+Step 1.2 scaffolded `packages/persistence/` with 16 stub `pgTable()` definitions in `src/schema/index.ts`. The schema contract tests pass at the export/shape level. Step 1.3 replaces the three tenancy stubs (`organizations`, `workspaces`, `memberships`) with real Drizzle table definitions matching the domain interfaces in `packages/tenancy/src/tenancy-behavior.ts`.
+
+### Domain Interfaces (from `packages/tenancy/`)
+
+**Organization**: `organizationId: string`, `name: string`, `createdAt: string` (ISO)
+
+**Workspace**: `workspaceId: string`, `organizationId: string`, `name: string`, `createdAt: string` (ISO)
+
+**WorkspaceMembership**: `membershipId: string`, `organizationId: string`, `workspaceId: string`, `principalId: string`, `role: "workspace-admin" | "maintainer" | "contributor" | "viewer"`, `status: "active" | "suspended"`
+
+### What to Build
+
+1. **`packages/persistence/src/schema/tenancy.ts`** — New file with real Drizzle `pgTable()` definitions:
+   - `organizations`: `id` (text, PK), `name` (text, not null), `created_at` (timestamp, not null, default now)
+   - `workspaces`: `id` (text, PK), `organization_id` (text, not null, FK → organizations.id), `name` (text, not null), `created_at` (timestamp, not null, default now)
+   - `memberships`: `id` (text, PK), `organization_id` (text, not null, FK → organizations.id), `workspace_id` (text, not null, FK → workspaces.id), `principal_id` (text, not null), `role` (pgEnum: workspace-admin/maintainer/contributor/viewer, not null), `status` (pgEnum: active/suspended, not null, default 'active')
+   - Composite index on `(organization_id, workspace_id)` for memberships
+   - Index on `organization_id` for workspaces
+
+2. **Update `packages/persistence/src/schema/index.ts`** — Replace the three tenancy stub `pgTable()` calls with re-exports from `./tenancy.ts`.
+
+### Key Technical Decisions
+- Column names use snake_case (Postgres convention), domain interfaces use camelCase — Drizzle handles the mapping.
+- Use `pgEnum` for `role` and `status` to enforce valid values at the database level.
+- Foreign keys reference parent tables for referential integrity.
+- Composite index on `(organization_id, workspace_id)` is specified in the Phase 1 scope for tenant-scoped queries.
+
+### Test Strategy (TDD)
+No new tests. The existing schema contract tests should continue passing — they check for named exports and truthy table objects with properties, which real `pgTable()` definitions satisfy.
+
+### Acceptance Criteria
+- `packages/persistence/src/schema/tenancy.ts` exists with real Drizzle table definitions
+- `organizations`, `workspaces`, `memberships` re-exported from `schema/index.ts`
+- Schema contract tests still pass (8/8)
+- `pnpm exec tsc --noEmit` clean (no new errors in persistence src)
+- No regressions in existing 249 passing tests
+
+### Execution Profile
+**Parallel mode:** serial | **Conflict risk:** low | **Review gates:** correctness, tests
+
+### Ship-One-Step Handoff Contract
+After approval: implement only Step 1.3, validate it, mark Step 1.3 done in `tasks/todo.md`, update `tasks/history.md`, commit and push the completed work, write the Step 1.4 plan, enter plan mode for Step 1.4 approval, and stop before implementing Step 1.4.
 
 - [ ] Step 1.3: **Automated** Define Drizzle schema for tenancy tables (organizations, workspaces, memberships).
   - Files: create `packages/persistence/src/schema/tenancy.ts`

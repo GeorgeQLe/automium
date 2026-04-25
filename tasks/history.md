@@ -259,3 +259,10 @@
 - Completed Phase 4 Step 4.4 (MCP-server green-phase verification sweep) as a pure verification step without any code changes. Re-ran MCP package tests at 5 files / 49 tests green, reused-domain matrix at 9 files / 25 tests green, full monorepo `pnpm test:run` at 56 files / 241 tests green, `pnpm exec tsc --noEmit` (clean), and `git diff --check` (clean). All acceptance criteria met on the first run; no source edits required.
 - Archived Phase 4 of the MCP-server roadmap to `tasks/phases/mcp-phase-4.md` (kept separate from the existing `tasks/phases/phase-4.md`, which holds the earlier owned-products-roadmap Phase 4 archive, so no prior data was overwritten), marked the Phase 4 milestone complete in `tasks/roadmap.md`, and regenerated `tasks/todo.md` to reflect the completed MCP Server Transport roadmap with deferred production blockers.
 - MCP Server Transport roadmap complete. All four phases delivered: package shell and registry foundation (Phase 1), seven v1 tool adapters with modeled-output markers (Phase 2), five fixed resources and three prompt templates with maturity-boundary copy (Phase 3), and stdio entrypoint with safety contract and README documentation (Phase 4). Final state: 56 test files / 241 tests green, TypeScript clean, no regressions.
+
+## 2026-04-25
+
+- Started Production Launch Phase 1 (Persistence Foundation) with a new 8-phase roadmap built from the 4 validated spec interviews.
+- Completed Step 1.1 (TDD red phase) by writing 33 failing contract tests across 5 new test files in 3 new packages (`packages/persistence/`, `packages/adapters-postgres/`, `packages/adapters-workos/`).
+- Tests cover: Drizzle schema exports for all 16 core tables, connection factory, migration runner, credential vault encrypt/decrypt/round-trip/scoping, AuditSinkAdapter boundary/emit/query contracts, SearchBackendAdapter boundary/index/search contracts, IdentityProviderAdapter boundary/authenticate/validateToken contracts.
+- All 33 new tests fail at import (source modules don't exist yet) with actionable error messages. Existing 241 tests unaffected. State: 61 test files / 274 tests (241 green, 33 red TDD stubs).

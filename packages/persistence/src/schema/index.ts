@@ -1,17 +1,13 @@
 import { pgTable, text } from "drizzle-orm/pg-core";
 
-// Tenancy tables — real definitions in Step 1.3
-export const organizations = pgTable("organizations", {
-  id: text("id").primaryKey(),
-});
-
-export const workspaces = pgTable("workspaces", {
-  id: text("id").primaryKey(),
-});
-
-export const memberships = pgTable("memberships", {
-  id: text("id").primaryKey(),
-});
+// Tenancy tables
+export {
+  organizations,
+  workspaces,
+  memberships,
+  membershipRoleEnum,
+  membershipStatusEnum,
+} from "./tenancy";
 
 // Auth tables — real definitions in Step 1.4
 export const sessions = pgTable("sessions", {

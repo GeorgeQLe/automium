@@ -110,15 +110,46 @@ No new tests. The existing schema contract tests should continue passing — the
 ### Ship-One-Step Handoff Contract
 After approval: implement only Step 1.3, validate it, mark Step 1.3 done in `tasks/todo.md`, update `tasks/history.md`, commit and push the completed work, write the Step 1.4 plan, enter plan mode for Step 1.4 approval, and stop before implementing Step 1.4.
 
-- [ ] Step 1.3: **Automated** Define Drizzle schema for tenancy tables (organizations, workspaces, memberships).
-  - Files: create `packages/persistence/src/schema/tenancy.ts`
-  - Map existing domain interfaces from `packages/tenancy/` to Drizzle table definitions.
-  - Composite index on (organization_id, workspace_id) for memberships.
+- [x] Step 1.3: **Automated** Define Drizzle schema for tenancy tables (organizations, workspaces, memberships).
+  - Files: created `packages/persistence/src/schema/tenancy.ts`
+  - Mapped domain interfaces from `packages/tenancy/` to real Drizzle table definitions with pgEnum, FK refs, and indexes.
+  - Composite index on (organization_id, workspace_id) for memberships. Index on organization_id for workspaces.
+
+---
+
+## Next Step Plan: Step 1.4 — Define Drizzle Schema for Auth Tables
+
+### Context
+Step 1.3 shipped real Drizzle table definitions for the three tenancy tables (`organizations`, `workspaces`, `memberships`) in `packages/persistence/src/schema/tenancy.ts` with pgEnums, FK references, and indexes. The pattern established in Step 1.3 carries forward: create a domain-specific schema file, re-export from `schema/index.ts`.
+
+### Domain Interfaces (from `packages/auth/`)
+
+**Session**: `sessionId: string`, `identityId: string`, `provider: "password" | "magic-link" | "sso"`, `state: "pending" | "active" | "revoked" | "expired"`, `createdAt: string` (ISO), `expiresAt: string` (ISO)
+
+**Invite**: `inviteId: string`, `organizationId: string`, `workspaceId: string`, `email: string`, `status: "pending" | "accepted" | "expired" | "revoked"`, `invitedBy: string`, `createdAt: string` (ISO), `expiresAt: string` (ISO)
+
+### What to Build
+
+1. **`packages/persistence/src/schema/auth.ts`** — New file with real Drizzle `pgTable()` definitions:
+   - `sessions`: `id` (text, PK), `identity_id` (text, not null), `provider` (pgEnum: password/magic-link/sso, not null), `state` (pgEnum: pending/active/revoked/expired, not null, default 'pending'), `created_at` (timestamp, not null, default now), `expires_at` (timestamp, not null)
+   - `invites`: `id` (text, PK), `organization_id` (text, not null, FK → organizations.id), `workspace_id` (text, not null, FK → workspaces.id), `email` (text, not null), `status` (pgEnum: pending/accepted/expired/revoked, not null, default 'pending'), `invited_by` (text, not null), `created_at` (timestamp, not null, default now), `expires_at` (timestamp, not null)
+   - Index on `identity_id` for sessions (lookup by identity)
+   - Composite index on `(organization_id, workspace_id)` for invites
+
+2. **Update `packages/persistence/src/schema/index.ts`** — Replace the two auth stub `pgTable()` calls with re-exports from `./auth.ts`.
+
+### Acceptance Criteria
+- Schema contract tests still pass (8/8)
+- No new TS errors in persistence src
+- No regressions in 249 passing tests
+
+### Ship-One-Step Handoff Contract
+After approval: implement only Step 1.4, validate it, mark Step 1.4 done in `tasks/todo.md`, update `tasks/history.md`, commit and push the completed work, write the Step 1.5 plan, enter plan mode for Step 1.5 approval, and stop before implementing Step 1.5.
 
 - [ ] Step 1.4: **Automated** Define Drizzle schema for auth tables (sessions, invites).
   - Files: create `packages/persistence/src/schema/auth.ts`
   - Map Session and Invite interfaces from `packages/auth/` to Drizzle tables.
-  - Session: pgEnum for state (pending/active/revoked/expired). Invite: pgEnum for status.
+  - Session: pgEnum for state (pending/active/revoked/expired), pgEnum for provider (password/magic-link/sso). Invite: pgEnum for status (pending/accepted/expired/revoked), FK refs to organizations and workspaces.
 
 - [ ] Step 1.5: **Automated** Define Drizzle schema for journey and run tables (journeys, journey_versions, runs, steps, assertions, recovery_rules).
   - Files: create `packages/persistence/src/schema/journeys.ts`, `packages/persistence/src/schema/runs.ts`

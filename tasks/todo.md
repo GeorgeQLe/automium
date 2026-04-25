@@ -1,8 +1,10 @@
-# Current Priority: Launch Readiness Spec Interviews
+# Automium Production Launch — Phase 1: Persistence Foundation
 
-Before planning roadmap phases for the remaining production blockers, validate and complete specs for each launch-critical area via `$spec-interview`.
+## Priority Task Queue
 
-## Spec Interview Queue
+- [ ] `/plan-phase 1` — Decompose Phase 1 into implementation steps, TDD structure, and file-level detail before starting execution.
+
+## Completed Spec Interviews
 
 - [x] `$spec-interview` — Browser engine / Playwright integration
   - Output: `specs/browser-playwright-integration.md`, `browser-playwright-integration-interview.md`
@@ -17,17 +19,7 @@ Before planning roadmap phases for the remaining production blockers, validate a
   - Output: `specs/ci-cd-integration.md`, `ci-cd-integration-interview.md`
   - Key decision: Standalone `@automium/cli` as thin remote client. Submit+poll+collect. JUnit XML + JSON + terminal. Three-level exit codes. GitHub Actions + GitLab CI examples.
 
-## After Interviews
-
-Once specs are validated, decompose each into phased roadmap steps (like the MCP transport work) and load into `tasks/roadmap.md`.
-
-## Completed Work
+## Completed Prior Work
 
 - [x] MCP Server Transport (4 phases) — archived in `tasks/phases/mcp-phase-{1-4}.md`
 - Monorepo health: 56 test files / 241 tests green, TypeScript clean
-
-## Other Deferred Items
-
-- Remote MCP transports (Streamable HTTP, SSE)
-- Credential vault and secrets management
-- Arbitrary user app targeting (v1 scoped to owned products by design)

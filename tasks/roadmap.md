@@ -1,212 +1,364 @@
-# Automium MCP Server Transport Roadmap
+# Roadmap: Automium Production Launch
 
-This plan translates [specs/mcp-server.md](/home/georgeqle/projects/tools/dev/automium/specs/mcp-server.md) into an execution-grade phased plan for the local Automium MCP server. The implementation must expose Automium's existing contract and domain surfaces through a stdio-only Model Context Protocol boundary without adding live browser execution, provider calls, persistence, arbitrary filesystem access, or repository mutation through MCP.
+> Generated from: `specs/browser-playwright-integration.md`, `specs/provider-backed-planner-execution.md`, `specs/production-persistence-infrastructure.md`, `specs/ci-cd-integration.md`
+> Date: 2026-04-25
+> Total Phases: 8
 
 ## Summary
 
-- Create `packages/mcp-server/` as the only package that depends on the official TypeScript MCP SDK.
-- Reuse existing Automium modules for corpus discovery, journey compilation, modeled run submission, replay summaries, artifact manifests, and benchmark comparison reports.
-- Keep v1 local and contract-safe: all tools are read-only or modeled, and every response must avoid implying live browser evidence.
-- Register a fixed set of MCP tools, resources, and prompts over stdio with deterministic validation and MCP-safe error conversion.
-- Preserve the implementation boundary documented in `tasks/lessons.md`: MCP transport is a runtime entrypoint, not proof that production browser execution exists.
+This roadmap turns the four validated spec interviews into an executable build plan for Automium's production platform. The sequencing prioritizes infrastructure foundations first (persistence, queue), then execution capabilities (browser runtime, planner adapters), then user-facing surfaces (API, CLI), then integration (artifacts, end-to-end). Each phase is small and serial, following the MCP transport pattern that proved effective.
 
 ## Phase Overview
 
-| Phase | Focus | Primary Deliverables | Depends On |
-| --- | --- | --- | --- |
-| 1 | Package shell and MCP registry foundation | Workspace package, server factory, schema/error boundary, failing registration tests | `specs/mcp-server.md` |
-| 2 | Tool adapters | Seven v1 tools backed by existing Automium modules, validation failures, modeled-output markers | Phase 1 |
-| 3 | Resources and prompts | Fixed v1 resources and prompt templates with registration tests and no arbitrary file reads | Phase 2 |
-| 4 | Stdio entrypoint and hardening | SDK transport wiring, executable package entrypoint, smoke tests, safety audit, docs | Phase 3 |
+| Phase | Title | Source Spec(s) | Key Deliverable | Est. Complexity |
+|-------|-------|----------------|-----------------|-----------------|
+| 1 | Persistence Foundation | production-persistence-infrastructure | Drizzle schema, Neon Postgres, adapter implementations | L |
+| 2 | Queue + Worker Infrastructure | production-persistence-infrastructure | BullMQ queues, Redis, worker process skeleton | M |
+| 3 | Browser Runtime | browser-playwright-integration | BrowserRuntime interface, Playwright adapter, semantic enrichment | L |
+| 4 | Planner Adapters | provider-backed-planner-execution | v2 contract, Claude adapter, fixture adapter, telemetry | M |
+| 5 | Control Plane API | production-persistence-infrastructure | Hono server, WorkOS auth, RBAC middleware, API routes | M |
+| 6 | Object Storage + Artifacts | production-persistence-infrastructure | R2 adapter, artifact upload pipeline, retention lifecycle | M |
+| 7 | CLI + CI Integration | ci-cd-integration | @automium/cli, reporters, GitHub Actions, GitLab CI template | M |
+| 8 | End-to-End Integration | all specs | Wire full pipeline, run owned benchmark corpus, verify replay | L |
 
-## Phase 1: Package Shell And MCP Registry Foundation
+---
 
-Goal: introduce the `packages/mcp-server/` package and a testable server-registration boundary before implementing individual tool behavior.
+## Phase 1: Persistence Foundation
 
-> Test strategy: tdd
+**Goal**: Establish the database layer that all other phases depend on. After this phase, Automium can persist tenants, journeys, runs, steps, audit events, and credentials in Postgres.
 
-### Tests First
+**Scope**:
+- Create `packages/persistence/` with Drizzle ORM schema for all core tables (organizations, workspaces, memberships, sessions, invites, journeys, journey_versions, runs, steps, assertions, recovery_rules, artifact_manifests, audit_events, credentials, files, jobs)
+- Implement Neon Postgres connection pool and migration runner
+- Create `packages/adapters-postgres/` implementing AuditSinkAdapter and SearchBackendAdapter (Postgres FTS)
+- Add Row-Level Security policies for tenant isolation
+- Implement encrypted credential vault (AES-256-GCM) in the credentials table
+- Create `packages/adapters-workos/` implementing IdentityProviderAdapter for magic-link auth
+- Composite indexes on (organization_id, workspace_id) for all tenant-scoped tables
 
-- Step 1.1: **Automated** Write failing package and registry tests for the MCP server shell.
-  - Files: create `packages/mcp-server/tests/mcp-server-registration.contract.test.ts`
-  - Tests cover: package exports a server factory, v1 capability manifest exists, tool/resource/prompt registries can be inspected in tests without starting stdio, and the package does not register unsupported remote transports.
+**Acceptance Criteria:**
+- [ ] Drizzle schema compiles and generates migrations for all core tables
+- [ ] Migrations run successfully against a Neon Postgres instance
+- [ ] AuditSinkAdapter can emit and query audit events through Postgres
+- [ ] SearchBackendAdapter can index and query using Postgres tsvector/tsquery
+- [ ] Credential vault can store, retrieve, and rotate encrypted secrets
+- [ ] RLS policies prevent cross-tenant data access when session variables are set
+- [ ] WorkOS adapter authenticates via magic-link and validates session tokens
+- [ ] All adapter implementations pass contract tests matching `packages/adapters/` interfaces
 
-### Implementation
+**Parallelization:** serial
 
-- Step 1.2: **Automated** Scaffold `packages/mcp-server/` using the existing workspace package conventions.
-  - Files: create `packages/mcp-server/package.json`, `packages/mcp-server/tsconfig.json`, `packages/mcp-server/src/index.ts`
-  - Include package exports and a future `bin` entry, but do not wire stdio process startup until Phase 4.
-- Step 1.3: **Automated** Add the MCP SDK dependency boundary and server factory.
-  - Files: create `packages/mcp-server/src/server.ts`
-  - The server factory should isolate SDK-specific construction inside `packages/mcp-server/` and expose a test-friendly registration surface.
-- Step 1.4: **Automated** Define v1 schema, error, and capability primitives for the MCP boundary.
-  - Files: create `packages/mcp-server/src/schemas.ts`, `packages/mcp-server/src/errors.ts`
-  - Schemas cover supported tool names, fixed resource URIs, prompt names, modeled-output metadata, planner references, journey input shapes, replay summary input, artifact manifest input, and benchmark comparison input.
-  - Errors cover invalid app ID, fixture/app mismatch, unsupported planner intent, invalid artifact kind, unsupported corpus version, malformed planner metadata, unsupported resource URI, and unsupported v1 operation.
-- Step 1.5: **Automated** Register placeholder descriptors for the v1 tools, resources, and prompts without implementing domain behavior yet.
-  - Files: create `packages/mcp-server/src/tools.ts`, `packages/mcp-server/src/resources.ts`, `packages/mcp-server/src/prompts.ts`
-  - Descriptors must include every v1 name from the spec and must keep remote Streamable HTTP/SSE out of scope.
+**Coordination Notes:** This phase touches the most packages and establishes patterns (Drizzle schema, adapter implementation, connection management) that all later phases follow. Must be serial to avoid conflicting patterns.
 
-### Green
+**On Completion**:
+- Deviations from plan:
+- Tech debt / follow-ups:
+- Ready for next phase: yes/no
 
-- Step 1.6: **Automated** Make the Phase 1 registration tests pass and run targeted workspace validation.
-  - Commands: `pnpm exec vitest run packages/mcp-server/tests/mcp-server-registration.contract.test.ts`, `pnpm exec tsc --noEmit`
+---
 
-### Milestone
+## Phase 2: Queue + Worker Infrastructure
 
-- [x] Phase 1 milestone completed on 2026-04-14.
+**Goal**: Enable job dispatch and worker orchestration so journey runs can be queued and picked up by workers.
 
-Acceptance criteria:
+**Scope**:
+- Create `packages/adapters-bullmq/` implementing JobQueueAdapter backed by BullMQ on Redis
+- Define BullMQ queues: journey-runs (priority-ordered), artifact-upload, audit-sink, data-lifecycle
+- Create `packages/adapters-redis/` implementing RealtimeTransportAdapter (Redis pub/sub)
+- Implement worker process skeleton in `packages/worker/` that dequeues jobs from BullMQ
+- Implement HTTP heartbeat endpoint and client for worker health reporting
+- Wire worker lease decisions from `packages/orchestrator/` to the BullMQ dispatch flow
+- Configure Redis connection management (shared between BullMQ and pub/sub)
 
-- `packages/mcp-server/` exists in the workspace.
-- The package exports a server factory and a test-inspectable v1 registration surface.
-- All v1 tool, resource, and prompt names are present as descriptors.
-- No remote MCP transport is registered.
-- All phase tests pass.
-- No regressions.
+**Acceptance Criteria:**
+- [ ] JobQueueAdapter can enqueue, dequeue, and acknowledge jobs through BullMQ
+- [ ] Priority ordering works correctly (high > normal > low)
+- [ ] RealtimeTransportAdapter can publish and subscribe to Redis channels
+- [ ] Worker process dequeues a job and reports heartbeats via HTTP
+- [ ] Worker lease quota enforcement prevents over-allocation
+- [ ] Queue and worker tests pass with a local Redis instance
+- [ ] Audit events flow through the audit-sink queue to Postgres asynchronously
 
-## Phase 2: Tool Adapters
+**Parallelization:** serial
 
-Goal: implement the seven v1 MCP tools by validating inputs at the MCP boundary and delegating behavior to existing Automium package exports.
+**Coordination Notes:** Depends on persistence (Phase 1) for run status updates and audit persistence. Redis connection patterns established here are reused by the realtime transport in Phase 5.
 
-> Test strategy: tdd
+**On Completion**:
+- Deviations from plan:
+- Tech debt / follow-ups:
+- Ready for next phase: yes/no
 
-### Tests First
+---
 
-- Step 2.1: **Automated** Write failing tool contract tests for successful calls and validation failures.
-  - Files: create `packages/mcp-server/tests/mcp-tools.contract.test.ts`
-  - Tests cover: `automium_list_apps`, `automium_list_fixtures`, `automium_compile_journey`, `automium_create_run_submission`, `automium_get_replay_summary`, `automium_get_artifact_manifest`, and `automium_compare_planners`.
-  - Failure coverage includes unauthorized app IDs, fixture/app mismatch, unsupported planner intents, malformed planner metadata, unsupported artifact kinds, absolute artifact entry paths, unsupported corpus versions, empty required fields, and repetitions normalized to at least one.
+## Phase 3: Browser Runtime
 
-### Implementation
+**Goal**: Implement the Playwright-backed browser execution layer that runs inside Firecracker microVMs. After this phase, Automium can navigate a web page, produce enriched semantic snapshots, execute planner intents, and capture artifacts.
 
-- Step 2.2: **Automated** Implement corpus discovery tools over the owned benchmark package.
-  - Files: modify `packages/mcp-server/src/tools.ts`, `packages/mcp-server/src/schemas.ts`, `packages/mcp-server/src/errors.ts`
-  - Reuse `packages/benchmark/src/corpus.ts` exports for app, fixture, environment profile, and corpus version data.
-- Step 2.3: **Automated** Implement `automium_compile_journey` over the control-plane compiler contract.
-  - Files: modify `packages/mcp-server/src/tools.ts`
-  - Reuse `apps/control-plane/src/control-plane-domain.ts` for `validateJourneyDefinition` and `compileJourneyDefinition`, while preserving the spec input shape and validation error response.
-- Step 2.4: **Automated** Implement `automium_create_run_submission` over the control-plane run model.
-  - Files: modify `packages/mcp-server/src/tools.ts`
-  - Reuse `createRunSubmission` and add MCP boundary validation that planner metadata includes non-empty `id`, `vendor`, and `model`.
-- Step 2.5: **Automated** Implement replay and artifact tools over replay-console and artifacts contracts.
-  - Files: modify `packages/mcp-server/src/tools.ts`, `packages/mcp-server/src/schemas.ts`
-  - Reuse `apps/replay-console/src/replay-console-domain.ts` for `summarizeReplayRun` and `packages/artifacts/src/artifacts-domain.ts` for `ARTIFACT_KINDS` and `createArtifactManifest`.
-  - Reject absolute artifact paths and unsupported artifact kinds before domain delegation.
-- Step 2.6: **Automated** Implement `automium_compare_planners` over the benchmark-runner report model.
-  - Files: modify `packages/mcp-server/src/tools.ts`
-  - Reuse `packages/benchmark-runner/src/benchmark-runner-domain.ts` and add deterministic MCP-safe errors for unsupported corpus versions and malformed planner metadata.
-- Step 2.7: **Automated** Add modeled-output markers to every tool that models instead of executes work.
-  - Files: modify `packages/mcp-server/src/tools.ts`, `packages/mcp-server/src/schemas.ts`
-  - The run, replay, artifact, and planner-comparison responses must explicitly state that no browser execution, provider calls, persistence, queueing, or artifact fetching occurred.
+**Scope**:
+- Define `BrowserRuntime` interface (~5-8 methods: navigate, snapshot, executeAction, captureElementScreenshot, getNetworkEvents, getConsoleEvents, getDOMMutations, close)
+- Create Playwright adapter implementing BrowserRuntime using Chromium headless shell
+- Implement semantic enrichment pipeline: stable ID assignment, actionability scoring, mutation diffing over Playwright's accessibility tree
+- Implement CDP observation pipeline: Network, Runtime, DOM, Performance event subscriptions
+- Implement targeted vision capture via Playwright element screenshots with bounding box and semantic annotation
+- Implement vision trigger heuristics (ambiguity detection, budget enforcement: max 2-3 crops/step, <100KB each)
+- Flatten iframe frame hierarchy into unified semantic snapshot
+- Build basic Firecracker microVM image with Chromium + Playwright pre-installed
+- Wire executor action compilation to BrowserRuntime method calls
 
-### Green
+**Acceptance Criteria:**
+- [ ] BrowserRuntime interface is defined and Playwright adapter passes all interface methods
+- [ ] Semantic enrichment produces stable element IDs that persist across page rerenders
+- [ ] Actionability scoring correctly identifies interactive vs non-interactive elements
+- [ ] CDP pipeline captures network requests, console messages, and DOM mutations in real-time
+- [ ] Targeted vision capture produces annotated element screenshots under budget
+- [ ] Iframe elements appear in the flattened semantic snapshot with frame metadata
+- [ ] Can navigate an owned benchmark product URL and produce a complete enriched snapshot
+- [ ] Executor can compile click, type, navigate, and assert intents into Playwright actions
+- [ ] Firecracker VM image boots and runs a Playwright script successfully
 
-- Step 2.8: **Automated** Make the MCP tool suites pass and verify no regressions in reused domain packages.
-  - Commands: `pnpm exec vitest run packages/mcp-server/tests/mcp-tools.contract.test.ts apps/control-plane/tests packages/artifacts/tests apps/replay-console/tests packages/benchmark-runner/tests packages/benchmark/tests packages/contracts/tests`, `pnpm exec tsc --noEmit`
+**Parallelization:** serial
 
-### Milestone
+**Coordination Notes:** This is the largest phase. The BrowserRuntime interface is the primary abstraction boundary — all Automium code above this layer must not import Playwright directly. Firecracker image building may require bare-metal access for testing.
 
-- [x] Phase 2 milestone completed on 2026-04-23.
+**Manual Tasks** (if any):
+- Provision a bare-metal KVM-capable server (Hetzner/OVH) for Firecracker VM testing _(blocks: Firecracker VM image acceptance criterion)_
 
-Acceptance criteria:
+**On Completion**:
+- Deviations from plan:
+- Tech debt / follow-ups:
+- Ready for next phase: yes/no
 
-- All seven v1 tools are callable through the MCP server registration surface.
-- Tool calls validate app IDs, fixture IDs, planner intent vocabulary, planner metadata, corpus version, artifact kinds, and relative artifact paths.
-- Tool calls delegate to existing Automium domain functions where those functions exist.
-- Modeled responses clearly say they were not live browser executions.
-- All phase tests pass.
-- No regressions.
+---
 
-## Phase 3: Resources And Prompts
+## Phase 4: Planner Adapters
 
-Goal: register the fixed v1 MCP resources and prompt templates without exposing arbitrary repository reads or speculative live-runtime guidance.
+**Goal**: Implement the v2 planner adapter contract and the first production adapter (Claude/Anthropic), enabling real model-backed journey planning.
 
-> Test strategy: tdd
+**Scope**:
+- Define PlannerAdapterV2 contract in `packages/contracts/` (buildMessages, toolDefinitions, parseToolCalls, compileIntent, summarizeStep)
+- Define provider-agnostic message types (PlannerMessages, ContentBlock, ToolCall, ToolDefinition)
+- Create `packages/planner-adapter-anthropic/` implementing PlannerAdapterV2 using @anthropic-ai/sdk
+- Create `packages/planner-adapter-fixture/` with deterministic intent sequences for CI
+- Implement tool definitions for all 12 planner intents as JSON Schema
+- Implement prompt construction: cacheable system prompt + structured user message with snapshot/context/vision
+- Implement per-step telemetry reporting (tokens, latency, model version, tool calls, vision usage, retries)
+- Implement multi-layer cost controls: per-step token cap, per-run budget, per-tenant quota
+- Implement provider-level retry (3x exponential backoff for 429/500/503) with rate limit header respect
+- Update adapter registry to resolve v2 adapters by vendor
+- Mark v1 string-based contract methods as deprecated
 
-### Tests First
+**Acceptance Criteria:**
+- [ ] PlannerAdapterV2 contract is defined and exported from packages/contracts/
+- [ ] Claude adapter produces valid tool-call prompts from enriched semantic snapshots
+- [ ] Claude adapter parses tool-call responses into PlannerIntent objects
+- [ ] Fixture adapter returns deterministic intent sequences matching v2 contract
+- [ ] Vision crops are included as image content blocks when flagged by the runtime
+- [ ] Per-step telemetry accurately reports tokens, latency, and model version from Claude API
+- [ ] Per-run budget enforcement aborts a journey when cumulative tokens exceed the limit
+- [ ] Provider retry handles 429 rate limits with exponential backoff
+- [ ] Adapter registry resolves Claude and fixture adapters by vendor string
+- [ ] Benchmark runner works with v2 adapters for planner comparison
 
-- Step 3.1: **Automated** Write failing resource and prompt contract tests.
-  - Files: create `packages/mcp-server/tests/mcp-resources-prompts.contract.test.ts`
-  - Tests cover: `automium://apps`, `automium://fixtures`, `automium://contracts/planner-adapter-v1`, `automium://contracts/replay-event-v1`, `automium://contracts/semantic-snapshot-v1`, `draft_journey`, `debug_failed_run`, and `compare_planner_backends`.
-  - Failure coverage includes unsupported resource URIs and prompt inputs that omit required identifiers.
+**Parallelization:** serial
 
-### Implementation
+**Coordination Notes:** Depends on Browser Runtime (Phase 3) for semantic snapshots that feed the planner, and Persistence (Phase 1) for cost control quota enforcement. The Claude adapter requires an Anthropic API key.
 
-- Step 3.2: **Automated** Implement fixed resource handlers from package exports and compact contract summaries.
-  - Files: modify `packages/mcp-server/src/resources.ts`, `packages/mcp-server/src/schemas.ts`, `packages/mcp-server/src/errors.ts`
-  - Reuse `packages/benchmark/src/corpus.ts`, `packages/contracts/src/planner-adapter.ts`, `packages/contracts/src/replay-event.ts`, and `packages/contracts/src/semantic-snapshot.ts`.
-  - Do not read arbitrary files or expose filesystem paths beyond checked-in contract references already represented by package exports.
-- Step 3.3: **Automated** Implement prompt handlers for journey drafting, failed-run debugging, and planner comparison.
-  - Files: modify `packages/mcp-server/src/prompts.ts`
-  - Prompts should guide coding agents toward the owned corpus, frozen planner intent vocabulary, bounded recovery, artifact/replay interpretation, and modeled planner comparison.
-- Step 3.4: **Automated** Ensure prompt copy preserves v1 maturity boundaries.
-  - Files: modify `packages/mcp-server/src/prompts.ts`
-  - Prompt guidance must avoid claiming live browser evidence, production artifact retrieval, credential access, or provider-backed planner execution.
+**Manual Tasks** (if any):
+- Provision an Anthropic API key for development and store in the credential vault _(blocks: Claude adapter acceptance criteria)_
 
-### Green
+**On Completion**:
+- Deviations from plan:
+- Tech debt / follow-ups:
+- Ready for next phase: yes/no
 
-- Step 3.5: **Automated** Make the resource and prompt suites pass and run the full MCP package test slice.
-  - Commands: `pnpm exec vitest run packages/mcp-server/tests`, `pnpm exec tsc --noEmit`
+---
 
-### Milestone
+## Phase 5: Control Plane API
 
-- [x] Phase 3 milestone completed on 2026-04-24.
+**Goal**: Stand up the production Hono API server with authentication, authorization, and all v1 routes wired to real implementations.
 
-Acceptance criteria:
+**Scope**:
+- Create Hono application in `apps/control-plane/` with middleware stack (CORS, auth, RBAC, logging, error handling)
+- Implement WorkOS session validation middleware
+- Implement RBAC middleware using existing `checkPermission()` from `packages/rbac/`
+- Wire all v1 API routes to real Postgres-backed implementations: journeys CRUD, journey compilation, run submission, run status, artifacts, benchmarks, tenants, credentials
+- Implement run submission flow: validate journey → resolve credentials → enqueue BullMQ job
+- Implement WebSocket gateway for live run status using Redis pub/sub from Phase 2
+- Implement OpenAPI schema generation via @hono/zod-openapi
+- Configure Postgres RLS session variables from authenticated request context
+- Add OpenTelemetry instrumentation for API request tracing
+- Add pino structured logging with traceId, organizationId, workspaceId
 
-- All five v1 resources are registered and limited to the fixed URI set.
-- All three v1 prompts are registered and validate required inputs.
-- Resources do not expose arbitrary filesystem reads.
-- Prompt guidance separates modeled contract outputs from live execution.
-- All phase tests pass.
-- No regressions.
+**Acceptance Criteria:**
+- [ ] Hono server starts and serves all v1 routes
+- [ ] WorkOS authentication rejects unauthenticated requests with 401
+- [ ] RBAC middleware enforces role-based access per the permission matrix
+- [ ] Journey CRUD operations persist to and read from Postgres
+- [ ] Run submission enqueues a job in BullMQ and returns a run ID
+- [ ] Run status endpoint returns real-time status from Postgres
+- [ ] WebSocket gateway streams run progress events from Redis pub/sub
+- [ ] OpenAPI spec is generated and accessible at /api/v1/openapi.json
+- [ ] API requests are traced end-to-end via OpenTelemetry
+- [ ] Credential CRUD endpoint encrypts values and never returns plaintext
 
-## Phase 4: Stdio Entrypoint And Hardening
+**Parallelization:** serial
 
-Goal: wire the official SDK stdio transport, add executable package entrypoints, verify local coding-agent startup, and document the safe v1 operating boundary.
+**Coordination Notes:** This phase wires together everything from Phases 1-4. The API server is the integration point where persistence, queue, and domain logic meet HTTP requests. Deploy target: Fly.io.
 
-> Test strategy: tdd
+**On Completion**:
+- Deviations from plan:
+- Tech debt / follow-ups:
+- Ready for next phase: yes/no
 
-### Tests First
+---
 
-- Step 4.1: **Automated** Write failing stdio startup and safety regression tests.
-  - Files: create `packages/mcp-server/tests/mcp-stdio.contract.test.ts`, `packages/mcp-server/tests/mcp-safety.contract.test.ts`
-  - Startup tests cover server metadata, stdio wiring, registered capabilities, and clean failure behavior without hanging test processes.
-  - Safety tests cover no browser driver imports, no provider SDK imports, no credential access helpers, no network transport registration, no filesystem writes, no arbitrary resource URI support, and modeled-output disclaimers on modeled tools.
+## Phase 6: Object Storage + Artifacts
 
-### Implementation
+**Goal**: Implement the artifact upload and retrieval pipeline using Cloudflare R2, enabling replay data to be stored and served.
 
-- Step 4.2: **Automated** Implement the stdio runtime entrypoint.
-  - Files: create `packages/mcp-server/src/stdio.ts`, modify `packages/mcp-server/src/index.ts`, modify `packages/mcp-server/package.json`
-  - The entrypoint should start only stdio transport and should not start HTTP/SSE listeners.
-- Step 4.3: **Automated** Document local setup and supported client configuration.
-  - Files: create `packages/mcp-server/README.md`, modify `tasks/todo.md`
-  - Documentation should include stdio command shape, supported tools/resources/prompts, v1 safety boundaries, and deferred remote transport scope.
+**Scope**:
+- Create `packages/adapters-r2/` implementing FileStorageAdapter using @aws-sdk/client-s3 with R2 endpoint
+- Implement artifact upload flow: worker collects artifacts → enqueues upload job → uploads to R2
+- Implement R2 bucket structure: {orgId}/{workspaceId}/runs/{runId}/...
+- Implement retention tagging at upload time (retention-class, expires-at)
+- Implement R2 lifecycle rules for automatic retention enforcement (14d pass, 30d fail, 7d unsupported)
+- Wire artifact retrieval through the control plane API (signed URL or proxy)
+- Implement Playwright trace.zip capture and upload as supplementary artifact
+- Implement Automium event stream serialization (JSONL) and upload
 
-### Green
+**Acceptance Criteria:**
+- [ ] FileStorageAdapter stores and retrieves files from R2 via S3-compatible API
+- [ ] Artifact upload job processes correctly after a journey run completes
+- [ ] Artifacts are organized in the correct bucket structure with org/workspace scoping
+- [ ] Retention tags are set on upload and R2 lifecycle rules are configured
+- [ ] Control plane API serves artifact downloads for authenticated, authorized users
+- [ ] Playwright trace.zip is captured and uploaded alongside Automium event stream
+- [ ] Automium replay event stream is serialized as JSONL and retrievable per run
 
-- Step 4.4: **Automated** Make the stdio and safety suites pass, then run MCP package tests, targeted dependent suites, TypeScript, formatting checks, and diff checks.
-  - Commands: `pnpm exec vitest run packages/mcp-server/tests apps/control-plane/tests apps/replay-console/tests packages/artifacts/tests packages/benchmark-runner/tests packages/benchmark/tests packages/contracts/tests packages/journey-compiler/tests`, `pnpm exec tsc --noEmit`, `git diff --check`
+**Parallelization:** serial
 
-### Milestone
+**Coordination Notes:** Depends on the worker pipeline (Phase 2-3) for artifact generation and the control plane (Phase 5) for serving artifacts. R2 bucket creation and lifecycle rule configuration are one-time setup.
 
-- [x] Phase 4 milestone completed on 2026-04-24.
+**Manual Tasks** (if any):
+- Create Cloudflare R2 bucket and configure API credentials _(blocks: R2 adapter acceptance criteria)_
 
-Acceptance criteria:
+**On Completion**:
+- Deviations from plan:
+- Tech debt / follow-ups:
+- Ready for next phase: yes/no
 
-- The MCP server starts over stdio.
-- The server registers the v1 tools, resources, and prompts listed in the spec.
-- The implementation has no provider API calls, browser driver calls, filesystem writes, remote artifact reads, or credential reads.
-- README instructions describe local stdio usage and v1 limitations.
-- All phase tests pass.
-- No regressions.
+---
+
+## Phase 7: CLI + CI Integration
+
+**Goal**: Ship the `@automium/cli` package that CI pipelines use to submit and monitor journey runs.
+
+**Scope**:
+- Create `packages/cli/` with `automium` binary entry point
+- Implement `automium run` command: config loading, journey filtering, parallel submission, polling, result collection
+- Implement `automium validate` command: config check, API reachability, journey validation
+- Implement `automium report` command: fetch results and generate reports from past runs
+- Implement `automium.config.ts` config file format with defineConfig helper
+- Implement three reporters: terminal summary (default), JUnit XML, JSON
+- Implement three-level exit codes: 0 (pass), 1 (test failure), 2 (infrastructure error)
+- Implement per-journey timeout (--timeout, default 300s) and overall timeout (--total-timeout, default 1800s)
+- Implement parallel submission with configurable concurrency (--concurrency, default 10)
+- Implement structured failure output: failed step, intent, assertion, snapshot context, dashboard link
+- Create GitHub Actions reusable action (@automium/github-action)
+- Create GitLab CI YAML template
+- Implement AUTOMIUM_API_TOKEN environment variable authentication
+
+**Acceptance Criteria:**
+- [ ] `automium run --tag smoke` submits journeys, polls, and exits with correct exit code
+- [ ] `automium validate` reports config and connectivity issues with actionable messages
+- [ ] JUnit XML output is parseable by GitHub Actions test-reporter and GitLab CI
+- [ ] JSON output contains all journey results with run IDs and replay URLs
+- [ ] Terminal output streams journey completion with pass/fail indicators
+- [ ] Exit code 1 on test failure, exit code 2 on auth/infra error
+- [ ] Per-journey timeout surfaces as an explicit failure in all reporters
+- [ ] Parallel submission respects concurrency limit and tenant quota
+- [ ] GitHub Actions example workflow runs successfully in a test repository
+- [ ] CLI has zero Playwright/engine/provider SDK dependencies
+
+**Parallelization:** serial
+
+**Coordination Notes:** Depends on the Control Plane API (Phase 5) being deployed and accessible. The CLI is a pure HTTP client against the control plane.
+
+**On Completion**:
+- Deviations from plan:
+- Tech debt / follow-ups:
+- Ready for next phase: yes/no
+
+---
+
+## Phase 8: End-to-End Integration
+
+**Goal**: Wire the full Automium pipeline together and validate with the owned benchmark corpus. After this phase, a real QA journey can be authored, submitted, executed on a Firecracker worker, planned by Claude, and debugged via replay artifacts.
+
+**Scope**:
+- Wire the complete run pipeline: CLI submit → API → BullMQ → Worker → Firecracker VM → Playwright → Claude planner → Executor → Artifacts → R2 → Replay
+- Run the owned benchmark corpus (Altitude, Switchboard, Foundry) end-to-end with the fixture planner
+- Run at least one journey with the Claude planner against an owned benchmark product
+- Verify replay event stream completeness (planner intents, executor actions, snapshots, assertions, network, vision)
+- Verify artifact lifecycle (upload, retrieval, retention tagging)
+- Verify benchmark comparison between fixture and Claude planners
+- Verify multi-tenant isolation (two tenants, separate runs, no data leakage)
+- Performance validation against spec targets: <5s cold start, <200ms snapshots, <2s steps, <30s journey
+- Fix integration issues discovered during end-to-end testing
+- Update the GPT/OpenAI adapter as fast-follow (if time permits)
+
+**Acceptance Criteria:**
+- [ ] A journey authored via the API executes end-to-end and produces a pass/fail verdict
+- [ ] Owned benchmark corpus (Altitude, Switchboard, Foundry) runs with fixture planner
+- [ ] At least one journey completes with Claude planner producing real tool-call intents
+- [ ] Replay artifacts are complete: event stream, targeted crops, network log, Playwright trace
+- [ ] Artifacts are retrievable via the API and respect tenant authorization
+- [ ] Benchmark comparison report shows meaningful metrics across fixture and Claude planners
+- [ ] Two tenants can submit runs simultaneously with no cross-tenant data access
+- [ ] Cold start meets <5s target, full 10-step journey meets <30s target
+- [ ] CLI can submit, monitor, and report on the end-to-end run with correct exit codes
+
+**Parallelization:** serial
+
+**Coordination Notes:** This is the integration phase that validates all previous phases work together. Expect to discover and fix issues at the seams between phases. This phase may take longer than others due to debugging integration problems.
+
+**On Completion**:
+- Deviations from plan:
+- Tech debt / follow-ups:
+- Ready for next phase: yes/no
+
+---
+
+## Deferred / Future Work
+
+- GPT/OpenAI planner adapter (fast-follow after Phase 8 if not completed during integration)
+- Gemini/Google planner adapter (v1.1+)
+- Firefox and WebKit browser support (v2+)
+- Custom browser engine (v2+ strategic option behind BrowserRuntime interface)
+- Data lifecycle tiering (hot Postgres → warm R2 → delete)
+- WebSocket replay streaming (v1 uses REST polling)
+- Postgres full-text search (v1 uses LIKE queries, FTS is ready when needed)
+- Watch mode for CLI (`automium run --watch`)
+- Local execution mode for CLI (Playwright without Firecracker)
+- SSO/SAML via WorkOS (magic-link only for v1)
+- Credential rotation automation
+- Worker autoscaling
+- Remote MCP transports (Streamable HTTP, SSE)
+- Advanced audit queries and dashboards
+- CTRF report format
+- Sharding across CI runners
+- Slack/Teams notification integration
 
 ## Cross-Phase Concerns
 
-- Keep `packages/mcp-server/` as the only package that imports the MCP SDK.
-- Use existing Automium domain exports instead of copying control-plane, benchmark, artifact, replay, or benchmark-runner logic.
-- Preserve fixed v1 boundaries: stdio only, local only, non-mutating, no arbitrary filesystem reads, no network calls, no browser execution, no credential reads, no provider-backed planner execution.
-- Every modeled response should include explicit metadata or copy stating that the output was modeled and not executed.
-- Add or update tests whenever validation behavior is introduced at the MCP boundary.
-- Before claiming completion, run the relevant MCP test slice, reused-domain regression tests, `pnpm exec tsc --noEmit`, and `git diff --check`.
+### Integration Tests
+- Phase 2: queue → worker integration test (enqueue job, worker dequeues and reports)
+- Phase 3: browser → semantic enrichment integration test (navigate page, verify snapshot)
+- Phase 5: API → queue → worker integration test (submit run via API, verify dispatch)
+- Phase 8: full pipeline integration test (CLI → API → worker → planner → artifacts → replay)
+
+### Non-Functional Requirements
+- **Security**: RLS in Phase 1, RBAC in Phase 5, credential encryption in Phase 1, tenant isolation verified in Phase 8
+- **Performance**: Targets validated in Phase 8 (<5s cold start, <200ms snapshots, <2s steps)
+- **Observability**: OpenTelemetry added in Phase 5, verified across the full pipeline in Phase 8
+- **Cost controls**: Per-step/run/tenant budgets implemented in Phase 4, verified in Phase 8

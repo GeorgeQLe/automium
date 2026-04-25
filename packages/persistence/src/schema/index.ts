@@ -9,14 +9,14 @@ export {
   membershipStatusEnum,
 } from "./tenancy";
 
-// Auth tables — real definitions in Step 1.4
-export const sessions = pgTable("sessions", {
-  id: text("id").primaryKey(),
-});
-
-export const invites = pgTable("invites", {
-  id: text("id").primaryKey(),
-});
+// Auth tables
+export {
+  sessions,
+  invites,
+  identityProviderEnum,
+  sessionStateEnum,
+  inviteStatusEnum,
+} from "./auth";
 
 // Journey tables — real definitions in Step 1.5
 export const journeys = pgTable("journeys", {

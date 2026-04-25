@@ -146,16 +146,53 @@ Step 1.3 shipped real Drizzle table definitions for the three tenancy tables (`o
 ### Ship-One-Step Handoff Contract
 After approval: implement only Step 1.4, validate it, mark Step 1.4 done in `tasks/todo.md`, update `tasks/history.md`, commit and push the completed work, write the Step 1.5 plan, enter plan mode for Step 1.5 approval, and stop before implementing Step 1.5.
 
-- [ ] Step 1.4: **Automated** Define Drizzle schema for auth tables (sessions, invites).
-  - Files: create `packages/persistence/src/schema/auth.ts`
-  - Map Session and Invite interfaces from `packages/auth/` to Drizzle tables.
-  - Session: pgEnum for state (pending/active/revoked/expired), pgEnum for provider (password/magic-link/sso). Invite: pgEnum for status (pending/accepted/expired/revoked), FK refs to organizations and workspaces.
+- [x] Step 1.4: **Automated** Define Drizzle schema for auth tables (sessions, invites).
+  - Files: created `packages/persistence/src/schema/auth.ts`
+  - Mapped Session and Invite interfaces from `packages/auth/` to real Drizzle table definitions with pgEnums (`identityProviderEnum`, `sessionStateEnum`, `inviteStatusEnum`), FK refs (invites → organizations, workspaces), and indexes (sessions: identity_id, invites: composite org+workspace).
+  - pgEnum values match frozen `as const` arrays in `platform-auth.ts` exactly. Sessions have no FK to tenancy tables (identity-scoped, not tenant-scoped).
 
 - [ ] Step 1.5: **Automated** Define Drizzle schema for journey and run tables (journeys, journey_versions, runs, steps, assertions, recovery_rules).
   - Files: create `packages/persistence/src/schema/journeys.ts`, `packages/persistence/src/schema/runs.ts`
   - Map from `packages/journey-compiler/` and `packages/contracts/` domain types.
   - Composite indexes on (organization_id, workspace_id) for journeys and runs.
   - Index on (run_id, sequence) for steps.
+
+---
+
+## Next Step Plan: Step 1.5 — Define Drizzle Schema for Journey and Run Tables
+
+### Context
+Step 1.4 shipped real Drizzle table definitions for the two auth tables (`sessions`, `invites`) in `packages/persistence/src/schema/auth.ts` with pgEnums, FK references, and indexes. Step 1.5 follows the same pattern for the six journey/run stubs (`journeys`, `journey_versions`, `runs`, `steps`, `assertions`, `recovery_rules`).
+
+Domain interfaces are spread across `apps/control-plane/src/control-plane-domain.ts` (JourneyDefinition, RunSubmission), `packages/journey-compiler/src/journey-compiler-domain.ts` (JourneyGraphNode, JourneyGraphAssertion, JourneyRecoveryRule), `packages/executor/src/executor-domain.ts` (SUPPORTED_EXECUTOR_INTENTS), `packages/assertions/src/assertions-domain.ts` (SUPPORTED_ASSERTION_TYPES), and `packages/contracts/src/replay-event.ts` (ReplayEvent phases).
+
+### What to Build
+
+1. **`packages/persistence/src/schema/journeys.ts`** — Drizzle `pgTable()` definitions:
+   - `journeys`: `id` (text PK), `organization_id` (text not null, FK → organizations.id), `workspace_id` (text not null, FK → workspaces.id), `app_id` (text not null), `goal` (text not null), `created_at` (timestamp w/ tz, not null, default now), composite index on `(organization_id, workspace_id)`
+   - `journeyVersions`: `id` (text PK), `journey_id` (text not null, FK → journeys.id), `graph_version` (text not null), `compiled_at` (timestamp w/ tz, not null, default now), index on `journey_id`
+
+2. **`packages/persistence/src/schema/runs.ts`** — Drizzle `pgTable()` definitions:
+   - `runs`: `id` (text PK), `organization_id` (text not null, FK → organizations.id), `workspace_id` (text not null, FK → workspaces.id), `journey_id` (text not null, FK → journeys.id), `status` (pgEnum: queued/leased/running/passed/failed/unsupported/cancelled, not null, default 'queued'), `planner_id` (text not null), `artifact_manifest_ref` (text), `created_at` (timestamp w/ tz, not null, default now), composite index on `(organization_id, workspace_id)`
+   - `steps`: `id` (text PK), `run_id` (text not null, FK → runs.id), `sequence` (integer not null), `intent` (text not null), `target` (text), `value` (text), `verdict` (pgEnum: pass/fail/inconclusive/unsupported), `created_at` (timestamp w/ tz, not null, default now), index on `(run_id, sequence)`
+   - `assertions`: `id` (text PK), `journey_version_id` (text not null, FK → journeyVersions.id), `type` (pgEnum: semantic/url/network/download/extracted-value, not null), `target` (text not null)
+   - `recoveryRules`: `id` (text PK), `journey_version_id` (text not null, FK → journeyVersions.id), `max_attempts` (integer not null, default 2), `strategy` (pgEnum: bounded-retry/fail-fast, not null, default 'bounded-retry')
+
+3. **Update `packages/persistence/src/schema/index.ts`** — Replace the six journey/run stub `pgTable()` calls with re-exports from `./journeys.ts` and `./runs.ts`. Also export the new pgEnums (`runStatusEnum`, `stepVerdictEnum`, `assertionTypeEnum`, `recoveryStrategyEnum`).
+
+### Key Decisions
+- `journeys` and `runs` are tenant-scoped (FK to organizations + workspaces, composite index)
+- `steps` belong to runs (FK), `assertions` and `recoveryRules` belong to journey versions (FK)
+- pgEnum values match the frozen `as const` arrays: `RUN_STATUS_VALUES`, `VERDICT_TAXONOMY` subset, `SUPPORTED_ASSERTION_TYPES`, recovery strategies
+- `steps.sequence` is integer for ordered replay, with composite index on `(run_id, sequence)`
+
+### Acceptance Criteria
+- Schema contract tests still pass (8/8)
+- No new TS errors in persistence src
+- No regressions in 249 passing tests
+
+### Ship-One-Step Handoff Contract
+After approval: implement only Step 1.5, validate it, mark Step 1.5 done in `tasks/todo.md`, update `tasks/history.md`, commit and push the completed work, write the Step 1.6 plan, enter plan mode for Step 1.6 approval, and stop before implementing Step 1.6.
 
 - [ ] Step 1.6: **Automated** Define Drizzle schema for artifact, audit, credential, file, and job tables.
   - Files: create `packages/persistence/src/schema/artifacts.ts`, `packages/persistence/src/schema/audit.ts`, `packages/persistence/src/schema/credentials.ts`, `packages/persistence/src/schema/files.ts`, `packages/persistence/src/schema/jobs.ts`

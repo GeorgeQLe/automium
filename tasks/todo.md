@@ -85,7 +85,7 @@
   - Tests cover: BrowserRuntime interface shape (8 methods), semantic enrichment pipeline (raw a11y → contract-compliant elements), frame hierarchy flattening, vision budget enforcement, executor-to-BrowserRuntime action bridging.
 
 ### Implementation
-- [ ] Step 3.2: **Automated** Scaffold `packages/browser-runtime/` and define BrowserRuntime interface types.
+- [x] Step 3.2: **Automated** Scaffold `packages/browser-runtime/` and define BrowserRuntime interface types.
   - Files: create `packages/browser-runtime/src/types.ts`, `packages/browser-runtime/src/index.ts`
   - `BrowserRuntime` interface with 8 methods: `navigate(url, options?)` → `NavigationResult`, `snapshot()` → `RawAccessibilitySnapshot`, `executeAction(action)` → `ActionResult`, `captureElementScreenshot(elementId, options?)` → `ScreenshotResult`, `getNetworkEvents(since?)` → `NetworkEvent[]`, `getConsoleEvents(since?)` → `ConsoleEvent[]`, `getDOMMutations(since?)` → `DOMMutation[]`, `close()` → `void`.
   - Supporting types: `NavigationResult`, `RawAccessibilitySnapshot`, `RawAccessibilityNode`, `ActionResult`, `ScreenshotResult`, `NetworkEvent`, `ConsoleEvent`, `DOMMutation`.
@@ -134,33 +134,44 @@
 
 ---
 
-### Next Step Implementation Plan: Step 3.2 — Scaffold BrowserRuntime Interface Types
+### Review — Step 3.2
+
+**Result:** Complete. The browser runtime package now exports `BrowserRuntime` types and `createBrowserRuntimeAdapter()` with the required `browser-runtime` boundary and async stub methods.
+
+**Validation:**
+- `pnpm test:run packages/browser-runtime/tests/browser-runtime.contract.test.ts` — 1 file / 8 tests passing
+- `pnpm exec tsc --noEmit` — clean
+
+**Notes:**
+- The remaining Phase 3 browser-runtime suites are expected-red for future steps: enrichment, frame-flattening, vision-capture, and action-bridge.
+- `pnpm typecheck` is not defined in this repository; use `pnpm exec tsc --noEmit` for TypeScript validation.
+
+### Next Step Implementation Plan: Step 3.3 — Semantic Enrichment Pipeline
 
 **What to build:**
-Scaffold `packages/browser-runtime/src/` with the `BrowserRuntime` interface types and a `createBrowserRuntimeAdapter` factory stub. This turns the 8 browser-runtime.contract tests green while other test files remain red.
+Implement the first semantic enrichment layer for `@automium/browser-runtime`: convert raw accessibility nodes into frozen-contract `SemanticInteractiveElement` records, compute stable IDs and actionability through the existing engine domain helper, diff enriched snapshots into mutation summaries, and normalize network events into contract categories.
 
 **Files to create/modify:**
-- Create `packages/browser-runtime/src/types.ts` — `BrowserRuntime` interface (8 methods), supporting types (`NavigationResult`, `RawAccessibilitySnapshot`, `RawAccessibilityNode`, `ActionResult`, `ScreenshotResult`, `NetworkEvent`, `ConsoleEvent`, `DOMMutation`)
-- Create `packages/browser-runtime/src/browser-runtime-adapter.ts` — `createBrowserRuntimeAdapter(config)` factory returning `{ boundary: "browser-runtime" as const, ...stub methods }`
-- Modify `packages/browser-runtime/src/index.ts` — re-export `createBrowserRuntimeAdapter` and types
+- Create `packages/browser-runtime/src/enrichment.ts`
+- Modify `packages/browser-runtime/src/index.ts` to export enrichment helpers
+- Modify `packages/browser-runtime/src/types.ts` only if raw accessibility/network input types need small additive fields required by tests
 
-**Interface details:**
-- `navigate(url: string, options?)` → `Promise<NavigationResult>` where `NavigationResult = { url, status, timing: { total } }`
-- `snapshot()` → `Promise<RawAccessibilitySnapshot>` where `RawAccessibilitySnapshot = { elements: RawAccessibilityNode[], url }`
-- `executeAction(action)` → `Promise<ActionResult>` where `ActionResult = { success, action }`
-- `captureElementScreenshot(elementId, options?)` → `Promise<ScreenshotResult>` where `ScreenshotResult = { data, boundingBox, elementId }`
-- `getNetworkEvents(since?)` → `Promise<NetworkEvent[]>`
-- `getConsoleEvents(since?)` → `Promise<ConsoleEvent[]>`
-- `getDOMMutations(since?)` → `Promise<DOMMutation[]>`
-- `close()` → `Promise<void>`
+**Implementation details:**
+- `enrichAccessibilityTree(rawSnapshot, route, frameId)` should recursively walk `RawAccessibilityNode` trees and emit visible/actionable browser elements as `SemanticInteractiveElement[]`.
+- Use `describeInteractiveElement()` from `packages/engine/src/engine-domain.ts` for stable ID generation and actionability scoring instead of duplicating hashing/scoring logic.
+- Fill every frozen element field from `packages/contracts/src/semantic-snapshot.ts`: `id`, `role`, `label`, `value`, `required`, `disabled`, `loading`, `error`, `visible`, `interactable`, and `group`.
+- Treat `RawAccessibilityNode.name` as the semantic label when a richer label field is absent.
+- Preserve frame grouping through the `group` field until Step 3.4 introduces full frame flattening.
+- `diffMutations(previous, current)` should compare element IDs and user-visible fields to produce `SemanticMutationSummary[]` for child-list, text, attribute, and visibility changes.
+- `categorizeNetworkEvent(event)` should map raw method/url/status/resource-type inputs into `SemanticNetworkEvent` with category `document`, `xhr`, `fetch`, `websocket`, or `other`.
 
 **Acceptance criteria:**
-- 8 browser-runtime.contract tests pass (green)
-- 24 remaining tests still fail (red) — enrichment, frame-flattening, vision-capture, action-bridge
-- `pnpm exec tsc --noEmit` — clean
-- All 309 existing tests still pass
+- `pnpm exec vitest run packages/browser-runtime/tests/enrichment.contract.test.ts` passes.
+- `pnpm test:run packages/browser-runtime/tests/browser-runtime.contract.test.ts` remains green.
+- `pnpm exec tsc --noEmit` remains clean.
+- Future-step suites for frame-flattening, vision-capture, and action-bridge may remain expected-red.
 
-**Ship-one-step handoff contract:** After approval, implement only Step 3.2; validate with tests; mark done in `tasks/todo.md`; update `tasks/history.md`; commit and push; write the Step 3.3 plan.
+**Ship-one-step handoff contract:** After approval, implement only Step 3.3; validate with focused enrichment and Step 3.2 regression tests; mark done in `tasks/todo.md`; update `tasks/history.md`; commit and push; write the Step 3.4 plan.
 
 ---
 

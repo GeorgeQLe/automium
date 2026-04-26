@@ -5,6 +5,9 @@
 - Completed Phase 3 Step 3.1: wrote 32 red-phase contract tests for `packages/browser-runtime/` across 5 test files (browser-runtime 8, enrichment 8, frame-flattening 5, vision-capture 5, action-bridge 6).
 - Created workspace member with `package.json`, `tsconfig.json`, empty barrel `src/index.ts`.
 - All 32 new tests fail (red) on missing exports. All 309 existing tests pass. TypeScript clean.
+- Reconciled Phase 3 Step 3.2 after confirming commit `749c0d6` already scaffolded `packages/browser-runtime/src/types.ts`, `src/browser-runtime-adapter.ts`, and `src/index.ts` with the BrowserRuntime interface, supporting event/result types, and `createBrowserRuntimeAdapter()` stub.
+- Verified Step 3.2 with `pnpm test:run packages/browser-runtime/tests/browser-runtime.contract.test.ts` at 1 passing file / 8 passing tests and `pnpm exec tsc --noEmit` clean.
+- Marked Step 3.2 complete in `tasks/todo.md` and prepared the Step 3.3 semantic enrichment implementation plan.
 
 ## 2026-04-07
 

@@ -97,7 +97,7 @@
   - `diffMutations(previous, current)` — compares two enriched snapshots, produces `SemanticMutationSummary[]` (attribute changes, child-list changes, text changes, visibility changes).
   - `categorizeNetworkEvent(event)` — maps raw network event to `SemanticNetworkEvent` with category (document/xhr/fetch/websocket/other).
 
-- [ ] Step 3.4: **Automated** Implement frame hierarchy flattening into unified element list with frame metadata.
+- [x] Step 3.4: **Automated** Implement frame hierarchy flattening into unified element list with frame metadata.
   - Files: create `packages/browser-runtime/src/frame-flattening.ts`, modify `packages/browser-runtime/src/index.ts`
   - `flattenFrameHierarchy(frames)` — takes array of `{ frameId, parentFrameId, origin, url, elements[] }`, produces unified `SemanticInteractiveElement[]` with elements tagged by frame origin + `SemanticFrameRef[]` matching the frozen contract.
   - Handles nested iframes (depth > 1) by traversing parent chain.
@@ -160,33 +160,43 @@
 - `RawAccessibilityNode` and `NetworkEvent` gained small additive fields needed to represent enrichment input without introducing a second local type system.
 - Frame flattening, vision capture, and action bridge suites remain expected-red for future steps.
 
-### Next Step Implementation Plan: Step 3.4 — Frame Hierarchy Flattening
+### Review — Step 3.4
 
-**What to build:**
-Implement frame hierarchy flattening for `@automium/browser-runtime`: take per-frame enriched elements plus frame metadata and produce a unified element list with a frozen-contract `SemanticFrameRef[]` hierarchy.
+**Result:** Complete. The browser runtime package now exports `flattenFrameHierarchy()` for merging per-frame elements into one unified element list while preserving frozen-contract frame metadata.
+
+**Validation:**
+- `pnpm exec vitest run packages/browser-runtime/tests/frame-flattening.contract.test.ts` — 1 file / 5 tests passing
+- `pnpm exec vitest run packages/browser-runtime/tests/enrichment.contract.test.ts` — 1 file / 8 tests passing
+- `pnpm test:run packages/browser-runtime/tests/browser-runtime.contract.test.ts` — 1 file / 8 tests passing
+- `pnpm exec tsc --noEmit` — clean
+
+**Notes:**
+- `flattenFrameHierarchy()` clones elements and tags each clone with `group: frameId`; caller-owned element objects are not mutated.
+- Frame hierarchy output maps directly to `SemanticFrameRef` (`id`, `parentFrameId`, `origin`, `url`).
+- Vision capture and action bridge suites remain expected-red for future steps.
+
+### Next Step Implementation Plan: Step 3.5 — Targeted Vision Capture
 
 **Files to create/modify:**
-- Create `packages/browser-runtime/src/frame-flattening.ts`
-- Modify `packages/browser-runtime/src/index.ts` to export frame-flattening helpers
-- Modify `packages/browser-runtime/src/types.ts` only if shared frame input types are useful and remain additive
+- Create `packages/browser-runtime/src/vision-capture.ts`
+- Modify `packages/browser-runtime/src/index.ts` to export vision-capture helpers
+- Modify `packages/browser-runtime/src/types.ts` only if shared screenshot or bounding-box types need additive fields
 
 **Implementation details:**
-- Read `packages/browser-runtime/tests/frame-flattening.contract.test.ts` first and implement only the tested public contract.
-- Define `flattenFrameHierarchy(frames)` around input frames shaped like `{ frameId, parentFrameId, origin, url, elements[] }`.
-- Return a value containing a unified `elements` array and `frameHierarchy` array unless tests require a more specific shape.
-- Emit `SemanticFrameRef` records with `id`, `parentFrameId`, `origin`, and `url`.
-- Preserve nested iframe parentage exactly; do not infer or reorder parent links beyond a deterministic traversal needed by the tests.
-- Tag each returned element with frame metadata through its `group` field or another tested property without mutating caller-owned element objects.
-- Keep this module independent of Playwright; real browser frame discovery remains deferred.
+- Read `packages/browser-runtime/tests/vision-capture.contract.test.ts` first and implement only the tested public contract.
+- Define `createVisionCaptureSession(config)` with defaults `{ maxCropsPerStep: 3, maxCropSizeBytes: 102400 }` and mutable per-step crop count.
+- Define `requestCapture(session, elementId, boundingBox, reason)` to enforce max crop count and crop size budget, integrate `shouldRequestTargetedVision()` from `packages/vision/src/vision-domain.ts`, and produce a `TargetedCropRequest` through `createTargetedCropRequest()` when capture is allowed.
+- Define `annotateScreenshot(screenshot, semanticContext)` to return screenshot bytes plus semantic metadata such as role, label, nearby elements, bounding box, and timestamp.
+- Keep this module independent of Playwright screenshot capture; real browser screenshot bytes remain adapter responsibility.
 
 **Acceptance criteria:**
-- `pnpm exec vitest run packages/browser-runtime/tests/frame-flattening.contract.test.ts` passes.
-- `pnpm exec vitest run packages/browser-runtime/tests/enrichment.contract.test.ts` remains green.
+- `pnpm exec vitest run packages/browser-runtime/tests/vision-capture.contract.test.ts` passes.
+- `pnpm exec vitest run packages/browser-runtime/tests/frame-flattening.contract.test.ts` remains green.
 - `pnpm test:run packages/browser-runtime/tests/browser-runtime.contract.test.ts` remains green.
 - `pnpm exec tsc --noEmit` remains clean.
-- Future-step suites for vision-capture and action-bridge may remain expected-red.
+- Future-step suites for action-bridge may remain expected-red.
 
-**Ship-one-step handoff contract:** After approval, implement only Step 3.4; validate with focused frame-flattening, enrichment regression, browser-runtime shape, and TypeScript checks; mark done in `tasks/todo.md`; update `tasks/history.md`; commit and push; write the Step 3.5 plan.
+**Ship-one-step handoff contract:** After approval, implement only Step 3.5; validate with focused vision-capture, frame-flattening regression, browser-runtime shape, and TypeScript checks; mark done in `tasks/todo.md`; update `tasks/history.md`; commit and push; write the Step 3.6 plan.
 
 ---
 
@@ -197,7 +207,7 @@ Implement frame hierarchy flattening for `@automium/browser-runtime`: take per-f
 - [ ] Actionability scoring correctly identifies interactive vs non-interactive elements *(uses engine-domain scoreActionability)*
 - [ ] CDP pipeline captures network requests, console messages, and DOM mutations in real-time *(event types defined; real CDP subscription deferred)*
 - [ ] Targeted vision capture produces annotated element screenshots under budget *(budget enforcement validated; real screenshot capture deferred)*
-- [ ] Iframe elements appear in the flattened semantic snapshot with frame metadata
+- [x] Iframe elements appear in the flattened semantic snapshot with frame metadata
 - [ ] Can navigate an owned benchmark product URL and produce a complete enriched snapshot *(contract-compliant snapshot shape validated; real navigation deferred)*
 - [ ] Executor can compile click, type, navigate, and assert intents into Playwright actions *(action bridge validated; real Playwright execution deferred)*
 - [ ] Firecracker VM image boots and runs a Playwright script successfully *(deferred — requires bare-metal KVM server)*

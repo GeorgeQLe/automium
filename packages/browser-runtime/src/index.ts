@@ -4,6 +4,11 @@ export {
   diffMutations,
   categorizeNetworkEvent,
 } from "./enrichment";
+export { flattenFrameHierarchy } from "./frame-flattening";
+export type {
+  BrowserRuntimeFrameInput,
+  FlattenedFrameHierarchy,
+} from "./frame-flattening";
 export type {
   BrowserRuntime,
   NavigationResult,

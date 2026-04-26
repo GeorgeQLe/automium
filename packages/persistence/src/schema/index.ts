@@ -1,5 +1,3 @@
-import { pgTable, text } from "drizzle-orm/pg-core";
-
 // Tenancy tables
 export {
   organizations,
@@ -33,23 +31,17 @@ export {
   recoveryStrategyEnum,
 } from "./runs";
 
-// Supporting tables — real definitions in Step 1.6
-export const artifactManifests = pgTable("artifact_manifests", {
-  id: text("id").primaryKey(),
-});
+// Artifact tables
+export { artifactManifests, artifactEntries, artifactKindEnum } from "./artifacts";
 
-export const auditEvents = pgTable("audit_events", {
-  id: text("id").primaryKey(),
-});
+// Audit tables
+export { auditEvents, auditedActionEnum } from "./audit";
 
-export const credentials = pgTable("credentials", {
-  id: text("id").primaryKey(),
-});
+// Credential tables
+export { credentials } from "./credentials";
 
-export const files = pgTable("files", {
-  id: text("id").primaryKey(),
-});
+// File tables
+export { files } from "./files";
 
-export const jobs = pgTable("jobs", {
-  id: text("id").primaryKey(),
-});
+// Job tables
+export { jobs, jobStateEnum } from "./jobs";

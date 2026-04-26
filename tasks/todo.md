@@ -160,7 +160,7 @@ Create `packages/orchestrator/src/dispatch.ts` with `dispatchRun(input, queueAda
   - `createHeartbeatReporter(config)` factory returns `{ report(), stop() }` for periodic health reporting.
   - Worker process stub: dequeue loop shape that calls `adapter.dequeue()` and processes jobs through the existing `packages/jobs/` lifecycle state machine.
 
-- [ ] Step 2.6: **Automated** Wire orchestrator lease decisions to queue dispatch flow.
+- [x] Step 2.6: **Automated** Wire orchestrator lease decisions to queue dispatch flow.
   - Files: create `packages/orchestrator/src/dispatch.ts`, modify `packages/orchestrator/src/index.ts`
   - `dispatchRun(input, queueAdapter)` takes a `WorkerLeaseInput` and `JobQueueAdapter`, calls `leaseWorker()` from existing `orchestrator-domain.ts`, and if lease is granted, calls `queueAdapter.enqueue()` with the run job. Returns `{ dispatched: boolean, lease: WorkerLeaseDecision, jobId?: string }`.
   - Integrates existing `leaseWorker()` logic with queue enqueue — no duplication of lease/quota code.
@@ -168,6 +168,31 @@ Create `packages/orchestrator/src/dispatch.ts` with `dispatchRun(input, queueAda
 ### Green
 - [ ] Step 2.7: **Automated** Run all tests and verify they pass (green).
 - [ ] Step 2.8: **Automated** Refactor pass — verify barrel exports, adapter alignment, no dead code.
+
+---
+
+### Next Step Implementation Plan: Step 2.7 — Green Verification Sweep
+
+**What to build:**
+Pure verification step — no code changes. Re-run the full test suite and TypeScript check to confirm Phase 2 is green.
+
+**Verification commands:**
+1. `pnpm test:run` — expect 309 passing, 0 failing
+2. `pnpm exec tsc --noEmit` — expect no errors
+3. `git diff --check` — expect clean
+
+**Acceptance criteria:**
+- All 309 tests pass (274 Phase 1 baseline + 35 Phase 2 tests)
+- No TypeScript errors across the monorepo
+- No uncommitted changes after verification
+
+**Phase 2 component summary (verify all covered):**
+- `packages/adapters-bullmq/` — JobQueueAdapter stub (8 tests) + queue definitions (7 tests)
+- `packages/adapters-redis/` — RealtimeTransportAdapter stub (8 tests) + connection factory (2 tests)
+- `packages/worker/` — WorkerProcess skeleton (4 tests) + HeartbeatReporter (3 tests)
+- `packages/orchestrator/` — dispatchRun wiring (3 tests) + existing orchestrator domain tests
+
+**Ship-one-step handoff contract:** After approval, run verification only (no code changes); mark Step 2.7 done in `tasks/todo.md`; update `tasks/history.md`; commit and push; write the Step 2.8 plan; enter plan mode; stop before implementing Step 2.8.
 
 ### Milestone: Phase 2 — Queue + Worker Infrastructure
 **Acceptance Criteria:**

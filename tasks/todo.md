@@ -158,58 +158,52 @@ After approval: implement only Step 1.4, validate it, mark Step 1.4 done in `tas
 
 ---
 
-## Next Step Plan: Step 1.6 — Define Drizzle Schema for Supporting Tables
+## Next Step Plan: Step 1.7 — Generate Initial Migration and Add RLS Policies
 
 ### Context
-Step 1.5 shipped real Drizzle table definitions for the six journey/run tables in `packages/persistence/src/schema/journeys.ts` and `runs.ts`. Step 1.6 replaces the five remaining stubs (`artifactManifests`, `auditEvents`, `credentials`, `files`, `jobs`) with real Drizzle table definitions, following the same pattern established in Steps 1.3–1.5.
-
-Domain interfaces come from:
-- `packages/artifacts/src/artifacts-domain.ts` — `ArtifactManifest`, `ArtifactManifestEntry`, `ArtifactKind`
-- `packages/audit/src/audit-behavior.ts` — `AuditEvent`, `AuditedAction`
-- `packages/files/src/files-behavior.ts` — `FileOwnership`
-- `packages/jobs/src/jobs-behavior.ts` — `Job`, `JobLifecycleState`
+Steps 1.3–1.6 completed all 16 core Drizzle table definitions across 6 schema files (`tenancy.ts`, `auth.ts`, `journeys.ts`, `runs.ts`, `artifacts.ts`, `audit.ts`, `credentials.ts`, `files.ts`, `jobs.ts`). Step 1.7 uses `drizzle-kit generate` to produce the initial migration SQL from the schema, adds Row-Level Security (RLS) policies for tenant isolation, and creates a migration runner.
 
 ### What to Build
 
-1. **`packages/persistence/src/schema/artifacts.ts`** — Drizzle `pgTable()` definitions:
-   - pgEnum: `artifactKindEnum` (semantic-snapshot/network-log/console-log/download/targeted-crop/assertion-trace/planner-intent/executor-action)
-   - `artifactManifests`: `id` (text PK), `run_id` (text not null, FK → runs.id), `root` (text not null), `schema_version` (text not null, default 'v1'), `created_at` (timestamp w/ tz, not null, default now). Index on `run_id`.
-   - `artifactEntries`: `id` (text PK), `manifest_id` (text not null, FK → artifactManifests.id), `kind` (artifactKindEnum, not null), `path` (text not null). Index on `manifest_id`.
+1. **`packages/persistence/drizzle.config.ts`** — Drizzle Kit configuration pointing at `src/schema/index.ts` as the schema source, with `dialect: "postgresql"` and `out: "./drizzle"` for migration output.
 
-2. **`packages/persistence/src/schema/audit.ts`** — Drizzle `pgTable()` definitions:
-   - pgEnum: `auditedActionEnum` (invite.sent/invite.accepted/membership.role-changed/file.ownership-transferred/job.scheduled/search.indexed/realtime.event-delivered)
-   - `auditEvents`: `id` (text PK), `organization_id` (text not null, FK → organizations.id), `workspace_id` (text not null, FK → workspaces.id), `actor_id` (text not null), `resource_type` (text not null), `resource_id` (text not null), `action` (auditedActionEnum, not null), `summary` (text not null), `metadata` (jsonb), `occurred_at` (timestamp w/ tz, not null, default now). Composite index on `(organization_id, workspace_id)`.
+2. **Run `drizzle-kit generate`** — Produces migration SQL files under `packages/persistence/drizzle/`. The generated SQL should create all 17 tables (16 core + `artifactEntries`), 10 pgEnums, all foreign keys, and all indexes.
 
-3. **`packages/persistence/src/schema/credentials.ts`** — Drizzle `pgTable()` definitions:
-   - `credentials`: `id` (text PK), `organization_id` (text not null, FK → organizations.id), `workspace_id` (text not null, FK → workspaces.id), `scope` (text not null), `purpose` (text not null), `encrypted_value` (text not null), `created_at` (timestamp w/ tz, not null, default now), `updated_at` (timestamp w/ tz, not null, default now). Unique composite index on `(organization_id, workspace_id, scope, purpose)`.
+3. **`packages/persistence/src/rls.sql`** — RLS policies for all tenant-scoped tables using `current_setting('app.organization_id')`. Tables that need RLS: `workspaces`, `memberships`, `invites`, `journeys`, `journey_versions`, `runs`, `steps`, `artifact_manifests`, `artifact_entries`, `audit_events`, `credentials`, `files`, `jobs`. Pattern:
+   ```sql
+   ALTER TABLE <table> ENABLE ROW LEVEL SECURITY;
+   CREATE POLICY tenant_isolation ON <table>
+     USING (organization_id = current_setting('app.organization_id'));
+   ```
+   Note: `organizations` and `sessions` don't have `organization_id` as a direct column (organizations IS the org; sessions are identity-scoped), so they don't get tenant RLS.
+   Note: `journey_versions` and `steps` don't have a direct `organization_id` column — they join through `journeys` and `runs` respectively. RLS policies for these tables would need a subquery join. For v1, we can either: (a) add `organization_id` as a denormalized column, or (b) skip RLS on these child tables and rely on the parent table's RLS. Decision: skip RLS on `journey_versions`, `steps`, `artifact_entries`, and `recovery_rules` (child tables without direct `organization_id`) for v1, relying on FK-enforced parent access control.
 
-4. **`packages/persistence/src/schema/files.ts`** — Drizzle `pgTable()` definitions:
-   - `files`: `id` (text PK), `organization_id` (text not null, FK → organizations.id), `workspace_id` (text not null, FK → workspaces.id), `owner_membership_id` (text not null, FK → memberships.id), `created_at` (timestamp w/ tz, not null, default now). Composite index on `(organization_id, workspace_id)`.
-
-5. **`packages/persistence/src/schema/jobs.ts`** — Drizzle `pgTable()` definitions:
-   - pgEnum: `jobStateEnum` (queued/running/completed/failed)
-   - `jobs`: `id` (text PK), `organization_id` (text not null, FK → organizations.id), `workspace_id` (text not null, FK → workspaces.id), `type` (text not null), `state` (jobStateEnum, not null, default 'queued'), `payload` (jsonb), `created_at` (timestamp w/ tz, not null, default now), `updated_at` (timestamp w/ tz, not null, default now). Composite index on `(organization_id, workspace_id)`.
-
-6. **Update `packages/persistence/src/schema/index.ts`** — Replace the five remaining stub `pgTable()` calls with re-exports from the new schema files. Remove the now-unused `pgTable`/`text` import.
+4. **Update `packages/persistence/src/migrate.ts`** — Replace the stub with a real migration runner using `drizzle-orm/neon-http/migrator` that reads from the `drizzle/` folder.
 
 ### Key Decisions
-- `artifactManifests` has a separate `artifactEntries` table for the nested entries array (normalized 1:N)
-- `auditEvents.metadata` and `jobs.payload` use `jsonb` for flexible semi-structured data
-- `credentials` has a unique composite on `(organization_id, workspace_id, scope, purpose)` for scoped lookup
-- All tenant-scoped tables get the standard composite index on `(organization_id, workspace_id)`
+- Migration output goes to `packages/persistence/drizzle/` (Drizzle Kit convention)
+- RLS uses `current_setting('app.organization_id')` — the control plane API (Phase 5) will `SET app.organization_id` on each request
+- Child tables without direct `organization_id` (`journey_versions`, `steps`, `artifact_entries`, `recovery_rules`) skip RLS for v1 — access is controlled through parent table queries
+- The `rls.sql` file is a standalone SQL script, not a Drizzle migration — it's applied separately after migration and can be re-run idempotently
 
 ### Acceptance Criteria
+- `drizzle-kit generate` produces migration SQL without errors
+- Migration SQL creates all 17 tables, 10 enums, FKs, and indexes
+- `rls.sql` covers all tenant-scoped tables with direct `organization_id` column
+- `migrate.ts` exports a real `migrate()` function using drizzle-orm migrator
 - Schema contract tests still pass (8/8)
 - No new TS errors in persistence src (excluding pre-existing credential-vault)
 - No regressions in 249 passing tests
 
 ### Ship-One-Step Handoff Contract
-After approval: implement only Step 1.6, validate it, mark Step 1.6 done in `tasks/todo.md`, update `tasks/history.md`, commit and push the completed work, write the Step 1.7 plan, enter plan mode for Step 1.7 approval, and stop before implementing Step 1.7.
+After approval: implement only Step 1.7, validate it, mark Step 1.7 done in `tasks/todo.md`, update `tasks/history.md`, commit and push the completed work, write the Step 1.8 plan, enter plan mode for Step 1.8 approval, and stop before implementing Step 1.8.
 
-- [ ] Step 1.6: **Automated** Define Drizzle schema for artifact, audit, credential, file, and job tables.
-  - Files: create `packages/persistence/src/schema/artifacts.ts`, `packages/persistence/src/schema/audit.ts`, `packages/persistence/src/schema/credentials.ts`, `packages/persistence/src/schema/files.ts`, `packages/persistence/src/schema/jobs.ts`
-  - Map from packages/artifacts/, packages/audit/, packages/files/, packages/jobs/ domain types.
-  - Credentials table: encrypted_value as text (AES-256-GCM ciphertext), scope + purpose columns with unique composite index.
+- [x] Step 1.6: **Automated** Define Drizzle schema for artifact, audit, credential, file, and job tables.
+  - Files: created `packages/persistence/src/schema/artifacts.ts`, `packages/persistence/src/schema/audit.ts`, `packages/persistence/src/schema/credentials.ts`, `packages/persistence/src/schema/files.ts`, `packages/persistence/src/schema/jobs.ts`
+  - Replaced the five remaining stub pgTable() calls in `schema/index.ts` with re-exports from dedicated schema files. Removed unused `pgTable`/`text` import.
+  - `artifactManifests` with FK to runs, plus normalized `artifactEntries` (1:N) with `artifactKindEnum` (8 values). `auditEvents` with `auditedActionEnum` (7 values) and jsonb metadata. `credentials` with unique composite index on (org, workspace, scope, purpose). `files` with FK to memberships for ownership. `jobs` with `jobStateEnum` (4 values) and jsonb payload.
+  - All tenant-scoped tables have standard composite index on (organization_id, workspace_id).
+  - Schema contract tests pass 8/8. 249 passing tests, 25 expected-failing (pre-existing credential-vault).
 
 - [ ] Step 1.7: **Automated** Generate initial migration and add RLS policies.
   - Files: create `packages/persistence/src/migrations/` (generated by drizzle-kit), create `packages/persistence/src/rls.sql`

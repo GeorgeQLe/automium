@@ -1,0 +1,10 @@
+{
+  "name": "@automium/adapters-redis",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./realtime-transport": "./src/realtime-transport.ts",
+    "./connection": "./src/connection.ts"
+  }
+}

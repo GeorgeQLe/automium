@@ -58,7 +58,7 @@
 **Phase 1 adapter pattern**: factory function → `{ boundary, ...methods }`, `as const` boundary, contract tests, subpath exports in `package.json`.
 
 ### Tests First
-- [ ] Step 2.1: **Automated** Write failing contract tests for all Phase 2 components.
+- [x] Step 2.1: **Automated** Write failing contract tests for all Phase 2 components.
   - Files: create `packages/adapters-bullmq/tests/job-queue.contract.test.ts`, `packages/adapters-bullmq/tests/queue-definitions.contract.test.ts`, `packages/adapters-redis/tests/realtime-transport.contract.test.ts`, `packages/adapters-redis/tests/connection.contract.test.ts`, `packages/worker/tests/worker-process.contract.test.ts`, `packages/orchestrator/tests/dispatch.contract.test.ts`
   - Tests cover: JobQueueAdapter boundary/enqueue/dequeue/acknowledge shape, queue name definitions for 4 named queues (journey-runs, artifact-upload, audit-sink, data-lifecycle), priority weight mapping (high > normal > low), RealtimeTransportAdapter boundary/publish/subscribe/unsubscribe shape, Redis connection factory export, worker process lifecycle (create/start/stop), dequeue loop shape, heartbeat reporting, orchestrator dispatch wiring (lease decision → queue enqueue).
 

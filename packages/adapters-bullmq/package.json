@@ -1,0 +1,10 @@
+{
+  "name": "@automium/adapters-bullmq",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./job-queue": "./src/job-queue.ts",
+    "./queue-definitions": "./src/queue-definitions.ts"
+  }
+}

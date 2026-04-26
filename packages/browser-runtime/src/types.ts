@@ -22,9 +22,20 @@ export interface RawAccessibilitySnapshot {
   url: string;
 }
 
+export interface BrowserRuntimeAdapterConfig {
+  readonly initialUrl?: string;
+  readonly route?: string;
+  readonly frameId?: string;
+  readonly maxCropsPerStep?: number;
+  readonly maxCropSizeBytes?: number;
+  readonly runId?: string;
+}
+
 export interface ActionResult {
   success: boolean;
   action: string;
+  targetElementId?: string;
+  value?: string;
 }
 
 export interface ScreenshotResult {

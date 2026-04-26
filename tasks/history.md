@@ -1,5 +1,12 @@
 # History
 
+## 2026-04-26
+
+- Completed Phase 3 Step 3.7 by tightening the `@automium/browser-runtime` adapter stub with typed config, deterministic navigation state, stable action result metadata, enrichment-pipeline invocation for empty raw snapshots, and targeted-vision session setup for screenshot capture requests.
+- Confirmed this remains contract/domain stub wiring only; real Playwright, CDP event subscriptions, and browser process execution are still deferred production-runtime work.
+- Verified Step 3.7 with `pnpm test:run packages/browser-runtime/tests/browser-runtime.contract.test.ts`, `pnpm exec vitest run packages/browser-runtime/tests/action-bridge.contract.test.ts`, `pnpm exec vitest run packages/browser-runtime/tests/vision-capture.contract.test.ts`, `pnpm exec tsc --noEmit`, and full `pnpm test:run` at 72 files / 341 tests.
+- Marked Step 3.7 complete in `tasks/todo.md` and prepared the Step 3.8 contract `SemanticSnapshot` builder plan.
+
 ## 2026-04-25
 
 - Completed Phase 3 Step 3.1: wrote 32 red-phase contract tests for `packages/browser-runtime/` across 5 test files (browser-runtime 8, enrichment 8, frame-flattening 5, vision-capture 5, action-bridge 6).

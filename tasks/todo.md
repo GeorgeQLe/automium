@@ -114,7 +114,7 @@
   - Returns `ActionBridgeResult` with `{ success, executorAction, runtimeResult?, error? }`.
   - Unsupported actions return `{ success: false, error: "unsupported" }` without calling runtime.
 
-- [ ] Step 3.7: **Automated** Implement full BrowserRuntime adapter stub with enrichment pipeline wiring.
+- [x] Step 3.7: **Automated** Implement full BrowserRuntime adapter stub with enrichment pipeline wiring.
   - Files: create `packages/browser-runtime/src/browser-runtime-adapter.ts`, modify `packages/browser-runtime/src/index.ts`
   - `createBrowserRuntimeAdapter(config)` factory returns `{ boundary: "browser-runtime" as const, navigate(), snapshot(), executeAction(), captureElementScreenshot(), getNetworkEvents(), getConsoleEvents(), getDOMMutations(), close() }`.
   - `navigate()` stub returns `{ url, status: 200, timing: { total: 0 } }`.
@@ -205,36 +205,49 @@
 - The bridge uses the repo's existing relative package-source import pattern for executor types because package-name imports are not wired in this workspace.
 - BrowserRuntime adapter wiring and snapshot builder suites remain future-step work.
 
-### Next Step Implementation Plan: Step 3.7 — BrowserRuntime Adapter Stub Wiring
+### Review — Step 3.7
+
+**Result:** Complete. The browser runtime adapter stub now has typed config, remembers the last navigated URL, returns deterministic action results with target/value metadata, exercises the enrichment pipeline for empty snapshots while preserving the raw snapshot contract, and initializes a targeted-vision capture session for screenshot requests.
+
+**Validation:**
+- `pnpm test:run packages/browser-runtime/tests/browser-runtime.contract.test.ts` — 1 file / 8 tests passing
+- `pnpm exec vitest run packages/browser-runtime/tests/action-bridge.contract.test.ts` — 1 file / 6 tests passing
+- `pnpm exec vitest run packages/browser-runtime/tests/vision-capture.contract.test.ts` — 1 file / 5 tests passing
+- `pnpm exec tsc --noEmit` — clean
+- `pnpm test:run` — 72 files / 341 tests passing
+
+**Notes:**
+- This remains a deterministic contract stub; no real Playwright, CDP, or browser process integration was added.
+- `snapshot()` intentionally returns `RawAccessibilitySnapshot` rather than semantic elements. Contract-compliant semantic snapshot assembly is owned by Step 3.8.
+
+### Next Step Implementation Plan: Step 3.8 — Contract SemanticSnapshot Builder
 
 **Files to create/modify:**
-- Modify `packages/browser-runtime/src/browser-runtime-adapter.ts`
-- Modify `packages/browser-runtime/src/index.ts` only if additional adapter result/config types need exporting
-- Modify `packages/browser-runtime/src/types.ts` only if the existing adapter stub contract needs additive fields
+- Create `packages/browser-runtime/src/snapshot-builder.ts`
+- Modify `packages/browser-runtime/src/index.ts` to export the builder and any public input/result types
+- Modify `packages/browser-runtime/tests/` only if existing Step 3.8 expectations need import-path alignment
 
 **Implementation details:**
-- Read `packages/browser-runtime/tests/browser-runtime.contract.test.ts` and the existing `packages/browser-runtime/src/browser-runtime-adapter.ts` first; preserve the Phase 3 stub boundary rather than adding real Playwright wiring.
-- Ensure `createBrowserRuntimeAdapter(config)` returns `{ boundary: "browser-runtime" as const, navigate, snapshot, executeAction, captureElementScreenshot, getNetworkEvents, getConsoleEvents, getDOMMutations, close }`.
-- Keep `navigate(url)` deterministic with `{ url, status: 200, timing: { total: 0 } }`.
-- Keep `snapshot()` returning a valid empty raw accessibility snapshot while wiring through the enrichment pipeline where the existing contract allows it.
-- Keep `executeAction(action)` returning a stable success shape for bridge calls, including fill values where relevant.
-- Keep event getters returning empty arrays and `close()` as a no-op.
-- For `captureElementScreenshot(elementId)`, return the existing valid screenshot stub shape; only delegate to vision-capture session if current tests require budget-aware behavior.
+- Read `packages/contracts/src/semantic-snapshot.ts` and the Step 3.8 tests before implementing.
+- Add `buildContractSnapshot(input)` that returns a frozen-contract `SemanticSnapshot` with all required top-level fields: `url`, `route`, `frameHierarchy`, `taskContext`, `checkpointContext`, `interactiveElements`, `recentMutations`, `relevantNetworkEvents`, and `pinnedInvariants`.
+- Accept already-enriched `SemanticInteractiveElement[]`, `SemanticFrameRef[]`, `SemanticMutationSummary[]`, and `SemanticNetworkEvent[]`; clone arrays/objects so callers cannot mutate snapshot internals by reference.
+- Provide conservative defaults for optional input fields: empty arrays for list fields, empty strings or deterministic IDs for context fields only where the frozen contract allows string values.
+- Export any type such as `BuildContractSnapshotInput` from the package barrel.
+- Do not add real Playwright, persistence, or CDP wiring in this step.
 
 **Acceptance criteria:**
-- `pnpm test:run packages/browser-runtime/tests/browser-runtime.contract.test.ts` passes.
-- `pnpm exec vitest run packages/browser-runtime/tests/action-bridge.contract.test.ts` remains green.
-- `pnpm exec vitest run packages/browser-runtime/tests/vision-capture.contract.test.ts` remains green if capture wiring is touched.
+- A new or existing snapshot-builder contract suite passes for full `SemanticSnapshot` shape.
+- `pnpm exec vitest run packages/browser-runtime/tests/enrichment.contract.test.ts` remains green.
+- `pnpm exec vitest run packages/contracts/tests/semantic-snapshot.contract.test.ts` remains green.
 - `pnpm exec tsc --noEmit` remains clean.
-- Future-step snapshot-builder suite may remain expected-red.
 
-**Ship-one-step handoff contract:** After approval, implement only Step 3.7; validate with browser-runtime shape, action-bridge regression, and TypeScript checks; mark done in `tasks/todo.md`; update `tasks/history.md`; commit and push; write the Step 3.8 plan.
+**Ship-one-step handoff contract:** After approval, implement only Step 3.8; validate snapshot builder, enrichment regression, frozen semantic-snapshot contract, and TypeScript; mark done in `tasks/todo.md`; update `tasks/history.md`; commit and push; write the Step 3.9 verification plan.
 
 ---
 
 ### Milestone: Phase 3 — Browser Runtime
 **Acceptance Criteria:**
-- [ ] BrowserRuntime interface is defined and Playwright adapter passes all interface methods *(stub shape validated; real Playwright wiring deferred)*
+- [x] BrowserRuntime interface is defined and Playwright adapter passes all interface methods *(stub shape validated; real Playwright wiring deferred)*
 - [ ] Semantic enrichment produces stable element IDs that persist across page rerenders *(uses engine-domain stableHash)*
 - [ ] Actionability scoring correctly identifies interactive vs non-interactive elements *(uses engine-domain scoreActionability)*
 - [ ] CDP pipeline captures network requests, console messages, and DOM mutations in real-time *(event types defined; real CDP subscription deferred)*

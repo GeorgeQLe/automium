@@ -91,7 +91,7 @@
   - Supporting types: `NavigationResult`, `RawAccessibilitySnapshot`, `RawAccessibilityNode`, `ActionResult`, `ScreenshotResult`, `NetworkEvent`, `ConsoleEvent`, `DOMMutation`.
   - `createBrowserRuntimeAdapter(config)` factory stub returning `{ boundary: "browser-runtime" as const, ...methods }`.
 
-- [ ] Step 3.3: **Automated** Implement semantic enrichment pipeline — raw accessibility tree to contract-compliant interactive elements.
+- [x] Step 3.3: **Automated** Implement semantic enrichment pipeline — raw accessibility tree to contract-compliant interactive elements.
   - Files: create `packages/browser-runtime/src/enrichment.ts`, modify `packages/browser-runtime/src/index.ts`
   - `enrichAccessibilityTree(rawSnapshot, route, frameId)` — maps `RawAccessibilityNode[]` to `SemanticInteractiveElement[]` using `describeInteractiveElement()` from `packages/engine/` for stable IDs and actionability, then fills remaining contract fields (value, required, disabled, loading, error, interactable, group).
   - `diffMutations(previous, current)` — compares two enriched snapshots, produces `SemanticMutationSummary[]` (attribute changes, child-list changes, text changes, visibility changes).
@@ -146,32 +146,47 @@
 - The remaining Phase 3 browser-runtime suites are expected-red for future steps: enrichment, frame-flattening, vision-capture, and action-bridge.
 - `pnpm typecheck` is not defined in this repository; use `pnpm exec tsc --noEmit` for TypeScript validation.
 
-### Next Step Implementation Plan: Step 3.3 — Semantic Enrichment Pipeline
+### Review — Step 3.3
+
+**Result:** Complete. The browser runtime package now exports the semantic enrichment helpers required for raw accessibility conversion, mutation summaries, and network-event categorization.
+
+**Validation:**
+- `pnpm exec vitest run packages/browser-runtime/tests/enrichment.contract.test.ts` — 1 file / 8 tests passing
+- `pnpm test:run packages/browser-runtime/tests/browser-runtime.contract.test.ts` — 1 file / 8 tests passing
+- `pnpm exec tsc --noEmit` — clean
+
+**Notes:**
+- `enrichAccessibilityTree()` delegates stable ID generation and actionability scoring to `describeInteractiveElement()` from the engine domain.
+- `RawAccessibilityNode` and `NetworkEvent` gained small additive fields needed to represent enrichment input without introducing a second local type system.
+- Frame flattening, vision capture, and action bridge suites remain expected-red for future steps.
+
+### Next Step Implementation Plan: Step 3.4 — Frame Hierarchy Flattening
 
 **What to build:**
-Implement the first semantic enrichment layer for `@automium/browser-runtime`: convert raw accessibility nodes into frozen-contract `SemanticInteractiveElement` records, compute stable IDs and actionability through the existing engine domain helper, diff enriched snapshots into mutation summaries, and normalize network events into contract categories.
+Implement frame hierarchy flattening for `@automium/browser-runtime`: take per-frame enriched elements plus frame metadata and produce a unified element list with a frozen-contract `SemanticFrameRef[]` hierarchy.
 
 **Files to create/modify:**
-- Create `packages/browser-runtime/src/enrichment.ts`
-- Modify `packages/browser-runtime/src/index.ts` to export enrichment helpers
-- Modify `packages/browser-runtime/src/types.ts` only if raw accessibility/network input types need small additive fields required by tests
+- Create `packages/browser-runtime/src/frame-flattening.ts`
+- Modify `packages/browser-runtime/src/index.ts` to export frame-flattening helpers
+- Modify `packages/browser-runtime/src/types.ts` only if shared frame input types are useful and remain additive
 
 **Implementation details:**
-- `enrichAccessibilityTree(rawSnapshot, route, frameId)` should recursively walk `RawAccessibilityNode` trees and emit visible/actionable browser elements as `SemanticInteractiveElement[]`.
-- Use `describeInteractiveElement()` from `packages/engine/src/engine-domain.ts` for stable ID generation and actionability scoring instead of duplicating hashing/scoring logic.
-- Fill every frozen element field from `packages/contracts/src/semantic-snapshot.ts`: `id`, `role`, `label`, `value`, `required`, `disabled`, `loading`, `error`, `visible`, `interactable`, and `group`.
-- Treat `RawAccessibilityNode.name` as the semantic label when a richer label field is absent.
-- Preserve frame grouping through the `group` field until Step 3.4 introduces full frame flattening.
-- `diffMutations(previous, current)` should compare element IDs and user-visible fields to produce `SemanticMutationSummary[]` for child-list, text, attribute, and visibility changes.
-- `categorizeNetworkEvent(event)` should map raw method/url/status/resource-type inputs into `SemanticNetworkEvent` with category `document`, `xhr`, `fetch`, `websocket`, or `other`.
+- Read `packages/browser-runtime/tests/frame-flattening.contract.test.ts` first and implement only the tested public contract.
+- Define `flattenFrameHierarchy(frames)` around input frames shaped like `{ frameId, parentFrameId, origin, url, elements[] }`.
+- Return a value containing a unified `elements` array and `frameHierarchy` array unless tests require a more specific shape.
+- Emit `SemanticFrameRef` records with `id`, `parentFrameId`, `origin`, and `url`.
+- Preserve nested iframe parentage exactly; do not infer or reorder parent links beyond a deterministic traversal needed by the tests.
+- Tag each returned element with frame metadata through its `group` field or another tested property without mutating caller-owned element objects.
+- Keep this module independent of Playwright; real browser frame discovery remains deferred.
 
 **Acceptance criteria:**
-- `pnpm exec vitest run packages/browser-runtime/tests/enrichment.contract.test.ts` passes.
+- `pnpm exec vitest run packages/browser-runtime/tests/frame-flattening.contract.test.ts` passes.
+- `pnpm exec vitest run packages/browser-runtime/tests/enrichment.contract.test.ts` remains green.
 - `pnpm test:run packages/browser-runtime/tests/browser-runtime.contract.test.ts` remains green.
 - `pnpm exec tsc --noEmit` remains clean.
-- Future-step suites for frame-flattening, vision-capture, and action-bridge may remain expected-red.
+- Future-step suites for vision-capture and action-bridge may remain expected-red.
 
-**Ship-one-step handoff contract:** After approval, implement only Step 3.3; validate with focused enrichment and Step 3.2 regression tests; mark done in `tasks/todo.md`; update `tasks/history.md`; commit and push; write the Step 3.4 plan.
+**Ship-one-step handoff contract:** After approval, implement only Step 3.4; validate with focused frame-flattening, enrichment regression, browser-runtime shape, and TypeScript checks; mark done in `tasks/todo.md`; update `tasks/history.md`; commit and push; write the Step 3.5 plan.
 
 ---
 

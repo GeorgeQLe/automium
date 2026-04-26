@@ -7,6 +7,13 @@ export interface NavigationResult {
 export interface RawAccessibilityNode {
   role: string;
   name: string;
+  value?: string | null;
+  required?: boolean;
+  disabled?: boolean;
+  loading?: boolean;
+  error?: string | null;
+  visible?: boolean;
+  enabled?: boolean;
   children?: RawAccessibilityNode[];
 }
 
@@ -27,9 +34,11 @@ export interface ScreenshotResult {
 }
 
 export interface NetworkEvent {
+  requestId?: string;
   url: string;
   method: string;
-  status: number;
+  status: number | null;
+  resourceType?: string;
 }
 
 export interface ConsoleEvent {

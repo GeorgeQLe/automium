@@ -1,4 +1,9 @@
 export { createBrowserRuntimeAdapter } from "./browser-runtime-adapter";
+export {
+  enrichAccessibilityTree,
+  diffMutations,
+  categorizeNetworkEvent,
+} from "./enrichment";
 export type {
   BrowserRuntime,
   NavigationResult,

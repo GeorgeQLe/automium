@@ -63,7 +63,7 @@
   - Tests cover: JobQueueAdapter boundary/enqueue/dequeue/acknowledge shape, queue name definitions for 4 named queues (journey-runs, artifact-upload, audit-sink, data-lifecycle), priority weight mapping (high > normal > low), RealtimeTransportAdapter boundary/publish/subscribe/unsubscribe shape, Redis connection factory export, worker process lifecycle (create/start/stop), dequeue loop shape, heartbeat reporting, orchestrator dispatch wiring (lease decision → queue enqueue).
 
 ### Implementation
-- [ ] Step 2.2: **Automated** Scaffold `packages/adapters-bullmq/` and implement JobQueueAdapter stub.
+- [x] Step 2.2: **Automated** Scaffold `packages/adapters-bullmq/` and implement JobQueueAdapter stub.
   - Files: create `packages/adapters-bullmq/package.json`, `packages/adapters-bullmq/tsconfig.json`, `packages/adapters-bullmq/src/index.ts`, `packages/adapters-bullmq/src/job-queue.ts`
   - `createJobQueueAdapter(config)` factory returns `{ boundary: "job-queue", enqueue(), dequeue(), acknowledge() }` stub implementations matching `JobQueueAdapter` interface from `packages/adapters/src/adapters-behavior.ts`.
   - Follow Phase 1 adapter pattern: factory function, boundary discriminator, async stubs returning correct shapes.
@@ -73,6 +73,46 @@
   - Define 4 named queues as frozen constants: `journey-runs` (priority-ordered), `artifact-upload`, `audit-sink`, `data-lifecycle`.
   - Define priority weight mapping: `high: 1`, `normal: 2`, `low: 3` (lower number = higher priority, matching BullMQ convention).
   - Export `QUEUE_DEFINITIONS`, `QUEUE_PRIORITY_WEIGHTS`, and queue name type.
+
+---
+
+### Next Step Implementation Plan: Step 2.3 — Queue Definitions with Priority Ordering
+
+**What to build:**
+Create `packages/adapters-bullmq/src/queue-definitions.ts` with frozen constant arrays and priority weight mapping, then add barrel re-export from `src/index.ts`.
+
+**Files to create/modify:**
+- `packages/adapters-bullmq/src/queue-definitions.ts` — NEW: frozen `QUEUE_DEFINITIONS` array (4 entries), `QUEUE_PRIORITY_WEIGHTS` object, queue name type
+- `packages/adapters-bullmq/src/index.ts` — MODIFY: add re-export from `./queue-definitions`
+
+**Implementation details:**
+- `QUEUE_DEFINITIONS`: `Object.freeze([{ name: "journey-runs" }, { name: "artifact-upload" }, { name: "audit-sink" }, { name: "data-lifecycle" }])` — frozen array of 4 queue definition objects
+- `QUEUE_PRIORITY_WEIGHTS`: `{ high: 1, normal: 2, low: 3 } as const` — lower number = higher priority (BullMQ convention)
+- Tests check: `Array.isArray(defs)`, `Object.isFrozen(defs)`, `defs.length === 4`, each queue name found, `weights.high < weights.normal < weights.low`
+
+**Tests that should turn green** (7 of 27 remaining):
+- `packages/adapters-bullmq/tests/queue-definitions.contract.test.ts` — all 7 tests
+
+**Acceptance criteria:**
+- `QUEUE_DEFINITIONS` and `QUEUE_PRIORITY_WEIGHTS` exported from `src/queue-definitions.ts` and `src/index.ts`
+- All 7 queue-definitions contract tests pass
+- 282 + 7 = 289 passing tests, 20 still failing (expected)
+- No TypeScript errors in the new files
+
+**Test strategy:** tdd (tests already written in Step 2.1)
+
+**Execution Profile:**
+- Parallel mode: serial
+- Integration owner: main agent
+- Review gates: correctness, tests
+
+**Verification:**
+- `pnpm test:run` — 289 passing, 20 failing
+- `pnpm exec tsc --noEmit` — check new files compile
+
+**Ship-one-step handoff contract:** After approval, implement only Step 2.3; validate with tests; mark done in `tasks/todo.md`; update `tasks/history.md`; commit and push; write the Step 2.4 plan; ensure `.claude/settings.local.json` has `showClearContextOnPlanAccept: true` and `defaultMode: "acceptEdits"`; call `EnterPlanMode`, write a brief pass-through plan, call `ExitPlanMode`, and stop before implementing Step 2.4.
+
+---
 
 - [ ] Step 2.4: **Automated** Scaffold `packages/adapters-redis/` and implement RealtimeTransportAdapter stub with connection factory.
   - Files: create `packages/adapters-redis/package.json`, `packages/adapters-redis/tsconfig.json`, `packages/adapters-redis/src/index.ts`, `packages/adapters-redis/src/realtime-transport.ts`, `packages/adapters-redis/src/connection.ts`

@@ -123,7 +123,7 @@
   - Event methods return empty arrays. `close()` is a no-op.
   - Real Playwright wiring deferred to integration phase.
 
-- [ ] Step 3.8: **Automated** Build contract-compliant SemanticSnapshot from enriched browser state.
+- [x] Step 3.8: **Automated** Build contract-compliant SemanticSnapshot from enriched browser state.
   - Files: create `packages/browser-runtime/src/snapshot-builder.ts`, modify `packages/browser-runtime/src/index.ts`
   - `buildContractSnapshot(input)` — takes enriched elements, frame hierarchy, mutations, network events, task context, and checkpoint context; produces a full `SemanticSnapshot` matching the frozen contract from `packages/contracts/src/semantic-snapshot.ts`.
   - Validates output has all `semanticSnapshotRequiredFields` and each element has all `interactiveElementRequiredFields`.
@@ -220,28 +220,41 @@
 - This remains a deterministic contract stub; no real Playwright, CDP, or browser process integration was added.
 - `snapshot()` intentionally returns `RawAccessibilitySnapshot` rather than semantic elements. Contract-compliant semantic snapshot assembly is owned by Step 3.8.
 
-### Next Step Implementation Plan: Step 3.8 — Contract SemanticSnapshot Builder
+### Review — Step 3.8
+
+**Result:** Complete. The browser runtime package now exports `buildContractSnapshot()` and `BuildContractSnapshotInput` for assembling a frozen-contract `SemanticSnapshot` from enriched browser state.
+
+**Validation:**
+- `pnpm exec vitest run packages/browser-runtime/tests/snapshot-builder.contract.test.ts` — 1 file / 5 tests passing
+- `pnpm exec vitest run packages/browser-runtime/tests/enrichment.contract.test.ts` — 1 file / 8 tests passing
+- `pnpm exec vitest run packages/contracts/tests/semantic-snapshot.contract.test.ts` — 1 file / 2 tests passing
+- `pnpm exec tsc --noEmit` — clean
+- `pnpm test:run` — 73 files / 346 tests passing
+
+**Notes:**
+- `buildContractSnapshot()` sets schema version `v1`, clones caller-owned arrays/objects, defaults absent list fields to empty arrays, defaults absent checkpoint context to `null`, and validates top-level plus interactive-element fields against the frozen contract exports.
+- This step intentionally does not add real Playwright, persistence, CDP, or browser-process behavior.
+
+### Next Step Implementation Plan: Step 3.9 — Phase 3 Green Verification
 
 **Files to create/modify:**
-- Create `packages/browser-runtime/src/snapshot-builder.ts`
-- Modify `packages/browser-runtime/src/index.ts` to export the builder and any public input/result types
-- Modify `packages/browser-runtime/tests/` only if existing Step 3.8 expectations need import-path alignment
+- Modify `tasks/todo.md` after verification to mark Step 3.9 complete and add its review section.
+- Modify `tasks/history.md` with the Step 3.9 verification result.
 
 **Implementation details:**
-- Read `packages/contracts/src/semantic-snapshot.ts` and the Step 3.8 tests before implementing.
-- Add `buildContractSnapshot(input)` that returns a frozen-contract `SemanticSnapshot` with all required top-level fields: `url`, `route`, `frameHierarchy`, `taskContext`, `checkpointContext`, `interactiveElements`, `recentMutations`, `relevantNetworkEvents`, and `pinnedInvariants`.
-- Accept already-enriched `SemanticInteractiveElement[]`, `SemanticFrameRef[]`, `SemanticMutationSummary[]`, and `SemanticNetworkEvent[]`; clone arrays/objects so callers cannot mutate snapshot internals by reference.
-- Provide conservative defaults for optional input fields: empty arrays for list fields, empty strings or deterministic IDs for context fields only where the frozen contract allows string values.
-- Export any type such as `BuildContractSnapshotInput` from the package barrel.
-- Do not add real Playwright, persistence, or CDP wiring in this step.
+- Run the full browser-runtime suite: `pnpm exec vitest run packages/browser-runtime/tests`.
+- Run the full repository regression suite: `pnpm test:run`.
+- Run the TypeScript validation command: `pnpm exec tsc --noEmit`.
+- Inspect all command output for warnings as well as failures; fix any unexpected regression before marking Step 3.9 complete.
+- Do not add new browser runtime behavior in this step unless required to fix a failing test.
 
 **Acceptance criteria:**
-- A new or existing snapshot-builder contract suite passes for full `SemanticSnapshot` shape.
-- `pnpm exec vitest run packages/browser-runtime/tests/enrichment.contract.test.ts` remains green.
-- `pnpm exec vitest run packages/contracts/tests/semantic-snapshot.contract.test.ts` remains green.
+- All Phase 3 browser-runtime tests pass, including snapshot builder, enrichment, frame flattening, vision capture, action bridge, and adapter shape.
+- Full `pnpm test:run` passes with no unexpected failures.
 - `pnpm exec tsc --noEmit` remains clean.
+- Any warnings are either fixed or explicitly recorded with rationale.
 
-**Ship-one-step handoff contract:** After approval, implement only Step 3.8; validate snapshot builder, enrichment regression, frozen semantic-snapshot contract, and TypeScript; mark done in `tasks/todo.md`; update `tasks/history.md`; commit and push; write the Step 3.9 verification plan.
+**Ship-one-step handoff contract:** After approval, execute only the Step 3.9 verification sweep; fix unexpected failures if any; mark Step 3.9 complete; update `tasks/history.md`; commit and push; write the Step 3.10 refactor-pass plan.
 
 ---
 

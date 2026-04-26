@@ -2,6 +2,10 @@
 
 ## 2026-04-26
 
+- Completed Phase 3 Step 3.8 by adding `buildContractSnapshot()` to `@automium/browser-runtime`, producing frozen-contract `SemanticSnapshot` records from enriched elements, frame hierarchy, mutations, network events, task context, checkpoint context, and pinned invariants.
+- Added `packages/browser-runtime/tests/snapshot-builder.contract.test.ts` covering public export shape, required frozen-contract fields, defaults for nullable/list fields, defensive cloning, and rejection of incomplete interactive elements.
+- Verified Step 3.8 with `pnpm exec vitest run packages/browser-runtime/tests/snapshot-builder.contract.test.ts`, `pnpm exec vitest run packages/browser-runtime/tests/enrichment.contract.test.ts`, `pnpm exec vitest run packages/contracts/tests/semantic-snapshot.contract.test.ts`, `pnpm exec tsc --noEmit`, `git diff --check`, and full `pnpm test:run` at 73 files / 346 tests.
+- Marked Step 3.8 complete in `tasks/todo.md` and prepared the Step 3.9 green verification sweep plan.
 - Completed Phase 3 Step 3.7 by tightening the `@automium/browser-runtime` adapter stub with typed config, deterministic navigation state, stable action result metadata, enrichment-pipeline invocation for empty raw snapshots, and targeted-vision session setup for screenshot capture requests.
 - Confirmed this remains contract/domain stub wiring only; real Playwright, CDP event subscriptions, and browser process execution are still deferred production-runtime work.
 - Verified Step 3.7 with `pnpm test:run packages/browser-runtime/tests/browser-runtime.contract.test.ts`, `pnpm exec vitest run packages/browser-runtime/tests/action-bridge.contract.test.ts`, `pnpm exec vitest run packages/browser-runtime/tests/vision-capture.contract.test.ts`, `pnpm exec tsc --noEmit`, and full `pnpm test:run` at 72 files / 341 tests.

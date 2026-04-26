@@ -1,5 +1,6 @@
 export { createBrowserRuntimeAdapter } from "./browser-runtime-adapter";
 export { bridgeExecutorAction } from "./action-bridge";
+export { buildContractSnapshot } from "./snapshot-builder";
 export {
   enrichAccessibilityTree,
   diffMutations,
@@ -14,6 +15,9 @@ export {
 export type {
   ActionBridgeResult,
 } from "./action-bridge";
+export type {
+  BuildContractSnapshotInput,
+} from "./snapshot-builder";
 export type {
   BrowserRuntimeFrameInput,
   FlattenedFrameHierarchy,

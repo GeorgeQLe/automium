@@ -18,30 +18,20 @@ export {
   inviteStatusEnum,
 } from "./auth";
 
-// Journey tables — real definitions in Step 1.5
-export const journeys = pgTable("journeys", {
-  id: text("id").primaryKey(),
-});
+// Journey tables
+export { journeys, journeyVersions } from "./journeys";
 
-export const journeyVersions = pgTable("journey_versions", {
-  id: text("id").primaryKey(),
-});
-
-export const runs = pgTable("runs", {
-  id: text("id").primaryKey(),
-});
-
-export const steps = pgTable("steps", {
-  id: text("id").primaryKey(),
-});
-
-export const assertions = pgTable("assertions", {
-  id: text("id").primaryKey(),
-});
-
-export const recoveryRules = pgTable("recovery_rules", {
-  id: text("id").primaryKey(),
-});
+// Run tables
+export {
+  runs,
+  steps,
+  assertions,
+  recoveryRules,
+  runStatusEnum,
+  stepVerdictEnum,
+  assertionTypeEnum,
+  recoveryStrategyEnum,
+} from "./runs";
 
 // Supporting tables — real definitions in Step 1.6
 export const artifactManifests = pgTable("artifact_manifests", {

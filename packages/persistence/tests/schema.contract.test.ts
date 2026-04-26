@@ -72,7 +72,7 @@ describe("schema contract", () => {
     const schema = await loadSchemaModule();
 
     for (const table of allTables) {
-      const tableObj = schema[table as keyof typeof schema] as Record<string, unknown>;
+      const tableObj = schema[table as keyof typeof schema] as unknown as Record<string, unknown>;
       expect(tableObj).toBeTruthy();
       // Drizzle table objects expose a Symbol-keyed config or a direct columns property
       const hasColumns =

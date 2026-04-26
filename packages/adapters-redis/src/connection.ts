@@ -1,4 +1,4 @@
-export function createRedisConnection(config: unknown) {
+export function createRedisConnection(config: unknown): { config: unknown } {
   return {
     config,
   };

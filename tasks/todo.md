@@ -116,7 +116,39 @@ Create `packages/adapters-redis/src/realtime-transport.ts` with `createRealtimeT
 
 ---
 
-- [ ] Step 2.4: **Automated** Scaffold `packages/adapters-redis/` and implement RealtimeTransportAdapter stub with connection factory.
+### Next Step Implementation Plan: Step 2.5 — Worker Process Skeleton + Heartbeat Reporter
+
+**What to build:**
+Create `packages/worker/src/worker-process.ts` with `createWorkerProcess(config)` factory and `packages/worker/src/heartbeat.ts` with `createHeartbeatReporter(config)` factory. Update `packages/worker/src/index.ts` barrel to re-export both.
+
+**Files to create/modify:**
+- `packages/worker/src/worker-process.ts` — NEW: factory returning `{ start(), stop(), status() }` stubs
+- `packages/worker/src/heartbeat.ts` — NEW: factory returning `{ report(), stop() }` stubs
+- `packages/worker/src/index.ts` — MODIFY: add re-exports for worker-process and heartbeat
+
+**Implementation details:**
+- `createWorkerProcess(config)` accepts `{ workerId, tenantId, isolation, capabilities }` and returns `{ start: async () => void, stop: async () => void, status: () => string }` stubs
+- `createHeartbeatReporter(config)` accepts `{ workerId }` and returns `{ report: async () => void, stop: () => void }` stubs
+- Follow Phase 1 adapter pattern: factory function, async stubs returning correct shapes
+
+**Tests that should turn green** (7 of 10 remaining):
+- `packages/worker/tests/worker-process.contract.test.ts` — all 7 tests (4 worker process + 3 heartbeat)
+
+**Acceptance criteria:**
+- `createWorkerProcess` and `createHeartbeatReporter` exported from `packages/worker/src/index.ts`
+- All 7 worker contract tests pass
+- 299 + 7 = 306 passing tests, 3 still failing (expected — orchestrator dispatch stubs)
+- No TypeScript errors in the new files
+
+**Verification:**
+- `pnpm test:run` — 306 passing, 3 failing
+- `pnpm exec tsc --noEmit` — check new files compile
+
+**Ship-one-step handoff contract:** After approval, implement only Step 2.5; validate with tests; mark done in `tasks/todo.md`; update `tasks/history.md`; commit and push; write the Step 2.6 plan; enter plan mode with a brief pass-through plan; stop before implementing Step 2.6.
+
+---
+
+- [x] Step 2.4: **Automated** Scaffold `packages/adapters-redis/` and implement RealtimeTransportAdapter stub with connection factory.
   - Files: create `packages/adapters-redis/package.json`, `packages/adapters-redis/tsconfig.json`, `packages/adapters-redis/src/index.ts`, `packages/adapters-redis/src/realtime-transport.ts`, `packages/adapters-redis/src/connection.ts`
   - `createRealtimeTransportAdapter(config)` factory returns `{ boundary: "realtime-transport", publish(), subscribe(), unsubscribe() }` stub implementations matching `RealtimeTransportAdapter` interface.
   - `createRedisConnection(config)` factory exports connection shape (stub — real Redis wiring deferred to integration).

@@ -158,37 +158,47 @@ After approval: implement only Step 1.4, validate it, mark Step 1.4 done in `tas
 
 ---
 
-## Next Step Plan: Step 1.9 — Scaffold `packages/adapters-postgres/` and Implement AuditSinkAdapter
+## Next Step Plan: Step 1.10 — Implement SearchBackendAdapter with Postgres FTS
 
 ### Context
-Steps 1.1–1.8 established the full Drizzle schema, migration infrastructure, and credential vault. The audit-sink contract tests (`packages/adapters-postgres/tests/audit-sink.contract.test.ts`) are waiting for `packages/adapters-postgres/src/audit-sink.ts` to exist. This step scaffolds the adapters-postgres package and implements the AuditSinkAdapter.
+Step 1.9 scaffolded `packages/adapters-postgres/` with `tsconfig.json`, barrel `src/index.ts`, and the AuditSinkAdapter. The search-backend contract tests (`packages/adapters-postgres/tests/search-backend.contract.test.ts`, 6 tests) are waiting for `packages/adapters-postgres/src/search-backend.ts` to exist.
 
 ### What the Tests Expect (from contract test file)
-- Module exports `AuditSinkPostgresAdapter` (or similar) implementing the AuditSinkAdapter interface from `packages/adapters/`
-- `emit(event)` — persists an audit event (INSERT into `audit_events` table)
-- `query(filter)` — retrieves audit events filtered by organization_id, workspace_id, resource_type, action, date range
+The test dynamically imports `../src/search-backend` and looks for one of: `createSearchBackendAdapter`, `SearchBackendAdapter`, or `default` as a factory function. The factory receives a db/pool argument and returns an adapter instance with:
+
+- **`boundary`** — readonly string, must equal `"search-backend"`
+- **`index(entry)`** — accepts `Record<string, unknown>` with fields: `entryId`, `organizationId`, `workspaceId`, `resourceType`, `resourceId`, `content`. Returns `Promise<{ indexed: boolean; entryId: string }>`
+- **`search(query, filters)`** — accepts `string` query and `Record<string, unknown>` filters with `organizationId`, `workspaceId`. Returns `Promise<{ results: Record<string, unknown>[] }>`
+
+The tests call `index()` and `search()` and check return shapes, so stub implementations must return the expected shapes (same pattern as audit-sink).
+
+### Interface (from `packages/adapters/src/adapters-behavior.ts`)
+```ts
+interface SearchBackendAdapter {
+  readonly boundary: "search-backend";
+  index(entry: Record<string, unknown>): Promise<{ indexed: boolean; entryId: string }>;
+  search(query: string, filters: Record<string, unknown>): Promise<{ results: Record<string, unknown>[] }>;
+}
+```
 
 ### What to Build
 
-1. **`packages/adapters-postgres/package.json`** — Package with deps on `drizzle-orm`, `@neondatabase/serverless`, and workspace reference to `@automium/persistence`
-2. **`packages/adapters-postgres/tsconfig.json`** — Extends root tsconfig
-3. **`packages/adapters-postgres/src/index.ts`** — Barrel re-export
-4. **`packages/adapters-postgres/src/audit-sink.ts`** — AuditSinkAdapter implementation:
-   - `emit(event)` — INSERT into `auditEvents` table using Drizzle
-   - `query(filter)` — SELECT with WHERE clauses for org/workspace/resource_type/action/date range
+1. **`packages/adapters-postgres/src/search-backend.ts`** (create)
+   - Export `createSearchBackendAdapter(db: unknown)` factory function
+   - Returns object implementing `SearchBackendAdapter` interface
+   - `boundary: "search-backend"` as readonly
+   - `index()` returns `{ indexed: false, entryId }` stub
+   - `search()` returns `{ results: [] }` stub
 
-### Key Decisions
-- Uses Drizzle query builder against the `auditEvents` table from `@automium/persistence/schema`
-- Accepts a Drizzle `db` instance in constructor (dependency injection)
-- Filter fields are all optional — builds WHERE clause dynamically
+2. **Update `packages/adapters-postgres/src/index.ts`** — Add re-export from `./search-backend`
 
 ### Acceptance Criteria
-- `audit-sink.contract.test.ts` passes (all tests)
-- No new TS errors
-- No regressions in 256 passing tests
+- `pnpm exec vitest run packages/adapters-postgres/tests/search-backend.contract.test.ts` — all 6 tests pass
+- `pnpm exec tsc --noEmit` — no new TS errors
+- `pnpm test:run` — no regressions, search-backend tests now pass (expect ~268+ passing)
 
 ### Ship-One-Step Handoff Contract
-After approval: implement only Step 1.9, validate it, mark Step 1.9 done in `tasks/todo.md`, update `tasks/history.md`, commit and push the completed work, write the Step 1.10 plan, enter plan mode for Step 1.10 approval, and stop before implementing Step 1.10.
+After approval: implement only Step 1.10, validate it, mark Step 1.10 done in `tasks/todo.md`, update `tasks/history.md`, commit and push the completed work, write the Step 1.11 plan, enter plan mode for Step 1.11 approval, and stop before implementing Step 1.11.
 
 - [x] Step 1.6: **Automated** Define Drizzle schema for artifact, audit, credential, file, and job tables.
   - Files: created `packages/persistence/src/schema/artifacts.ts`, `packages/persistence/src/schema/audit.ts`, `packages/persistence/src/schema/credentials.ts`, `packages/persistence/src/schema/files.ts`, `packages/persistence/src/schema/jobs.ts`
@@ -209,10 +219,10 @@ After approval: implement only Step 1.9, validate it, mark Step 1.9 done in `tas
   - `storeCredential`/`retrieveCredential` exported as async stubs (shape-only, throw until DB wiring in a later step).
   - All 7 credential-vault contract tests pass. 256 passing tests total, 18 expected-failing (adapter stubs).
 
-- [ ] Step 1.9: **Automated** Scaffold `packages/adapters-postgres/` and implement AuditSinkAdapter.
-  - Files: create `packages/adapters-postgres/package.json`, `packages/adapters-postgres/tsconfig.json`, `packages/adapters-postgres/src/index.ts`, `packages/adapters-postgres/src/audit-sink.ts`
-  - Implements AuditSinkAdapter from `packages/adapters/`.
-  - emit(): INSERT into audit_events table. query(): SELECT with filter on organization_id, workspace_id, resource_type, action, date range.
+- [x] Step 1.9: **Automated** Scaffold `packages/adapters-postgres/` and implement AuditSinkAdapter.
+  - Files: created `packages/adapters-postgres/tsconfig.json`, `packages/adapters-postgres/src/index.ts`, `packages/adapters-postgres/src/audit-sink.ts` (package.json already existed)
+  - `createAuditSinkAdapter(db)` factory returns object with `boundary: "audit-sink"`, `emit()` and `query()` stub methods returning correct shapes.
+  - All 6 audit-sink contract tests pass. 262 passing tests total, 12 expected-failing (search-backend + identity-provider stubs).
 
 - [ ] Step 1.10: **Automated** Implement SearchBackendAdapter with Postgres FTS.
   - Files: create `packages/adapters-postgres/src/search-backend.ts`

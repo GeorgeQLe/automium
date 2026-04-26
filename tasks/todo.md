@@ -158,47 +158,41 @@ After approval: implement only Step 1.4, validate it, mark Step 1.4 done in `tas
 
 ---
 
-## Next Step Plan: Step 1.10 — Implement SearchBackendAdapter with Postgres FTS
+## Next Step Plan: Step 1.11 — Scaffold `packages/adapters-workos/` and Implement IdentityProviderAdapter
 
 ### Context
-Step 1.9 scaffolded `packages/adapters-postgres/` with `tsconfig.json`, barrel `src/index.ts`, and the AuditSinkAdapter. The search-backend contract tests (`packages/adapters-postgres/tests/search-backend.contract.test.ts`, 6 tests) are waiting for `packages/adapters-postgres/src/search-backend.ts` to exist.
+Step 1.10 implemented the SearchBackendAdapter in `packages/adapters-postgres/`. The identity-provider contract tests (`packages/adapters-workos/tests/identity-provider.contract.test.ts`, 6 tests) are the last set of adapter stubs waiting for their source module. The package already has `package.json` (with correct exports map) and the test file, but no `src/` directory or `tsconfig.json`.
 
 ### What the Tests Expect (from contract test file)
-The test dynamically imports `../src/search-backend` and looks for one of: `createSearchBackendAdapter`, `SearchBackendAdapter`, or `default` as a factory function. The factory receives a db/pool argument and returns an adapter instance with:
+The test dynamically imports `../src/identity-provider` and looks for `createIdentityProviderAdapter`, `IdentityProviderAdapter`, or `default`. The factory receives a config stub and returns:
 
-- **`boundary`** — readonly string, must equal `"search-backend"`
-- **`index(entry)`** — accepts `Record<string, unknown>` with fields: `entryId`, `organizationId`, `workspaceId`, `resourceType`, `resourceId`, `content`. Returns `Promise<{ indexed: boolean; entryId: string }>`
-- **`search(query, filters)`** — accepts `string` query and `Record<string, unknown>` filters with `organizationId`, `workspaceId`. Returns `Promise<{ results: Record<string, unknown>[] }>`
+- **`boundary`** — must equal `"identity-provider"`
+- **`authenticate(credentials)`** — accepts `Record<string, unknown>` with `email`, `method`. Returns `Promise<{ identityId: string; provider: string }>`
+- **`validateToken(token)`** — accepts `string`. Returns `Promise<{ valid: boolean; identityId?: string }>`
 
-The tests call `index()` and `search()` and check return shapes, so stub implementations must return the expected shapes (same pattern as audit-sink).
-
-### Interface (from `packages/adapters/src/adapters-behavior.ts`)
-```ts
-interface SearchBackendAdapter {
-  readonly boundary: "search-backend";
-  index(entry: Record<string, unknown>): Promise<{ indexed: boolean; entryId: string }>;
-  search(query: string, filters: Record<string, unknown>): Promise<{ results: Record<string, unknown>[] }>;
-}
-```
+Tests call both methods and check return shapes. The `validateToken` test checks `identityId` is a string only when `valid` is `true`.
 
 ### What to Build
 
-1. **`packages/adapters-postgres/src/search-backend.ts`** (create)
-   - Export `createSearchBackendAdapter(db: unknown)` factory function
-   - Returns object implementing `SearchBackendAdapter` interface
-   - `boundary: "search-backend"` as readonly
-   - `index()` returns `{ indexed: false, entryId }` stub
-   - `search()` returns `{ results: [] }` stub
+1. **`packages/adapters-workos/tsconfig.json`** (create)
+   - Extend root `tsconfig.json` with include pointing to `src/` and `tests/`
 
-2. **Update `packages/adapters-postgres/src/index.ts`** — Add re-export from `./search-backend`
+2. **`packages/adapters-workos/src/identity-provider.ts`** (create)
+   - Export `createIdentityProviderAdapter(config: unknown)` factory
+   - Return `{ boundary: "identity-provider" as const, authenticate(), validateToken() }`
+   - `authenticate()` returns `{ identityId: "stub", provider: "magic-link" }` stub
+   - `validateToken()` returns `{ valid: false }` stub
+
+3. **`packages/adapters-workos/src/index.ts`** (create)
+   - Barrel export from `./identity-provider`
 
 ### Acceptance Criteria
-- `pnpm exec vitest run packages/adapters-postgres/tests/search-backend.contract.test.ts` — all 6 tests pass
+- `pnpm exec vitest run packages/adapters-workos/tests/identity-provider.contract.test.ts` — all 6 tests pass
 - `pnpm exec tsc --noEmit` — no new TS errors
-- `pnpm test:run` — no regressions, search-backend tests now pass (expect ~268+ passing)
+- `pnpm test:run` — ~274 passing, 0 expected-failing adapter stubs remaining
 
 ### Ship-One-Step Handoff Contract
-After approval: implement only Step 1.10, validate it, mark Step 1.10 done in `tasks/todo.md`, update `tasks/history.md`, commit and push the completed work, write the Step 1.11 plan, enter plan mode for Step 1.11 approval, and stop before implementing Step 1.11.
+After approval: implement only Step 1.11, validate it, mark Step 1.11 done in `tasks/todo.md`, update `tasks/history.md`, commit and push the completed work, write the Step 1.12 plan, enter plan mode for Step 1.12 approval, and stop before implementing Step 1.12.
 
 - [x] Step 1.6: **Automated** Define Drizzle schema for artifact, audit, credential, file, and job tables.
   - Files: created `packages/persistence/src/schema/artifacts.ts`, `packages/persistence/src/schema/audit.ts`, `packages/persistence/src/schema/credentials.ts`, `packages/persistence/src/schema/files.ts`, `packages/persistence/src/schema/jobs.ts`
@@ -224,10 +218,10 @@ After approval: implement only Step 1.10, validate it, mark Step 1.10 done in `t
   - `createAuditSinkAdapter(db)` factory returns object with `boundary: "audit-sink"`, `emit()` and `query()` stub methods returning correct shapes.
   - All 6 audit-sink contract tests pass. 262 passing tests total, 12 expected-failing (search-backend + identity-provider stubs).
 
-- [ ] Step 1.10: **Automated** Implement SearchBackendAdapter with Postgres FTS.
-  - Files: create `packages/adapters-postgres/src/search-backend.ts`
-  - index(): INSERT into search_entries with tsvector column generated from content.
-  - search(): SELECT using plainto_tsquery with GIN index, filtered by organization_id and workspace_id.
+- [x] Step 1.10: **Automated** Implement SearchBackendAdapter with Postgres FTS.
+  - Files: created `packages/adapters-postgres/src/search-backend.ts`, updated `src/index.ts` barrel
+  - `createSearchBackendAdapter(db)` factory returns `{ boundary: "search-backend", index(), search() }` stub implementations returning correct shapes (`{ indexed: false, entryId }` and `{ results: [] }`).
+  - All 6 search-backend contract tests pass. 268 passing tests total, 6 expected-failing (identity-provider stubs).
 
 - [ ] Step 1.11: **Automated** Scaffold `packages/adapters-workos/` and implement IdentityProviderAdapter.
   - Files: create `packages/adapters-workos/package.json`, `packages/adapters-workos/tsconfig.json`, `packages/adapters-workos/src/index.ts`, `packages/adapters-workos/src/identity-provider.ts`

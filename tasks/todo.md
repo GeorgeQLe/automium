@@ -68,7 +68,7 @@
   - `createJobQueueAdapter(config)` factory returns `{ boundary: "job-queue", enqueue(), dequeue(), acknowledge() }` stub implementations matching `JobQueueAdapter` interface from `packages/adapters/src/adapters-behavior.ts`.
   - Follow Phase 1 adapter pattern: factory function, boundary discriminator, async stubs returning correct shapes.
 
-- [ ] Step 2.3: **Automated** Add queue definitions with priority ordering.
+- [x] Step 2.3: **Automated** Add queue definitions with priority ordering.
   - Files: create `packages/adapters-bullmq/src/queue-definitions.ts`, modify `packages/adapters-bullmq/src/index.ts`
   - Define 4 named queues as frozen constants: `journey-runs` (priority-ordered), `artifact-upload`, `audit-sink`, `data-lifecycle`.
   - Define priority weight mapping: `high: 1`, `normal: 2`, `low: 3` (lower number = higher priority, matching BullMQ convention).
@@ -76,27 +76,29 @@
 
 ---
 
-### Next Step Implementation Plan: Step 2.3 — Queue Definitions with Priority Ordering
+### Next Step Implementation Plan: Step 2.4 — RealtimeTransportAdapter Stub + Redis Connection Factory
 
 **What to build:**
-Create `packages/adapters-bullmq/src/queue-definitions.ts` with frozen constant arrays and priority weight mapping, then add barrel re-export from `src/index.ts`.
+Create `packages/adapters-redis/src/realtime-transport.ts` with `createRealtimeTransportAdapter(config)` factory, `packages/adapters-redis/src/connection.ts` with `createRedisConnection(config)` factory, and `packages/adapters-redis/src/index.ts` barrel re-exporting both.
 
 **Files to create/modify:**
-- `packages/adapters-bullmq/src/queue-definitions.ts` — NEW: frozen `QUEUE_DEFINITIONS` array (4 entries), `QUEUE_PRIORITY_WEIGHTS` object, queue name type
-- `packages/adapters-bullmq/src/index.ts` — MODIFY: add re-export from `./queue-definitions`
+- `packages/adapters-redis/src/realtime-transport.ts` — NEW: factory returning `{ boundary: "realtime-transport", publish(), subscribe(), unsubscribe() }` stubs
+- `packages/adapters-redis/src/connection.ts` — NEW: factory returning a connection object (stub — real Redis wiring deferred)
+- `packages/adapters-redis/src/index.ts` — NEW: barrel re-exporting from `./realtime-transport` and `./connection`
 
 **Implementation details:**
-- `QUEUE_DEFINITIONS`: `Object.freeze([{ name: "journey-runs" }, { name: "artifact-upload" }, { name: "audit-sink" }, { name: "data-lifecycle" }])` — frozen array of 4 queue definition objects
-- `QUEUE_PRIORITY_WEIGHTS`: `{ high: 1, normal: 2, low: 3 } as const` — lower number = higher priority (BullMQ convention)
-- Tests check: `Array.isArray(defs)`, `Object.isFrozen(defs)`, `defs.length === 4`, each queue name found, `weights.high < weights.normal < weights.low`
+- `createRealtimeTransportAdapter(config)` returns `{ boundary: "realtime-transport" as const, publish: async (topic, payload, audience) => ({ published: false, recipientCount: 0 }), subscribe: async (topic, recipientId) => ({ subscribed: false }), unsubscribe: async (topic, recipientId) => ({ unsubscribed: false }) }`
+- `createRedisConnection(config)` returns a plain object (stub connection shape)
+- Follow Phase 1 adapter pattern: factory function, `as const` boundary discriminator, async stubs returning correct shapes
 
-**Tests that should turn green** (7 of 27 remaining):
-- `packages/adapters-bullmq/tests/queue-definitions.contract.test.ts` — all 7 tests
+**Tests that should turn green** (10 of 20 remaining):
+- `packages/adapters-redis/tests/realtime-transport.contract.test.ts` — all 8 tests
+- `packages/adapters-redis/tests/connection.contract.test.ts` — all 2 tests
 
 **Acceptance criteria:**
-- `QUEUE_DEFINITIONS` and `QUEUE_PRIORITY_WEIGHTS` exported from `src/queue-definitions.ts` and `src/index.ts`
-- All 7 queue-definitions contract tests pass
-- 282 + 7 = 289 passing tests, 20 still failing (expected)
+- `createRealtimeTransportAdapter` and `createRedisConnection` exported from `src/index.ts`
+- All 10 redis adapter contract tests pass
+- 289 + 10 = 299 passing tests, 10 still failing (expected — worker + orchestrator stubs)
 - No TypeScript errors in the new files
 
 **Test strategy:** tdd (tests already written in Step 2.1)
@@ -107,10 +109,10 @@ Create `packages/adapters-bullmq/src/queue-definitions.ts` with frozen constant 
 - Review gates: correctness, tests
 
 **Verification:**
-- `pnpm test:run` — 289 passing, 20 failing
+- `pnpm test:run` — 299 passing, 10 failing
 - `pnpm exec tsc --noEmit` — check new files compile
 
-**Ship-one-step handoff contract:** After approval, implement only Step 2.3; validate with tests; mark done in `tasks/todo.md`; update `tasks/history.md`; commit and push; write the Step 2.4 plan; ensure `.claude/settings.local.json` has `showClearContextOnPlanAccept: true` and `defaultMode: "acceptEdits"`; call `EnterPlanMode`, write a brief pass-through plan, call `ExitPlanMode`, and stop before implementing Step 2.4.
+**Ship-one-step handoff contract:** After approval, implement only Step 2.4; validate with tests; mark done in `tasks/todo.md`; update `tasks/history.md`; commit and push; write the Step 2.5 plan; enter plan mode with a brief pass-through plan; stop before implementing Step 2.5.
 
 ---
 

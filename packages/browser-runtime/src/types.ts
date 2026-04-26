@@ -54,7 +54,7 @@ export interface DOMMutation {
 export interface BrowserRuntime {
   navigate(url: string): Promise<NavigationResult>;
   snapshot(): Promise<RawAccessibilitySnapshot>;
-  executeAction(action: { type: string; targetElementId: string }): Promise<ActionResult>;
+  executeAction(action: { type: string; targetElementId: string; value?: string }): Promise<ActionResult>;
   captureElementScreenshot(elementId: string): Promise<ScreenshotResult>;
   getNetworkEvents(): Promise<NetworkEvent[]>;
   getConsoleEvents(): Promise<ConsoleEvent[]>;

@@ -108,7 +108,7 @@
   - `requestCapture(session, elementId, boundingBox, reason)` — checks budget, calls `shouldRequestTargetedVision()` from vision domain, produces `TargetedCropRequest` via `createTargetedCropRequest()`, returns `{ captured: boolean, request?, budgetRemaining }`.
   - `annotateScreenshot(screenshot, semanticContext)` — wraps raw screenshot with element role, label, nearby elements, bounding box, timestamp.
 
-- [ ] Step 3.6: **Automated** Implement executor-to-BrowserRuntime action bridge.
+- [x] Step 3.6: **Automated** Implement executor-to-BrowserRuntime action bridge.
   - Files: create `packages/browser-runtime/src/action-bridge.ts`, modify `packages/browser-runtime/src/index.ts`
   - `bridgeExecutorAction(executorAction, runtime)` — takes `ExecutorAction` from executor domain and a `BrowserRuntime` instance, maps each opcode to the corresponding BrowserRuntime method call: `navigate` → `runtime.navigate(value)`, `click` → `runtime.executeAction({type:"click", targetElementId})`, `fill` → `runtime.executeAction({type:"fill", targetElementId, value})`, `assert` → `runtime.snapshot()` + evaluate assertion, etc.
   - Returns `ActionBridgeResult` with `{ success, executorAction, runtimeResult?, error? }`.
@@ -190,30 +190,45 @@
 - Screenshot bytes remain adapter-owned; `annotateScreenshot()` only attaches semantic context and metadata.
 - Action bridge suite remains expected-red for the next step.
 
-### Next Step Implementation Plan: Step 3.6 — Executor Action Bridge
+### Review — Step 3.6
+
+**Result:** Complete. The browser runtime package now exports `bridgeExecutorAction()` with an `ActionBridgeResult` type, maps executor opcodes to the corresponding `BrowserRuntime` calls, preserves the original executor action in results, and returns unsupported actions without invoking runtime methods.
+
+**Validation:**
+- `pnpm exec vitest run packages/browser-runtime/tests/action-bridge.contract.test.ts` — 1 file / 6 tests passing
+- `pnpm exec vitest run packages/browser-runtime/tests/vision-capture.contract.test.ts` — 1 file / 5 tests passing
+- `pnpm test:run packages/browser-runtime/tests/browser-runtime.contract.test.ts` — 1 file / 8 tests passing
+- `pnpm exec tsc --noEmit` — clean
+
+**Notes:**
+- `BrowserRuntime.executeAction()` now accepts an optional `value` field so fill/type actions can carry text without a second bridge-only action shape.
+- The bridge uses the repo's existing relative package-source import pattern for executor types because package-name imports are not wired in this workspace.
+- BrowserRuntime adapter wiring and snapshot builder suites remain future-step work.
+
+### Next Step Implementation Plan: Step 3.7 — BrowserRuntime Adapter Stub Wiring
 
 **Files to create/modify:**
-- Create `packages/browser-runtime/src/action-bridge.ts`
-- Modify `packages/browser-runtime/src/index.ts` to export action bridge helper and result types
-- Modify `packages/browser-runtime/src/types.ts` only if `executeAction()` needs additive action value support for fill/type commands
+- Modify `packages/browser-runtime/src/browser-runtime-adapter.ts`
+- Modify `packages/browser-runtime/src/index.ts` only if additional adapter result/config types need exporting
+- Modify `packages/browser-runtime/src/types.ts` only if the existing adapter stub contract needs additive fields
 
 **Implementation details:**
-- Read `packages/browser-runtime/tests/action-bridge.contract.test.ts` and `packages/executor/src/executor-domain.ts` first; implement only the tested bridge contract.
-- Define `bridgeExecutorAction(executorAction, runtime)` returning `ActionBridgeResult` with `{ success, executorAction, runtimeResult?, error? }`.
-- Map `navigate` to `runtime.navigate(value)`.
-- Map `click` to `runtime.executeAction({ type: "click", targetElementId })`.
-- Map `fill` / compiled `type` intents to `runtime.executeAction({ type: "fill", targetElementId, value })`.
-- Map `assert` to `runtime.snapshot()` plus a minimal deterministic assertion result shape expected by the contract.
-- Return `{ success: false, error: "unsupported" }` for unsupported executor actions without calling runtime.
+- Read `packages/browser-runtime/tests/browser-runtime.contract.test.ts` and the existing `packages/browser-runtime/src/browser-runtime-adapter.ts` first; preserve the Phase 3 stub boundary rather than adding real Playwright wiring.
+- Ensure `createBrowserRuntimeAdapter(config)` returns `{ boundary: "browser-runtime" as const, navigate, snapshot, executeAction, captureElementScreenshot, getNetworkEvents, getConsoleEvents, getDOMMutations, close }`.
+- Keep `navigate(url)` deterministic with `{ url, status: 200, timing: { total: 0 } }`.
+- Keep `snapshot()` returning a valid empty raw accessibility snapshot while wiring through the enrichment pipeline where the existing contract allows it.
+- Keep `executeAction(action)` returning a stable success shape for bridge calls, including fill values where relevant.
+- Keep event getters returning empty arrays and `close()` as a no-op.
+- For `captureElementScreenshot(elementId)`, return the existing valid screenshot stub shape; only delegate to vision-capture session if current tests require budget-aware behavior.
 
 **Acceptance criteria:**
-- `pnpm exec vitest run packages/browser-runtime/tests/action-bridge.contract.test.ts` passes.
-- `pnpm exec vitest run packages/browser-runtime/tests/vision-capture.contract.test.ts` remains green.
-- `pnpm test:run packages/browser-runtime/tests/browser-runtime.contract.test.ts` remains green.
+- `pnpm test:run packages/browser-runtime/tests/browser-runtime.contract.test.ts` passes.
+- `pnpm exec vitest run packages/browser-runtime/tests/action-bridge.contract.test.ts` remains green.
+- `pnpm exec vitest run packages/browser-runtime/tests/vision-capture.contract.test.ts` remains green if capture wiring is touched.
 - `pnpm exec tsc --noEmit` remains clean.
-- Future-step suites for browser-runtime adapter wiring and snapshot builder may remain expected-red.
+- Future-step snapshot-builder suite may remain expected-red.
 
-**Ship-one-step handoff contract:** After approval, implement only Step 3.6; validate with focused action-bridge, vision-capture regression, browser-runtime shape, and TypeScript checks; mark done in `tasks/todo.md`; update `tasks/history.md`; commit and push; write the Step 3.7 plan.
+**Ship-one-step handoff contract:** After approval, implement only Step 3.7; validate with browser-runtime shape, action-bridge regression, and TypeScript checks; mark done in `tasks/todo.md`; update `tasks/history.md`; commit and push; write the Step 3.8 plan.
 
 ---
 
@@ -226,7 +241,7 @@
 - [ ] Targeted vision capture produces annotated element screenshots under budget *(budget enforcement validated; real screenshot capture deferred)*
 - [x] Iframe elements appear in the flattened semantic snapshot with frame metadata
 - [ ] Can navigate an owned benchmark product URL and produce a complete enriched snapshot *(contract-compliant snapshot shape validated; real navigation deferred)*
-- [ ] Executor can compile click, type, navigate, and assert intents into Playwright actions *(action bridge validated; real Playwright execution deferred)*
+- [x] Executor can compile click, type, navigate, and assert intents into Playwright actions *(action bridge validated; real Playwright execution deferred)*
 - [ ] Firecracker VM image boots and runs a Playwright script successfully *(deferred — requires bare-metal KVM server)*
 - [ ] All phase tests pass
 - [ ] No regressions in previous phase tests

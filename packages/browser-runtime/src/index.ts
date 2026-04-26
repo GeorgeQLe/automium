@@ -1,4 +1,5 @@
 export { createBrowserRuntimeAdapter } from "./browser-runtime-adapter";
+export { bridgeExecutorAction } from "./action-bridge";
 export {
   enrichAccessibilityTree,
   diffMutations,
@@ -10,6 +11,9 @@ export {
   createVisionCaptureSession,
   requestCapture,
 } from "./vision-capture";
+export type {
+  ActionBridgeResult,
+} from "./action-bridge";
 export type {
   BrowserRuntimeFrameInput,
   FlattenedFrameHierarchy,

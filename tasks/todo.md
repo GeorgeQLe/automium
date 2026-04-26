@@ -80,7 +80,7 @@
 **Phase 1-2 adapter pattern**: factory function → `{ boundary: "xxx" as const, ...methods }`, contract tests verify shape, subpath exports in `package.json`.
 
 ### Tests First
-- [ ] Step 3.1: **Automated** Write failing contract tests for all Phase 3 components.
+- [x] Step 3.1: **Automated** Write failing contract tests for all Phase 3 components.
   - Files: create `packages/browser-runtime/package.json`, `packages/browser-runtime/tsconfig.json`, `packages/browser-runtime/tests/browser-runtime.contract.test.ts` (8 tests: factory, boundary, navigate/snapshot/executeAction/captureElementScreenshot/getNetworkEvents/getConsoleEvents/getDOMMutations/close shape), `packages/browser-runtime/tests/enrichment.contract.test.ts` (8 tests: a11y tree → enriched elements with stable IDs, actionability scores per visibility/enabled matrix, element grouping by frame, mutation diffing between snapshots, network event categorization, enriched output matches SemanticInteractiveElement contract fields), `packages/browser-runtime/tests/frame-flattening.contract.test.ts` (5 tests: single-frame passthrough, multi-frame flattening with frame metadata, nested iframe hierarchy preserved, elements tagged with frame origin, frame hierarchy matches SemanticFrameRef contract), `packages/browser-runtime/tests/vision-capture.contract.test.ts` (5 tests: capture request shape, budget enforcement max 3 crops/step, crop size enforcement <100KB, annotated screenshot with bounding box/semantic context, vision trigger integration with shouldRequestTargetedVision), `packages/browser-runtime/tests/action-bridge.contract.test.ts` (6 tests: navigate intent → BrowserRuntime.navigate call shape, click intent → executeAction call shape, type/fill intent → executeAction with value, assert intent → snapshot + evaluate shape, unsupported intent → fail-fast, executor action result shape)
   - Tests cover: BrowserRuntime interface shape (8 methods), semantic enrichment pipeline (raw a11y → contract-compliant elements), frame hierarchy flattening, vision budget enforcement, executor-to-BrowserRuntime action bridging.
 
@@ -134,81 +134,33 @@
 
 ---
 
-### Next Step Implementation Plan: Step 3.1 — Red Phase Contract Tests
+### Next Step Implementation Plan: Step 3.2 — Scaffold BrowserRuntime Interface Types
 
 **What to build:**
-Write failing contract tests for the entire Phase 3 BrowserRuntime package. Create the `packages/browser-runtime/` workspace member with package metadata but NO source files — tests import from not-yet-created modules and fail at import as expected for TDD red phase.
+Scaffold `packages/browser-runtime/src/` with the `BrowserRuntime` interface types and a `createBrowserRuntimeAdapter` factory stub. This turns the 8 browser-runtime.contract tests green while other test files remain red.
 
-**Files to create:**
-- `packages/browser-runtime/package.json` — workspace member, `"name": "@automium/browser-runtime"`, depends on `@automium/engine`, `@automium/executor`, `@automium/vision`, `@automium/contracts`
-- `packages/browser-runtime/tsconfig.json` — extends root `tsconfig.json`
-- `packages/browser-runtime/tests/browser-runtime.contract.test.ts` — 8 tests
-- `packages/browser-runtime/tests/enrichment.contract.test.ts` — 8 tests
-- `packages/browser-runtime/tests/frame-flattening.contract.test.ts` — 5 tests
-- `packages/browser-runtime/tests/vision-capture.contract.test.ts` — 5 tests
-- `packages/browser-runtime/tests/action-bridge.contract.test.ts` — 6 tests
+**Files to create/modify:**
+- Create `packages/browser-runtime/src/types.ts` — `BrowserRuntime` interface (8 methods), supporting types (`NavigationResult`, `RawAccessibilitySnapshot`, `RawAccessibilityNode`, `ActionResult`, `ScreenshotResult`, `NetworkEvent`, `ConsoleEvent`, `DOMMutation`)
+- Create `packages/browser-runtime/src/browser-runtime-adapter.ts` — `createBrowserRuntimeAdapter(config)` factory returning `{ boundary: "browser-runtime" as const, ...stub methods }`
+- Modify `packages/browser-runtime/src/index.ts` — re-export `createBrowserRuntimeAdapter` and types
 
-**Test details:**
-
-`browser-runtime.contract.test.ts` (8 tests):
-1. `createBrowserRuntimeAdapter` is exported as a function
-2. Adapter has `boundary: "browser-runtime"`
-3. `navigate()` is async and returns `{ url, status, timing }`
-4. `snapshot()` is async and returns `{ elements, url }`
-5. `executeAction()` is async and returns `{ success, action }`
-6. `captureElementScreenshot()` is async and returns `{ data, boundingBox, elementId }`
-7. `getNetworkEvents()`, `getConsoleEvents()`, `getDOMMutations()` return arrays
-8. `close()` is async and resolves without error
-
-`enrichment.contract.test.ts` (8 tests):
-1. `enrichAccessibilityTree` is exported
-2. Maps raw nodes to `SemanticInteractiveElement` with all 11 contract fields
-3. Stable IDs: same input produces same ID across calls
-4. Actionability: visible+enabled → score 1.0; visible only → 0.5; neither → 0
-5. Elements grouped by frame (via group field)
-6. `diffMutations` detects attribute changes between snapshots
-7. `diffMutations` detects visibility changes
-8. `categorizeNetworkEvent` maps fetch/XHR/document/websocket correctly
-
-`frame-flattening.contract.test.ts` (5 tests):
-1. `flattenFrameHierarchy` is exported
-2. Single-frame input passes through elements unchanged
-3. Multi-frame: elements from all frames in unified list
-4. Each element tagged with frame origin
-5. Frame hierarchy output matches `SemanticFrameRef` contract (id, parentFrameId, origin, url)
-
-`vision-capture.contract.test.ts` (5 tests):
-1. `createVisionCaptureSession` is exported
-2. `requestCapture` returns `{ captured: true }` when within budget
-3. Budget enforcement: 4th capture in a step returns `{ captured: false }`
-4. Annotated screenshot has bounding box and semantic context
-5. Integration: `shouldRequestTargetedVision` low confidence triggers capture
-
-`action-bridge.contract.test.ts` (6 tests):
-1. `bridgeExecutorAction` is exported
-2. Navigate action → calls `runtime.navigate(url)`, returns success
-3. Click action → calls `runtime.executeAction({type:"click"})`, returns success
-4. Fill action → calls `runtime.executeAction({type:"fill", value})`, returns success
-5. Unsupported action → returns `{ success: false }` without calling runtime
-6. Result includes original `executorAction` and `runtimeResult`
-
-**Key conventions:**
-- Follow Phase 1-2 test pattern: `describe()` + `it()` with async module loading
-- Tests import from `../src/index` (barrel) — will fail at import since no source exists yet
-- Use dynamic `import()` with try/catch loaders for expected missing modules (same pattern as MCP test Step 2.1)
-- All 32 new tests should fail at import. Existing 309 tests must remain green.
+**Interface details:**
+- `navigate(url: string, options?)` → `Promise<NavigationResult>` where `NavigationResult = { url, status, timing: { total } }`
+- `snapshot()` → `Promise<RawAccessibilitySnapshot>` where `RawAccessibilitySnapshot = { elements: RawAccessibilityNode[], url }`
+- `executeAction(action)` → `Promise<ActionResult>` where `ActionResult = { success, action }`
+- `captureElementScreenshot(elementId, options?)` → `Promise<ScreenshotResult>` where `ScreenshotResult = { data, boundingBox, elementId }`
+- `getNetworkEvents(since?)` → `Promise<NetworkEvent[]>`
+- `getConsoleEvents(since?)` → `Promise<ConsoleEvent[]>`
+- `getDOMMutations(since?)` → `Promise<DOMMutation[]>`
+- `close()` → `Promise<void>`
 
 **Acceptance criteria:**
-- 5 new test files created under `packages/browser-runtime/tests/`
-- All 32 new tests fail (red) on missing source modules
-- All 309 existing tests pass (no regressions)
-- `pnpm exec tsc --noEmit` — clean (test files use dynamic import to avoid TS module errors)
+- 8 browser-runtime.contract tests pass (green)
+- 24 remaining tests still fail (red) — enrichment, frame-flattening, vision-capture, action-bridge
+- `pnpm exec tsc --noEmit` — clean
+- All 309 existing tests still pass
 
-**Verification:**
-- `pnpm test:run` — 309 passing (existing), 32 failing (new red-phase tests)
-- `pnpm exec tsc --noEmit` — no errors
-
-**Ship-one-step handoff contract:** After approval, implement only Step 3.1; validate with tests; mark done in `tasks/todo.md`; update `tasks/history.md`; commit and push; write the Step 3.2 plan; ensure `.claude/settings.local.json` has `"showClearContextOnPlanAccept": true` and `"defaultMode": "acceptEdits"`; start the approval UI for Step 3.2 by calling `EnterPlanMode` first, write a brief pass-through plan in plan mode, call `ExitPlanMode`, and stop before implementing Step 3.2.
+**Ship-one-step handoff contract:** After approval, implement only Step 3.2; validate with tests; mark done in `tasks/todo.md`; update `tasks/history.md`; commit and push; write the Step 3.3 plan.
 
 ---
 

@@ -1,5 +1,11 @@
 # History
 
+## 2026-04-25
+
+- Completed Phase 3 Step 3.1: wrote 32 red-phase contract tests for `packages/browser-runtime/` across 5 test files (browser-runtime 8, enrichment 8, frame-flattening 5, vision-capture 5, action-bridge 6).
+- Created workspace member with `package.json`, `tsconfig.json`, empty barrel `src/index.ts`.
+- All 32 new tests fail (red) on missing exports. All 309 existing tests pass. TypeScript clean.
+
 ## 2026-04-07
 
 - Converted the outline roadmap into an execution-grade phased plan in `tasks/roadmap.md`.

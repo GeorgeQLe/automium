@@ -1,0 +1,8 @@
+{
+  "name": "@automium/browser-runtime",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  }
+}

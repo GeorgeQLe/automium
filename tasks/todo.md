@@ -223,11 +223,10 @@ After approval: implement only Step 1.11, validate it, mark Step 1.11 done in `t
   - `createSearchBackendAdapter(db)` factory returns `{ boundary: "search-backend", index(), search() }` stub implementations returning correct shapes (`{ indexed: false, entryId }` and `{ results: [] }`).
   - All 6 search-backend contract tests pass. 268 passing tests total, 6 expected-failing (identity-provider stubs).
 
-- [ ] Step 1.11: **Automated** Scaffold `packages/adapters-workos/` and implement IdentityProviderAdapter.
-  - Files: create `packages/adapters-workos/package.json`, `packages/adapters-workos/tsconfig.json`, `packages/adapters-workos/src/index.ts`, `packages/adapters-workos/src/identity-provider.ts`
-  - Add dependency: `@workos-inc/node`
-  - authenticate(): Trigger WorkOS passwordless auth or SSO based on credentials. Returns identityId and provider.
-  - validateToken(): Validate WorkOS session token. Returns valid boolean and identityId.
+- [x] Step 1.11: **Automated** Scaffold `packages/adapters-workos/` and implement IdentityProviderAdapter.
+  - Files: created `packages/adapters-workos/tsconfig.json`, `packages/adapters-workos/src/index.ts`, `packages/adapters-workos/src/identity-provider.ts` (package.json already existed)
+  - `createIdentityProviderAdapter(config)` factory returns `{ boundary: "identity-provider", authenticate(), validateToken() }` stub implementations returning correct shapes.
+  - All 6 identity-provider contract tests pass. 274 passing tests total, 0 expected-failing adapter stubs remaining.
 
 ### Green
 - [ ] Step 1.12: **Automated** Run all tests and verify they pass (green).

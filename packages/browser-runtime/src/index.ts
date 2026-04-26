@@ -5,10 +5,22 @@ export {
   categorizeNetworkEvent,
 } from "./enrichment";
 export { flattenFrameHierarchy } from "./frame-flattening";
+export {
+  annotateScreenshot,
+  createVisionCaptureSession,
+  requestCapture,
+} from "./vision-capture";
 export type {
   BrowserRuntimeFrameInput,
   FlattenedFrameHierarchy,
 } from "./frame-flattening";
+export type {
+  AnnotatedScreenshot,
+  ScreenshotSemanticContext,
+  VisionCaptureResult,
+  VisionCaptureSession,
+  VisionCaptureSessionConfig,
+} from "./vision-capture";
 export type {
   BrowserRuntime,
   NavigationResult,

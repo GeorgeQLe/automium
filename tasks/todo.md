@@ -102,7 +102,7 @@
   - `flattenFrameHierarchy(frames)` — takes array of `{ frameId, parentFrameId, origin, url, elements[] }`, produces unified `SemanticInteractiveElement[]` with elements tagged by frame origin + `SemanticFrameRef[]` matching the frozen contract.
   - Handles nested iframes (depth > 1) by traversing parent chain.
 
-- [ ] Step 3.5: **Automated** Implement targeted vision capture contracts and budget enforcement.
+- [x] Step 3.5: **Automated** Implement targeted vision capture contracts and budget enforcement.
   - Files: create `packages/browser-runtime/src/vision-capture.ts`, modify `packages/browser-runtime/src/index.ts`
   - `createVisionCaptureSession(config)` — factory accepting `{ maxCropsPerStep: 3, maxCropSizeBytes: 102400 }`.
   - `requestCapture(session, elementId, boundingBox, reason)` — checks budget, calls `shouldRequestTargetedVision()` from vision domain, produces `TargetedCropRequest` via `createTargetedCropRequest()`, returns `{ captured: boolean, request?, budgetRemaining }`.
@@ -175,28 +175,45 @@
 - Frame hierarchy output maps directly to `SemanticFrameRef` (`id`, `parentFrameId`, `origin`, `url`).
 - Vision capture and action bridge suites remain expected-red for future steps.
 
-### Next Step Implementation Plan: Step 3.5 — Targeted Vision Capture
+### Review — Step 3.5
+
+**Result:** Complete. The browser runtime package now exports targeted vision capture helpers with per-step crop budgeting, crop size checks, targeted-vision decision integration, crop-request creation, and semantic screenshot annotation.
+
+**Validation:**
+- `pnpm exec vitest run packages/browser-runtime/tests/vision-capture.contract.test.ts` — 1 file / 5 tests passing
+- `pnpm exec vitest run packages/browser-runtime/tests/frame-flattening.contract.test.ts` — 1 file / 5 tests passing
+- `pnpm test:run packages/browser-runtime/tests/browser-runtime.contract.test.ts` — 1 file / 8 tests passing
+- `pnpm exec tsc --noEmit` — clean
+
+**Notes:**
+- `requestCapture()` uses `shouldRequestTargetedVision()` from the vision domain and emits frozen `TargetedCropRequest` records through `createTargetedCropRequest()`.
+- Screenshot bytes remain adapter-owned; `annotateScreenshot()` only attaches semantic context and metadata.
+- Action bridge suite remains expected-red for the next step.
+
+### Next Step Implementation Plan: Step 3.6 — Executor Action Bridge
 
 **Files to create/modify:**
-- Create `packages/browser-runtime/src/vision-capture.ts`
-- Modify `packages/browser-runtime/src/index.ts` to export vision-capture helpers
-- Modify `packages/browser-runtime/src/types.ts` only if shared screenshot or bounding-box types need additive fields
+- Create `packages/browser-runtime/src/action-bridge.ts`
+- Modify `packages/browser-runtime/src/index.ts` to export action bridge helper and result types
+- Modify `packages/browser-runtime/src/types.ts` only if `executeAction()` needs additive action value support for fill/type commands
 
 **Implementation details:**
-- Read `packages/browser-runtime/tests/vision-capture.contract.test.ts` first and implement only the tested public contract.
-- Define `createVisionCaptureSession(config)` with defaults `{ maxCropsPerStep: 3, maxCropSizeBytes: 102400 }` and mutable per-step crop count.
-- Define `requestCapture(session, elementId, boundingBox, reason)` to enforce max crop count and crop size budget, integrate `shouldRequestTargetedVision()` from `packages/vision/src/vision-domain.ts`, and produce a `TargetedCropRequest` through `createTargetedCropRequest()` when capture is allowed.
-- Define `annotateScreenshot(screenshot, semanticContext)` to return screenshot bytes plus semantic metadata such as role, label, nearby elements, bounding box, and timestamp.
-- Keep this module independent of Playwright screenshot capture; real browser screenshot bytes remain adapter responsibility.
+- Read `packages/browser-runtime/tests/action-bridge.contract.test.ts` and `packages/executor/src/executor-domain.ts` first; implement only the tested bridge contract.
+- Define `bridgeExecutorAction(executorAction, runtime)` returning `ActionBridgeResult` with `{ success, executorAction, runtimeResult?, error? }`.
+- Map `navigate` to `runtime.navigate(value)`.
+- Map `click` to `runtime.executeAction({ type: "click", targetElementId })`.
+- Map `fill` / compiled `type` intents to `runtime.executeAction({ type: "fill", targetElementId, value })`.
+- Map `assert` to `runtime.snapshot()` plus a minimal deterministic assertion result shape expected by the contract.
+- Return `{ success: false, error: "unsupported" }` for unsupported executor actions without calling runtime.
 
 **Acceptance criteria:**
-- `pnpm exec vitest run packages/browser-runtime/tests/vision-capture.contract.test.ts` passes.
-- `pnpm exec vitest run packages/browser-runtime/tests/frame-flattening.contract.test.ts` remains green.
+- `pnpm exec vitest run packages/browser-runtime/tests/action-bridge.contract.test.ts` passes.
+- `pnpm exec vitest run packages/browser-runtime/tests/vision-capture.contract.test.ts` remains green.
 - `pnpm test:run packages/browser-runtime/tests/browser-runtime.contract.test.ts` remains green.
 - `pnpm exec tsc --noEmit` remains clean.
-- Future-step suites for action-bridge may remain expected-red.
+- Future-step suites for browser-runtime adapter wiring and snapshot builder may remain expected-red.
 
-**Ship-one-step handoff contract:** After approval, implement only Step 3.5; validate with focused vision-capture, frame-flattening regression, browser-runtime shape, and TypeScript checks; mark done in `tasks/todo.md`; update `tasks/history.md`; commit and push; write the Step 3.6 plan.
+**Ship-one-step handoff contract:** After approval, implement only Step 3.6; validate with focused action-bridge, vision-capture regression, browser-runtime shape, and TypeScript checks; mark done in `tasks/todo.md`; update `tasks/history.md`; commit and push; write the Step 3.7 plan.
 
 ---
 

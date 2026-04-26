@@ -166,33 +166,38 @@ Create `packages/orchestrator/src/dispatch.ts` with `dispatchRun(input, queueAda
   - Integrates existing `leaseWorker()` logic with queue enqueue — no duplication of lease/quota code.
 
 ### Green
-- [ ] Step 2.7: **Automated** Run all tests and verify they pass (green).
+- [x] Step 2.7: **Automated** Run all tests and verify they pass (green).
 - [ ] Step 2.8: **Automated** Refactor pass — verify barrel exports, adapter alignment, no dead code.
 
 ---
 
-### Next Step Implementation Plan: Step 2.7 — Green Verification Sweep
+### Next Step Implementation Plan: Step 2.8 — Refactor Pass
 
 **What to build:**
-Pure verification step — no code changes. Re-run the full test suite and TypeScript check to confirm Phase 2 is green.
+Review all Phase 2 packages for barrel export hygiene, adapter interface alignment, and dead code. No new features — only cleanup.
 
-**Verification commands:**
-1. `pnpm test:run` — expect 309 passing, 0 failing
-2. `pnpm exec tsc --noEmit` — expect no errors
-3. `git diff --check` — expect clean
+**Files to review:**
+- `packages/adapters-bullmq/src/index.ts` — verify barrel re-exports job-queue + queue-definitions
+- `packages/adapters-redis/src/index.ts` — verify barrel re-exports realtime-transport + connection
+- `packages/worker/src/index.ts` — verify barrel re-exports worker-process + heartbeat
+- `packages/orchestrator/src/index.ts` — verify barrel re-exports dispatch alongside existing domain
+
+**Checks:**
+1. Every exported factory is importable from the package barrel
+2. No unused imports across Phase 2 `src/` files
+3. Return types explicit on all factory functions
+4. `as const` boundary discriminators on all adapter factories
+5. No dead code or leftover TODO placeholders
+6. `pnpm test:run` — 309 passing, 0 failing (no regressions)
+7. `pnpm exec tsc --noEmit` — no errors
 
 **Acceptance criteria:**
-- All 309 tests pass (274 Phase 1 baseline + 35 Phase 2 tests)
-- No TypeScript errors across the monorepo
-- No uncommitted changes after verification
+- All barrel exports verified clean
+- No dead code found (or removed if found)
+- 309 tests passing, 0 failing
+- No TypeScript errors
 
-**Phase 2 component summary (verify all covered):**
-- `packages/adapters-bullmq/` — JobQueueAdapter stub (8 tests) + queue definitions (7 tests)
-- `packages/adapters-redis/` — RealtimeTransportAdapter stub (8 tests) + connection factory (2 tests)
-- `packages/worker/` — WorkerProcess skeleton (4 tests) + HeartbeatReporter (3 tests)
-- `packages/orchestrator/` — dispatchRun wiring (3 tests) + existing orchestrator domain tests
-
-**Ship-one-step handoff contract:** After approval, run verification only (no code changes); mark Step 2.7 done in `tasks/todo.md`; update `tasks/history.md`; commit and push; write the Step 2.8 plan; enter plan mode; stop before implementing Step 2.8.
+**Ship-one-step handoff contract:** After approval, execute the refactor audit; fix any issues found; mark Step 2.8 done in `tasks/todo.md`; update `tasks/history.md`; commit and push; complete the Phase 2 milestone section; archive to `tasks/phases/`; regenerate `tasks/todo.md` for Phase 3; enter plan mode; stop before implementing Phase 3.
 
 ### Milestone: Phase 2 — Queue + Worker Infrastructure
 **Acceptance Criteria:**

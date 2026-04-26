@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 async function loadSearchBackendModule() {
   try {
-    return await import("../src/search-backend");
+    return await import("../src/search-backend") as Record<string, unknown>;
   } catch (error) {
     throw new Error(
       "Expected packages/adapters-postgres/src/search-backend.ts to implement the SearchBackendAdapter.",

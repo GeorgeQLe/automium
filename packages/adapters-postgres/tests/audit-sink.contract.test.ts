@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 async function loadAuditSinkModule() {
   try {
-    return await import("../src/audit-sink");
+    return await import("../src/audit-sink") as Record<string, unknown>;
   } catch (error) {
     throw new Error(
       "Expected packages/adapters-postgres/src/audit-sink.ts to implement the AuditSinkAdapter.",

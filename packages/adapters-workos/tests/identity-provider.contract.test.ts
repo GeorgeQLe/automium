@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 async function loadIdentityProviderModule() {
   try {
-    return await import("../src/identity-provider");
+    return await import("../src/identity-provider") as Record<string, unknown>;
   } catch (error) {
     throw new Error(
       "Expected packages/adapters-workos/src/identity-provider.ts to implement the IdentityProviderAdapter.",

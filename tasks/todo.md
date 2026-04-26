@@ -158,45 +158,39 @@ After approval: implement only Step 1.4, validate it, mark Step 1.4 done in `tas
 
 ---
 
-## Next Step Plan: Step 1.7 — Generate Initial Migration and Add RLS Policies
+## Next Step Plan: Step 1.8 — Implement Credential Vault with AES-256-GCM Encryption
 
 ### Context
-Steps 1.3–1.6 completed all 16 core Drizzle table definitions across 6 schema files (`tenancy.ts`, `auth.ts`, `journeys.ts`, `runs.ts`, `artifacts.ts`, `audit.ts`, `credentials.ts`, `files.ts`, `jobs.ts`). Step 1.7 uses `drizzle-kit generate` to produce the initial migration SQL from the schema, adds Row-Level Security (RLS) policies for tenant isolation, and creates a migration runner.
+Steps 1.1–1.7 established the full Drizzle schema (17 tables, 12 enums), migration SQL, RLS policies, and migration runner. Step 1.8 implements the encrypted credential vault in `packages/persistence/src/credential-vault.ts`, which the credential-vault contract tests (5 tests in `packages/persistence/tests/credential-vault.contract.test.ts`) are waiting for.
+
+### Domain Interface (from contract tests)
+The contract tests expect:
+- `encryptCredential(plaintext: string, key: string): string` — AES-256-GCM encrypt, returns a self-contained ciphertext string (IV + authTag + ciphertext, base64-encoded or similar)
+- `decryptCredential(ciphertext: string, key: string): string` — reverse of encrypt
+- `storeCredential(db, params)` / `retrieveCredential(db, params)` — DB operations scoped by `(organizationId, workspaceId, scope, purpose)`
 
 ### What to Build
 
-1. **`packages/persistence/drizzle.config.ts`** — Drizzle Kit configuration pointing at `src/schema/index.ts` as the schema source, with `dialect: "postgresql"` and `out: "./drizzle"` for migration output.
-
-2. **Run `drizzle-kit generate`** — Produces migration SQL files under `packages/persistence/drizzle/`. The generated SQL should create all 17 tables (16 core + `artifactEntries`), 10 pgEnums, all foreign keys, and all indexes.
-
-3. **`packages/persistence/src/rls.sql`** — RLS policies for all tenant-scoped tables using `current_setting('app.organization_id')`. Tables that need RLS: `workspaces`, `memberships`, `invites`, `journeys`, `journey_versions`, `runs`, `steps`, `artifact_manifests`, `artifact_entries`, `audit_events`, `credentials`, `files`, `jobs`. Pattern:
-   ```sql
-   ALTER TABLE <table> ENABLE ROW LEVEL SECURITY;
-   CREATE POLICY tenant_isolation ON <table>
-     USING (organization_id = current_setting('app.organization_id'));
-   ```
-   Note: `organizations` and `sessions` don't have `organization_id` as a direct column (organizations IS the org; sessions are identity-scoped), so they don't get tenant RLS.
-   Note: `journey_versions` and `steps` don't have a direct `organization_id` column — they join through `journeys` and `runs` respectively. RLS policies for these tables would need a subquery join. For v1, we can either: (a) add `organization_id` as a denormalized column, or (b) skip RLS on these child tables and rely on the parent table's RLS. Decision: skip RLS on `journey_versions`, `steps`, `artifact_entries`, and `recovery_rules` (child tables without direct `organization_id`) for v1, relying on FK-enforced parent access control.
-
-4. **Update `packages/persistence/src/migrate.ts`** — Replace the stub with a real migration runner using `drizzle-orm/neon-http/migrator` that reads from the `drizzle/` folder.
+1. **`packages/persistence/src/credential-vault.ts`** — New file with:
+   - `encryptCredential(plaintext, key)` — uses Node.js `crypto` module with AES-256-GCM. Generates random 12-byte IV, derives 32-byte key from input via `scryptSync` or accepts raw 32-byte hex key. Returns base64 string encoding `iv:authTag:ciphertext`.
+   - `decryptCredential(ciphertext, key)` — reverses the above.
+   - `storeCredential(db, params)` — INSERT into `credentials` table with encrypted value.
+   - `retrieveCredential(db, params)` — SELECT from `credentials` table by `(organizationId, workspaceId, scope, purpose)`, decrypt and return.
 
 ### Key Decisions
-- Migration output goes to `packages/persistence/drizzle/` (Drizzle Kit convention)
-- RLS uses `current_setting('app.organization_id')` — the control plane API (Phase 5) will `SET app.organization_id` on each request
-- Child tables without direct `organization_id` (`journey_versions`, `steps`, `artifact_entries`, `recovery_rules`) skip RLS for v1 — access is controlled through parent table queries
-- The `rls.sql` file is a standalone SQL script, not a Drizzle migration — it's applied separately after migration and can be re-run idempotently
+- Encryption uses AES-256-GCM (authenticated encryption) per spec
+- Key is expected as 64-char hex string (32 bytes) from `CREDENTIAL_ENCRYPTION_KEY` env var
+- IV is random per encryption (12 bytes, GCM standard)
+- Ciphertext format: `base64(iv):base64(authTag):base64(ciphertext)` for easy parsing
+- No key rotation in v1 — `rotateCredential` can be a future addition
 
 ### Acceptance Criteria
-- `drizzle-kit generate` produces migration SQL without errors
-- Migration SQL creates all 17 tables, 10 enums, FKs, and indexes
-- `rls.sql` covers all tenant-scoped tables with direct `organization_id` column
-- `migrate.ts` exports a real `migrate()` function using drizzle-orm migrator
-- Schema contract tests still pass (8/8)
-- No new TS errors in persistence src (excluding pre-existing credential-vault)
+- `credential-vault.contract.test.ts` passes (5/5 tests: encrypt/decrypt round-trip, different keys produce different ciphertext, scoped store/retrieve)
+- No new TS errors
 - No regressions in 249 passing tests
 
 ### Ship-One-Step Handoff Contract
-After approval: implement only Step 1.7, validate it, mark Step 1.7 done in `tasks/todo.md`, update `tasks/history.md`, commit and push the completed work, write the Step 1.8 plan, enter plan mode for Step 1.8 approval, and stop before implementing Step 1.8.
+After approval: implement only Step 1.8, validate it, mark Step 1.8 done in `tasks/todo.md`, update `tasks/history.md`, commit and push the completed work, write the Step 1.9 plan, enter plan mode for Step 1.9 approval, and stop before implementing Step 1.9.
 
 - [x] Step 1.6: **Automated** Define Drizzle schema for artifact, audit, credential, file, and job tables.
   - Files: created `packages/persistence/src/schema/artifacts.ts`, `packages/persistence/src/schema/audit.ts`, `packages/persistence/src/schema/credentials.ts`, `packages/persistence/src/schema/files.ts`, `packages/persistence/src/schema/jobs.ts`
@@ -205,11 +199,11 @@ After approval: implement only Step 1.7, validate it, mark Step 1.7 done in `tas
   - All tenant-scoped tables have standard composite index on (organization_id, workspace_id).
   - Schema contract tests pass 8/8. 249 passing tests, 25 expected-failing (pre-existing credential-vault).
 
-- [ ] Step 1.7: **Automated** Generate initial migration and add RLS policies.
-  - Files: create `packages/persistence/src/migrations/` (generated by drizzle-kit), create `packages/persistence/src/rls.sql`
-  - Run `drizzle-kit generate` to produce migration SQL from schema.
-  - Add RLS policies for all tenant-scoped tables using `current_setting('app.organization_id')`.
-  - Create migration runner in `packages/persistence/src/migrate.ts`.
+- [x] Step 1.7: **Automated** Generate initial migration and add RLS policies.
+  - Files: created `packages/persistence/drizzle.config.ts`, `packages/persistence/drizzle/0000_ambitious_marauders.sql`, `packages/persistence/src/rls.sql`, updated `packages/persistence/src/migrate.ts`
+  - `drizzle-kit generate` produced migration SQL with 17 tables, 12 pgEnums, all FKs and indexes.
+  - RLS policies cover 9 tenant-scoped tables with direct `organization_id` column (workspaces, memberships, invites, journeys, runs, audit_events, credentials, files, jobs). `artifact_manifests` excluded (no direct `organization_id`). Child tables (journey_versions, steps, artifact_entries, recovery_rules, assertions) skip RLS — access via parent queries.
+  - Migration runner uses `drizzle-orm/neon-http/migrator` with `import.meta.url` for path resolution.
 
 - [ ] Step 1.8: **Automated** Implement credential vault with AES-256-GCM encryption.
   - Files: create `packages/persistence/src/credential-vault.ts`

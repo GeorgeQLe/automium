@@ -1,10 +1,11 @@
-const ADAPTER_INTEGRATION_BOUNDARIES = [
+export const ADAPTER_INTEGRATION_BOUNDARIES = [
   "identity-provider",
   "audit-sink",
   "file-storage",
   "job-queue",
   "search-backend",
-  "realtime-transport"
+  "realtime-transport",
+  "browser-runtime"
 ] as const;
 
 // --- Types derived from frozen constants ---
@@ -52,6 +53,18 @@ export interface RealtimeTransportAdapter {
   unsubscribe(topic: string, recipientId: string): Promise<{ unsubscribed: boolean }>;
 }
 
+export interface BrowserRuntimeAdapter {
+  readonly boundary: "browser-runtime";
+  navigate(url: string): Promise<{ url: string; status: number; timing: { total: number } }>;
+  snapshot(): Promise<{ elements: readonly unknown[]; url: string }>;
+  executeAction(action: { type: string; targetElementId: string; value?: string }): Promise<{ success: boolean; action: string; targetElementId?: string; value?: string }>;
+  captureElementScreenshot(elementId: string): Promise<{ data: Buffer; boundingBox: { x: number; y: number; width: number; height: number }; elementId: string }>;
+  getNetworkEvents(): Promise<readonly unknown[]>;
+  getConsoleEvents(): Promise<readonly unknown[]>;
+  getDOMMutations(): Promise<readonly unknown[]>;
+  close(): Promise<void>;
+}
+
 // --- Adapter type map ---
 
 type AdapterTypeMap = {
@@ -61,6 +74,7 @@ type AdapterTypeMap = {
   "job-queue": JobQueueAdapter;
   "search-backend": SearchBackendAdapter;
   "realtime-transport": RealtimeTransportAdapter;
+  "browser-runtime": BrowserRuntimeAdapter;
 };
 
 // --- Registry ---

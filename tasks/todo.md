@@ -130,7 +130,7 @@
 
 ### Green
 - [x] Step 3.9: **Automated** Run all tests and verify they pass (green).
-- [ ] Step 3.10: **Automated** Refactor pass — verify barrel exports, adapter alignment, no dead code.
+- [x] Step 3.10: **Automated** Refactor pass — verify barrel exports, adapter alignment, no dead code.
 
 ---
 
@@ -300,6 +300,29 @@
 
 **Ship-one-step handoff contract:** Execute only the Step 3.10 refactor audit and any narrow cleanup it identifies; complete Phase 3 only if acceptance criteria are met and the manual Firecracker blocker is correctly documented.
 
+---
+
+### Review — Step 3.10
+
+**Result:** Complete. The browser-runtime refactor audit found and fixed narrow adapter-boundary drift.
+
+**Changes:**
+- Exported `BrowserRuntimeAdapterConfig` from `packages/browser-runtime/src/index.ts` so the public barrel includes the adapter factory config type.
+- Made `packages/adapters/src/adapters-behavior.ts` the single source of truth for `ADAPTER_INTEGRATION_BOUNDARIES` and added the `browser-runtime` boundary to the registry type map.
+- Removed the duplicate boundary constant from `packages/adapters/src/index.ts`.
+
+**Validation:**
+- `pnpm exec vitest run packages/browser-runtime/tests` — 6 files / 37 tests passing
+- `pnpm test:run` — 73 files / 346 tests passing
+- `pnpm exec tsc --noEmit` — clean
+- `git diff --check` — clean
+
+**Warnings:** None observed in command output.
+
+**Notes:**
+- No Playwright, CDP, Firecracker, persistence, or production browser behavior was added in this refactor step.
+- Phase 3 implementation steps are complete, but the phase is not ready to archive because several milestone acceptance criteria remain deferred to real Playwright/CDP/Firecracker integration work and the KVM server manual blocker is still open.
+
 ### Milestone: Phase 3 — Browser Runtime
 **Acceptance Criteria:**
 - [x] BrowserRuntime interface is defined and Playwright adapter passes all interface methods *(stub shape validated; real Playwright wiring deferred)*
@@ -311,10 +334,10 @@
 - [ ] Can navigate an owned benchmark product URL and produce a complete enriched snapshot *(contract-compliant snapshot shape validated; real navigation deferred)*
 - [x] Executor can compile click, type, navigate, and assert intents into Playwright actions *(action bridge validated; real Playwright execution deferred)*
 - [ ] Firecracker VM image boots and runs a Playwright script successfully *(deferred — requires bare-metal KVM server)*
-- [ ] All phase tests pass
-- [ ] No regressions in previous phase tests
+- [x] All phase tests pass
+- [x] No regressions in previous phase tests
 
 **On Completion**:
-- Deviations from plan:
-- Tech debt / follow-ups:
-- Ready for next phase: yes/no
+- Deviations from plan: Browser runtime remains a deterministic contract stub; real Playwright, CDP subscriptions, live navigation, and Firecracker VM execution are deferred.
+- Tech debt / follow-ups: Wire real Playwright adapter behavior, CDP event collection, real element screenshots, owned benchmark navigation smoke tests, and Firecracker image validation once a KVM-capable server is available.
+- Ready for next phase: no — milestone acceptance criteria and the manual Firecracker blocker remain open.

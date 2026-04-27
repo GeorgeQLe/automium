@@ -30,6 +30,7 @@ export type {
   VisionCaptureSessionConfig,
 } from "./vision-capture";
 export type {
+  BrowserRuntimeAdapterConfig,
   BrowserRuntime,
   NavigationResult,
   RawAccessibilitySnapshot,

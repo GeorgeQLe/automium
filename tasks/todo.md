@@ -129,7 +129,7 @@
   - Validates output has all `semanticSnapshotRequiredFields` and each element has all `interactiveElementRequiredFields`.
 
 ### Green
-- [ ] Step 3.9: **Automated** Run all tests and verify they pass (green).
+- [x] Step 3.9: **Automated** Run all tests and verify they pass (green).
 - [ ] Step 3.10: **Automated** Refactor pass — verify barrel exports, adapter alignment, no dead code.
 
 ---
@@ -257,6 +257,48 @@
 **Ship-one-step handoff contract:** After approval, execute only the Step 3.9 verification sweep; fix unexpected failures if any; mark Step 3.9 complete; update `tasks/history.md`; commit and push; write the Step 3.10 refactor-pass plan.
 
 ---
+
+### Review — Step 3.9
+
+**Result:** Complete. Phase 3 browser-runtime verification is green without source-code changes or regression fixes.
+
+**Validation:**
+- `pnpm exec vitest run packages/browser-runtime/tests` — 6 files / 37 tests passing
+- `pnpm test:run` — 73 files / 346 tests passing
+- `pnpm exec tsc --noEmit` — clean
+
+**Warnings:** None observed in command output.
+
+**Notes:**
+- No unexpected failures were found, so no implementation changes were required.
+- This confirms the browser-runtime contracts, snapshot builder, enrichment, frame flattening, vision capture, action bridge, and prior phase tests remain green.
+
+### Next Step Implementation Plan: Step 3.10 — Refactor Pass
+
+**Files to create/modify:**
+- Modify browser-runtime source files only if the audit finds concrete cleanup needs.
+- Modify `tasks/todo.md` after the audit to mark Step 3.10 complete and fill the Phase 3 completion section if the phase is ready to archive.
+- Modify `tasks/history.md` with the Step 3.10 result.
+
+**Implementation details:**
+- Audit `packages/browser-runtime/src/index.ts` for complete and intentional barrel exports.
+- Audit `packages/browser-runtime/src/types.ts`, `browser-runtime-adapter.ts`, `enrichment.ts`, `frame-flattening.ts`, `vision-capture.ts`, `action-bridge.ts`, and `snapshot-builder.ts` for unused exports, duplicated local shapes, inconsistent adapter return shapes, and stale comments.
+- Verify adapter alignment with the registry pattern and the frozen contracts in `packages/contracts/src/semantic-snapshot.ts`.
+- Keep any cleanup narrowly scoped; do not add real Playwright, CDP, Firecracker, or persistence behavior in this refactor step.
+
+**Validation plan:**
+- Run `pnpm exec vitest run packages/browser-runtime/tests`.
+- Run `pnpm test:run`.
+- Run `pnpm exec tsc --noEmit`.
+- Inspect outputs for warnings and fix or record any warning found.
+
+**Acceptance criteria:**
+- Browser-runtime barrel exports are complete and intentional.
+- Adapter boundaries and method result shapes remain aligned with contract tests.
+- No unused code, stale comments, or avoidable duplicate type shapes remain in the browser-runtime package.
+- Full test and TypeScript checks remain green.
+
+**Ship-one-step handoff contract:** Execute only the Step 3.10 refactor audit and any narrow cleanup it identifies; complete Phase 3 only if acceptance criteria are met and the manual Firecracker blocker is correctly documented.
 
 ### Milestone: Phase 3 — Browser Runtime
 **Acceptance Criteria:**

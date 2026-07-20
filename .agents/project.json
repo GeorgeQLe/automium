@@ -1,5 +1,7 @@
 {
   "project_type": "devtool",
-  "enabled_packs": ["devtool"],
+  "enabled_packs": [
+    "devtool"
+  ],
   "skill_pack_version": 1
 }

@@ -1,0 +1,130 @@
+{
+  "managed_by": "agentic-skills",
+  "source_package": "skillpacks@0.1.22-experimental.6",
+  "docs": [
+    {
+      "path": "alignment-page-convention.md",
+      "source_sha": "2fef085f1032fff0eea17cbb8f58215f55c26390be771c12af87f66b7ac68ef1"
+    },
+    {
+      "path": "alignment-yaml-routing-contract.md",
+      "source_sha": "f2c6617cd3eec5bf43a4a79b1407e88c25f434f3e3cabcc681d0715a4650677e"
+    },
+    {
+      "path": "briefing-slides-convention.md",
+      "source_sha": "cb98f20704e618550fbe3dbe58ff99fdc6a66ab268672dfec7e237d8844c5e1a"
+    },
+    {
+      "path": "design-tree-loop-convention.md",
+      "source_sha": "5a0a0eaceab04733e15c2fa26ad1d514f7e83300b87fca17627f1911b5edd06d"
+    },
+    {
+      "path": "excalidraw-convention.md",
+      "source_sha": "685570e9c5aaa29e9a7d1856f765b4a8ac68258113c361af1e4b89fd8f35dbb1"
+    },
+    {
+      "path": "interrogation-page-convention.md",
+      "source_sha": "c0838a8a0032e242b5fd29831d9f5b8545673f3c8dcd072857693f4a784453a9"
+    },
+    {
+      "path": "interview-convention.md",
+      "source_sha": "a7f723040f2885721a08f26d08f6828a928625e2b9a7171b82a2f9fc43a02199"
+    },
+    {
+      "path": "orchestrator-convention.md",
+      "source_sha": "b4b8c0a25c58b2ef7b02134e939cf3f9b35660e7775088dfccb9189c053590ac"
+    },
+    {
+      "path": "prototype-session-loop-convention.md",
+      "source_sha": "cfad44c454b4bd217493e59503332ab215de2d892d553be833bebdde695b82e3"
+    },
+    {
+      "path": "quality-gate-contract.md",
+      "source_sha": "cc9d16c5fba2e053fb2e23151ccefc4fdd1196f897d6473ce409d48a242f78ae"
+    },
+    {
+      "path": "research-session-loop-convention.md",
+      "source_sha": "3670cb1f12f31c7cfb4d8691081ce125ea03cd0b8dea2298b534cbeabf090a24"
+    },
+    {
+      "path": "session-triage-handoff-contract.md",
+      "source_sha": "b9186a1c521da0d8a9cc6ac9629675deb3e065cd20ed4fa88879bda0de5cddca"
+    },
+    {
+      "path": "skill-next-step-contracts.md",
+      "source_sha": "98d34ef66da52fb6d65fb3eb7d76b0fa1d4ce29be13be71df3341fd9deab78b6"
+    },
+    {
+      "path": "skillpacks-install-routing-contract.md",
+      "source_sha": "3921b29c8f099b06bc2866449abc5ccf7099a29fb1c280f6b928400fbb688799"
+    },
+    {
+      "path": "social-ledger-convention.md",
+      "source_sha": "5fea515f65793e648287659e1f11d3968c7a71cb4d32ca5dd79961a966ea094f"
+    },
+    {
+      "path": "social-post-convention.md",
+      "source_sha": "5b6f876e0213bc9c9f58867402d811f79bb42588010ed9a40c96f85e389e7487"
+    },
+    {
+      "path": "social-video-content-convention.md",
+      "source_sha": "e3a334acdea06070d5e006a1326368050d8aa2ce96e2023cd44c979e4a17fb11"
+    },
+    {
+      "path": "social/bluesky-convention.md",
+      "source_sha": "b8cf75d24a7e0255568648276f09b46f4468dcc1089398728b2e4800b1b25012"
+    },
+    {
+      "path": "social/founder-devtool-video-prompts-convention.md",
+      "source_sha": "b2e0a6ecdff5e0771c1dcfab851b18e3fdd70de14d90d0267c3e7e9b42aa207a"
+    },
+    {
+      "path": "social/hacker-news-convention.md",
+      "source_sha": "5bfa016df8b77154daef9bd94f985d3d11646233a6f7a3979afeb8a07ba306ba"
+    },
+    {
+      "path": "social/instagram-reels-convention.md",
+      "source_sha": "62ced1fcd1709cda0c5a068a441883c5ce2a6489b10e04bc2637a064833718ba"
+    },
+    {
+      "path": "social/linkedin-post-convention.md",
+      "source_sha": "1ba89a2308851d5fb307034130c94f2c2fbc4b5f1178a91f8c979d5cb02b7476"
+    },
+    {
+      "path": "social/linkedin-video-convention.md",
+      "source_sha": "9dad99a5b79750e9bd25713e92396fc42fe7da89e6ffe4f7486b0a71514e77bb"
+    },
+    {
+      "path": "social/mastodon-convention.md",
+      "source_sha": "e0c6450f5b00d01fae2b9af454bb2ac583211a3dfcfb0bde99e0efbfa64b74de"
+    },
+    {
+      "path": "social/reddit-convention.md",
+      "source_sha": "b3f4b6eb7bb04c49808614a7dcd6e89bc3c75fa2f3d0fa5603e253e7af870412"
+    },
+    {
+      "path": "social/threads-convention.md",
+      "source_sha": "17086dee442ff8dddb8589c0250405c524f96607cc7fcad1e5e1c2c01c868b5e"
+    },
+    {
+      "path": "social/tiktok-convention.md",
+      "source_sha": "d0f492149151d24e50d712e1e2181ecddff9af0afdacd69c519853d0a9dcf367"
+    },
+    {
+      "path": "social/x-post-convention.md",
+      "source_sha": "2238c3f165eb070b42b53984fa092e71f83bccf71debb0040f6b80b6df755b1b"
+    },
+    {
+      "path": "social/youtube-community-convention.md",
+      "source_sha": "4928cf70fe8e52dff088c4881e3d558327a95e3be86e9a3d2e0aca0cde9a7cab"
+    },
+    {
+      "path": "social/youtube-long-form-convention.md",
+      "source_sha": "78e0805a1cfc3a4f4a1e20a6b7d84aa8f8787391c00ec91b06f292975bdc8788"
+    },
+    {
+      "path": "social/youtube-shorts-convention.md",
+      "source_sha": "7db2ae2dec402384765fc029bf5029d16d546ebe9337e1d8441374e01e5a6135"
+    }
+  ]
+}
